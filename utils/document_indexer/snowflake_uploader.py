@@ -58,8 +58,8 @@ class DocumentIndexUploader:
         
         try:
             # Create database and schema if they don't exist
-            hook.query(f"CREATE DATABASE IF NOT EXISTS {self.database}")
-            hook.query(f"CREATE SCHEMA IF NOT EXISTS {self.database}.{self.schema}")
+            hook.query_snowflake(f"CREATE DATABASE IF NOT EXISTS {self.database}")
+            hook.query_snowflake(f"CREATE SCHEMA IF NOT EXISTS {self.database}.{self.schema}")
             
             # Create table with all necessary columns
             create_table_sql = f"""
@@ -116,7 +116,7 @@ class DocumentIndexUploader:
             )
             """
             
-            hook.query(create_table_sql)
+            hook.query_snowflake(create_table_sql)
             print(f"Table {self.full_table_name} created/verified successfully")
             return True
             
@@ -251,7 +251,7 @@ class DocumentIndexUploader:
             return False
         
         try:
-            hook.query(f"DELETE FROM {self.full_table_name}")
+            hook.query_snowflake(f"DELETE FROM {self.full_table_name}")
             print(f"Cleared table {self.full_table_name}")
             return True
         except Exception as e:
@@ -276,7 +276,7 @@ class DocumentIndexUploader:
             FROM {self.full_table_name}
             """
             
-            result = hook.query(stats_query, return_results=True)
+            result = hook.query_snowflake(stats_query)
             if result and len(result) > 0:
                 return dict(zip([col.name for col in result.description], result.fetchone()))
             

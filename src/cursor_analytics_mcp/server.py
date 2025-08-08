@@ -51,7 +51,97 @@ except ImportError:
     HYBRID_SEARCH_AVAILABLE = False
 
 # Initialize FastMCP server
+# Disable banner to prevent JSON parsing errors in MCP Inspector
 mcp = FastMCP("Cursor Analytics MCP Server 🚀")
+
+# ============================================================================
+# HELPER FUNCTIONS
+# ============================================================================
+
+def get_configured_hybrid_searcher():
+    """
+    Get a properly configured HybridSearcher with error handling
+    
+    Returns:
+        HybridSearcher instance or None if initialization fails
+    """
+    if not HYBRID_SEARCH_AVAILABLE:
+        return None
+    
+    try:
+        # Explicit table configuration for clarity
+        searcher = HybridSearcher(database="proddb", schema="fionafan", table="document_index")
+        
+        # Validate Snowflake connection
+        hook = searcher.get_snowflake_hook()
+        if not hook:
+            logger.error("Failed to establish Snowflake connection")
+            return None
+            
+        return searcher
+    except Exception as e:
+        logger.error(f"Failed to initialize HybridSearcher: {str(e)}")
+        return None
+
+@mcp.tool
+def get_search_system_status() -> str:
+    """
+    Get the current status of the search system including table configuration
+    
+    Returns:
+        Status information about the search system
+    """
+    try:
+        status = []
+        status.append("🔍 Search System Status")
+        status.append("=" * 50)
+        
+        # Check if hybrid search is available
+        if HYBRID_SEARCH_AVAILABLE:
+            status.append("✅ Hybrid search module: Available")
+        else:
+            status.append("❌ Hybrid search module: Not available")
+            return "\n".join(status)
+        
+        # Check searcher configuration
+        status.append("\n📊 Table Configuration:")
+        status.append(f"  Database: proddb")
+        status.append(f"  Schema: fionafan") 
+        status.append(f"  Table: document_index")
+        status.append(f"  Full path: proddb.fionafan.document_index")
+        
+        # Test connection
+        searcher = get_configured_hybrid_searcher()
+        if searcher:
+            status.append("\n✅ Snowflake connection: Success")
+            
+            # Try to get table stats
+            try:
+                hook = searcher.get_snowflake_hook()
+                cursor = hook.conn.cursor()
+                cursor.execute("SELECT COUNT(*) FROM proddb.fionafan.document_index")
+                total_count = cursor.fetchone()[0]
+                
+                cursor.execute("SELECT category, COUNT(*) FROM proddb.fionafan.document_index GROUP BY category ORDER BY COUNT(*) DESC")
+                categories = cursor.fetchall()
+                
+                status.append(f"\n📈 Table Statistics:")
+                status.append(f"  Total documents: {total_count}")
+                status.append(f"  Categories:")
+                for cat, count in categories:
+                    status.append(f"    - {cat}: {count} chunks")
+                
+                cursor.close()
+            except Exception as e:
+                status.append(f"\n⚠️  Table statistics: Error - {str(e)}")
+        else:
+            status.append("\n❌ Snowflake connection: Failed")
+        
+        return "\n".join(status)
+        
+    except Exception as e:
+        logger.error(f"Get search system status error: {str(e)}")
+        return f"Error getting search system status: {str(e)}"
 
 # ============================================================================
 # SNOWFLAKE OPERATIONS
@@ -404,17 +494,22 @@ def fetch_table_context(query: str, top_k: int = 5) -> str:
         if not HYBRID_SEARCH_AVAILABLE:
             return "Hybrid search not available. Please run document indexing first."
         
-        searcher = HybridSearcher()
+        # Get configured searcher with validation
+        searcher = get_configured_hybrid_searcher()
+        if not searcher:
+            return "Error: Unable to initialize search system. Please check Snowflake connectivity and ensure the document index table exists."
+        
+        # Perform search
         results = searcher.search_table_context(query, top_k=top_k)
         
         if not results:
-            return f"No table context found for query: '{query}'"
+            return f"No table context found for query: '{query}'. The document index may be empty or the query didn't match any content."
         
         return searcher.format_search_results(results, query)
             
     except Exception as e:
         logger.error(f"Fetch table context error: {str(e)}")
-        return f"Error fetching table context: {str(e)}"
+        return f"Error fetching table context: {str(e)}. Please ensure the document index table exists and is populated."
 
 
 @mcp.tool
@@ -447,17 +542,22 @@ def fetch_pod_queries(query: str, top_k: int = 3) -> str:
         if not HYBRID_SEARCH_AVAILABLE:
             return "Hybrid search not available. Please run document indexing first."
         
-        searcher = HybridSearcher()
+        # Get configured searcher with validation
+        searcher = get_configured_hybrid_searcher()
+        if not searcher:
+            return "Error: Unable to initialize search system. Please check Snowflake connectivity and ensure the document index table exists."
+        
+        # Perform search
         results = searcher.search_pod_queries(query, top_k=top_k)
         
         if not results:
-            return f"No pod-level queries found for query: '{query}'"
+            return f"No pod-level queries found for query: '{query}'. The document index may be empty or the query didn't match any content."
         
         return searcher.format_search_results(results, query)
                 
     except Exception as e:
         logger.error(f"Fetch pod queries error: {str(e)}")
-        return f"Error fetching pod queries: {str(e)}"
+        return f"Error fetching pod queries: {str(e)}. Please ensure the document index table exists and is populated."
 
 
 @mcp.tool
@@ -498,17 +598,22 @@ def fetch_user_context(query: str, top_k: int = 5) -> str:
         if not HYBRID_SEARCH_AVAILABLE:
             return "Hybrid search not available. Please run document indexing first."
         
-        searcher = HybridSearcher()
+        # Get configured searcher with validation
+        searcher = get_configured_hybrid_searcher()
+        if not searcher:
+            return "Error: Unable to initialize search system. Please check Snowflake connectivity and ensure the document index table exists."
+        
+        # Perform search
         results = searcher.search_user_context(query, top_k=top_k)
         
         if not results:
-            return f"No user context found for query: '{query}'"
+            return f"No user context found for query: '{query}'. The document index may be empty or the query didn't match any content."
         
         return searcher.format_search_results(results, query)
                 
     except Exception as e:
         logger.error(f"Fetch user context error: {str(e)}")
-        return f"Error fetching user context: {str(e)}"
+        return f"Error fetching user context: {str(e)}. Please ensure the document index table exists and is populated."
 
 
 @mcp.tool

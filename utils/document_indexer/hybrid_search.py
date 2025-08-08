@@ -148,7 +148,7 @@ class HybridSearcher:
             LIMIT {top_k * 3}  -- Get more for re-ranking
             """
             
-            result = hook.query(bm25_query, return_results=True)
+            result = hook.query_snowflake(bm25_query)
             if not result:
                 return []
             
@@ -270,7 +270,7 @@ class HybridSearcher:
             ORDER BY chunk_id
             """
             
-            result = hook.query(query, return_results=True)
+            result = hook.query_snowflake(query)
             if not result:
                 return []
             
@@ -368,7 +368,7 @@ class HybridSearcher:
 
 def main():
     """Test the hybrid searcher"""
-    searcher = HybridSearcher()
+    searcher = HybridSearcher(database="proddb", schema="fionafan", table="document_index")
     
     # Test searches
     test_queries = [

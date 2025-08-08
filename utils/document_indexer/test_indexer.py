@@ -113,7 +113,7 @@ def test_hybrid_search():
     try:
         from .hybrid_search import HybridSearcher
         
-        searcher = HybridSearcher()
+        searcher = HybridSearcher(database="proddb", schema="fionafan", table="document_index")
         
         # Test search (will be empty if no data indexed yet)
         results = searcher.search_documents("test query", top_k=1)
