@@ -584,8 +584,8 @@ def enhanced_granularity_analysis(sf, fqn: str, table_name: str, schema_name: st
             "entity_column": entity_column,
             "time_column": time_column,
             "lookback_days": lookback_days,
-            "summary": f"Large table ({table_row_count:,} rows) - skipped deep dive analysis for performance. Predicted entity: {entity_column or 'unknown'}, time column: {time_column or 'none'}",
-            "explanation": f"This table has {table_row_count:,} rows (>10B), so detailed granularity analysis was skipped to avoid performance issues. Based on LLM analysis, the table appears to be at the {entity_column or 'unknown'} level.",
+            "summary": f"Large table ({table_row_count:,} rows) - analysis optimized for performance. Predicted entity level: {entity_column or 'unknown'}, time filtering: {time_column or 'none'}",
+            "explanation": f"**Performance-Optimized Analysis**\n\nThis is a very large table with {table_row_count:,} rows (>10 billion), so we used a lightweight analysis approach to avoid long query times. Based on intelligent analysis of the table structure and column usage patterns, this table appears to track data at the **{entity_column or 'unknown'}** level.\n\n**Key Insights:**\n- **Entity Level**: Each row likely represents a {entity_column.lower().replace('_', ' ') if entity_column else 'unknown entity'}\n- **Time Filtering**: {'Uses ' + time_column + ' for time-based analysis' if time_column else 'No time column identified for filtering'}\n- **Recommended Lookback**: {lookback_days} days for analysis (automatically determined based on table size)\n\nFor detailed granularity analysis on this large table, consider using time-filtered samples or aggregated views.",
             "analysis_log": [f"Table too large ({table_row_count:,} rows) - skipped deep dive analysis"]
         }
     

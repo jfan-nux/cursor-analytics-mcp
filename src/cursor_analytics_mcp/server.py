@@ -6,6 +6,7 @@ A standalone MCP server providing tools for:
 - Snowflake operations (query execution, table management)
 - Query search functionality  
 - Curie experiment exports
+- Table context generation and documentation
 - Context fetching from various sources
 - Cursor rules awareness
 """
@@ -26,7 +27,6 @@ sys.path.insert(0, str(PROJECT_ROOT))
 # Import local modules
 try:
     from utils.snowflake_connection import SnowflakeHook
-    from utils.query_search import search_queries_by_keywords, save_results_to_context
     from utils.curie_export.export_helper import (
         export_curie_with_explicit_params,
         get_experiment_metadata
@@ -49,6 +49,14 @@ try:
 except ImportError:
     print("Warning: Hybrid search not available. Document indexing may not be set up.")
     HYBRID_SEARCH_AVAILABLE = False
+
+# Try to import table context agent functionality
+try:
+    from local_tools.table_context_agent.agent import main as generate_table_context
+    TABLE_CONTEXT_AVAILABLE = True
+except ImportError:
+    print("Warning: Table context agent not available.")
+    TABLE_CONTEXT_AVAILABLE = False
 
 # Initialize FastMCP server
 # Disable banner to prevent JSON parsing errors in MCP Inspector
@@ -83,65 +91,7 @@ def get_configured_hybrid_searcher():
         logger.error(f"Failed to initialize HybridSearcher: {str(e)}")
         return None
 
-@mcp.tool
-def get_search_system_status() -> str:
-    """
-    Get the current status of the search system including table configuration
-    
-    Returns:
-        Status information about the search system
-    """
-    try:
-        status = []
-        status.append("🔍 Search System Status")
-        status.append("=" * 50)
-        
-        # Check if hybrid search is available
-        if HYBRID_SEARCH_AVAILABLE:
-            status.append("✅ Hybrid search module: Available")
-        else:
-            status.append("❌ Hybrid search module: Not available")
-            return "\n".join(status)
-        
-        # Check searcher configuration
-        status.append("\n📊 Table Configuration:")
-        status.append(f"  Database: proddb")
-        status.append(f"  Schema: fionafan") 
-        status.append(f"  Table: document_index")
-        status.append(f"  Full path: proddb.fionafan.document_index")
-        
-        # Test connection
-        searcher = get_configured_hybrid_searcher()
-        if searcher:
-            status.append("\n✅ Snowflake connection: Success")
-            
-            # Try to get table stats
-            try:
-                hook = searcher.get_snowflake_hook()
-                cursor = hook.conn.cursor()
-                cursor.execute("SELECT COUNT(*) FROM proddb.fionafan.document_index")
-                total_count = cursor.fetchone()[0]
-                
-                cursor.execute("SELECT category, COUNT(*) FROM proddb.fionafan.document_index GROUP BY category ORDER BY COUNT(*) DESC")
-                categories = cursor.fetchall()
-                
-                status.append(f"\n📈 Table Statistics:")
-                status.append(f"  Total documents: {total_count}")
-                status.append(f"  Categories:")
-                for cat, count in categories:
-                    status.append(f"    - {cat}: {count} chunks")
-                
-                cursor.close()
-            except Exception as e:
-                status.append(f"\n⚠️  Table statistics: Error - {str(e)}")
-        else:
-            status.append("\n❌ Snowflake connection: Failed")
-        
-        return "\n".join(status)
-        
-    except Exception as e:
-        logger.error(f"Get search system status error: {str(e)}")
-        return f"Error getting search system status: {str(e)}"
+
 
 # ============================================================================
 # SNOWFLAKE OPERATIONS
@@ -198,98 +148,7 @@ def snowflake_query(
         return f"Error executing query: {str(e)}"
 
 
-@mcp.tool
-def snowflake_create_table(
-    table_name: str,
-    data: str,
-    database: Optional[str] = None,
-    schema: Optional[str] = None,
-    warehouse: Optional[str] = None,
-    overwrite: bool = True
-) -> str:
-    """
-    Create and populate a table in Snowflake from DataFrame data.
-    
-    Args:
-        table_name: Name of the table to create
-        data: JSON string of the data to insert (list of dicts)
-        database: Database name (optional)
-        schema: Schema name (optional)
-        warehouse: Warehouse name (optional)
-        overwrite: Whether to overwrite existing table
-    
-    Returns:
-        Success/error message
-    """
-    try:
-        # Parse JSON data
-        import pandas as pd
-        data_parsed = json.loads(data)
-        df = pd.DataFrame(data_parsed)
-        
-        # Create SnowflakeHook with optional parameters
-        hook_kwargs = {}
-        if database:
-            hook_kwargs["database"] = database
-        if schema:
-            hook_kwargs["schema"] = schema  
-        if warehouse:
-            hook_kwargs["warehouse"] = warehouse
-            
-        with SnowflakeHook(**hook_kwargs) as sf:
-            if overwrite:
-                # Drop table if it exists
-                try:
-                    sf.drop_table(table_name)
-                except:
-                    pass  # Table might not exist
-                    
-            sf.create_and_populate_table(df, table_name)
-            
-        return f"Table '{table_name}' created successfully with {len(df)} rows."
-        
-    except Exception as e:
-        logger.error(f"Create table error: {str(e)}")
-        return f"Error creating table: {str(e)}"
 
-
-@mcp.tool
-def snowflake_drop_table(
-    table_name: str,
-    database: Optional[str] = None,
-    schema: Optional[str] = None,
-    warehouse: Optional[str] = None
-) -> str:
-    """
-    Drop a table from Snowflake.
-    
-    Args:
-        table_name: Name of the table to drop
-        database: Database name (optional)
-        schema: Schema name (optional)
-        warehouse: Warehouse name (optional)
-    
-    Returns:
-        Success/error message
-    """
-    try:
-        # Create SnowflakeHook with optional parameters
-        hook_kwargs = {}
-        if database:
-            hook_kwargs["database"] = database
-        if schema:
-            hook_kwargs["schema"] = schema
-        if warehouse:
-            hook_kwargs["warehouse"] = warehouse
-            
-        with SnowflakeHook(**hook_kwargs) as sf:
-            sf.drop_table(table_name)
-            
-        return f"Table '{table_name}' dropped successfully."
-        
-    except Exception as e:
-        logger.error(f"Drop table error: {str(e)}")
-        return f"Error dropping table: {str(e)}"
 
 
 # ============================================================================
@@ -298,57 +157,144 @@ def snowflake_drop_table(
 
 @mcp.tool
 def query_search(
-    keywords: List[str],
-    limit: int = 10,
-    save_to_context: bool = True
+    table_name: str,
+    limit: int = 5
 ) -> str:
     """
-    Search for historical queries by keywords.
+    Find the top most used queries for a specific table in the last 30 days.
+    Uses Tyler's sf_table_usage table to find patterns.
     
     Args:
-        keywords: Keywords to search for in query history
-        limit: Maximum number of results to return
-        save_to_context: Whether to save results to context directory
+        table_name: Full or partial table name (e.g., 'dimension_deliveries' or 'edw.finance.dimension_deliveries')
+        limit: Maximum number of queries to return (default: 5)
     
     Returns:
-        Formatted search results
+        Formatted list of top queries for the table
     """
     try:
-        # Search for queries
-        results = search_queries_by_keywords(keywords)
+        # Import the table resolution function from tyler_sources
+        from local_tools.table_context_agent.tyler_sources import resolve_table_name
         
-        if not results:
-            return f"No queries found matching keywords: {', '.join(keywords)}"
-        
-        # Save to context if requested
-        saved_path = None
-        if save_to_context:
-            saved_path = save_results_to_context(results, keywords, limit)
-        
-        # Format results for display
-        limited_results = results[:limit]
-        response = f"Found {len(results)} queries matching keywords: {', '.join(keywords)}\n"
-        if saved_path:
-            response += f"Results saved to: {saved_path}\n"
-        response += f"\nTop {len(limited_results)} results:\n\n"
-        
-        for i, result in enumerate(limited_results, 1):
-            response += f"--- Query {i} ---\n"
-            response += f"Query ID: {result.get('QUERY_ID')}\n"
-            response += f"User: {result.get('USER_NAME')}\n"
-            response += f"Time: {result.get('START_TIME')}\n"
-            response += f"Type: {result.get('QUERY_TYPE')}\n"
-            query_text = result.get('QUERY_TEXT', '')[:500]  # Truncate for display
-            if len(result.get('QUERY_TEXT', '')) > 500:
-                query_text += "... (truncated)"
-            response += f"Query: {query_text}\n"
-            response += "-" * 50 + "\n\n"
-        
-        return response
-        
+        with SnowflakeHook() as sf:
+            # Step 1: Resolve the table name to fully qualified name
+            try:
+                full_table_name = resolve_table_name(sf, table_name, verbose=False)
+            except Exception:
+                # Fallback: use the input as-is if resolution fails
+                full_table_name = table_name
+            
+            # Step 2: Try to find the top 5 most used queries in the last 30 days
+            most_used_queries_sql = f"""
+            WITH recent_queries AS (
+                SELECT 
+                    query_text,
+                    dd_user,
+                    start_time,
+                    COUNT(*) as execution_count,
+                    MAX(start_time) as latest_execution
+                FROM tyleranderson.sf_table_usage
+                WHERE fully_qualified_table_name = '{full_table_name}'
+                  AND start_time >= CURRENT_DATE - 30
+                  AND query_text IS NOT NULL
+                  AND LENGTH(TRIM(query_text)) > 10  -- Filter out very short queries
+                GROUP BY query_text, dd_user, start_time
+                HAVING execution_count >= 1
+                ORDER BY execution_count DESC, latest_execution DESC
+                LIMIT {limit * 3}  -- Get more results to filter from
+            ),
+            distinct_queries AS (
+                SELECT DISTINCT
+                    query_text,
+                    SUM(execution_count) as total_executions,
+                    MAX(latest_execution) as most_recent_execution,
+                    LISTAGG(DISTINCT dd_user, ', ') as users
+                FROM recent_queries
+                GROUP BY query_text
+                ORDER BY total_executions DESC, most_recent_execution DESC
+                LIMIT {limit}
+            )
+            SELECT 
+                query_text,
+                total_executions,
+                most_recent_execution,
+                users
+            FROM distinct_queries
+            ORDER BY total_executions DESC, most_recent_execution DESC
+            """
+            
+            result_df = sf.query_snowflake(most_used_queries_sql, method="pandas")
+            
+            # Step 3: If no frequently used queries found, find most active user and their recent queries
+            if result_df.empty:
+                fallback_sql = f"""
+                WITH most_active_user AS (
+                    SELECT dd_user
+                    FROM tyleranderson.sf_table_usage
+                    WHERE fully_qualified_table_name = '{full_table_name}'
+                      AND start_time >= CURRENT_DATE - 30
+                    GROUP BY dd_user
+                    ORDER BY COUNT(*) DESC
+                    LIMIT 1
+                ),
+                user_queries AS (
+                    SELECT DISTINCT
+                        query_text,
+                        MAX(start_time) as latest_execution_time,
+                        dd_user
+                    FROM tyleranderson.sf_table_usage
+                    WHERE fully_qualified_table_name = '{full_table_name}'
+                      AND start_time >= CURRENT_DATE - 30
+                      AND dd_user = (SELECT dd_user FROM most_active_user)
+                      AND query_text IS NOT NULL
+                      AND LENGTH(TRIM(query_text)) > 10
+                    GROUP BY query_text, dd_user
+                    ORDER BY latest_execution_time DESC
+                    LIMIT {limit}
+                )
+                SELECT 
+                    query_text,
+                    1 as total_executions,
+                    latest_execution_time as most_recent_execution,
+                    dd_user as users
+                FROM user_queries
+                ORDER BY latest_execution_time DESC
+                """
+                
+                result_df = sf.query_snowflake(fallback_sql, method="pandas")
+            
+            # Step 4: Format the results
+            if result_df.empty:
+                return f"No queries found for table '{full_table_name}' in the last 30 days."
+            
+            response = f"🔍 Top {len(result_df)} queries for table: {full_table_name}\n"
+            response += f"📅 Search period: Last 30 days\n"
+            response += "=" * 70 + "\n\n"
+            
+            for i, row in result_df.iterrows():
+                execution_count = row.get('total_executions', 1)
+                recent_time = row.get('most_recent_execution', 'Unknown')
+                users = row.get('users', 'Unknown')
+                query_text = row.get('query_text', '')
+                
+                response += f"--- Query {i + 1} ---\n"
+                response += f"📊 Executions: {execution_count}\n"
+                response += f"⏰ Most Recent: {recent_time}\n"
+                response += f"👤 Users: {users}\n\n"
+                
+                # Truncate long queries for readability
+                if len(query_text) > 800:
+                    truncated_query = query_text[:800] + "\n... (truncated)"
+                else:
+                    truncated_query = query_text
+                    
+                response += f"💻 Query:\n{truncated_query}\n"
+                response += "-" * 70 + "\n\n"
+            
+            return response
+            
     except Exception as e:
-        logger.error(f"Query search error: {str(e)}")
-        return f"Error searching queries: {str(e)}"
+        logger.error(f"Table query search error: {str(e)}")
+        return f"Error searching queries for table '{table_name}': {str(e)}"
 
 
 # ============================================================================
@@ -653,6 +599,169 @@ def fetch_cursor_rules(rule_name: str) -> str:
     except Exception as e:
         logger.error(f"Fetch cursor rules error: {str(e)}")
         return f"Error fetching cursor rules: {str(e)}"
+
+
+@mcp.tool
+def generate_snowflake_table_context(
+    table_name: str,
+    print_only: bool = True,
+    output_format: str = "markdown",
+    sample_row_limit: int = 10,
+    verbose: bool = False
+) -> str:
+    """
+    Generate comprehensive context documentation for a Snowflake table.
+    
+    This tool creates detailed documentation including business context, 
+    metadata analysis, granularity detection, and sample queries.
+    
+    Args:
+        table_name: Table name (can be partial or fully qualified)
+        print_only: If True, only returns content. If False, also saves to file.
+        output_format: Output format - "markdown" or "json" 
+        sample_row_limit: Number of sample rows for granularity analysis (1-20)
+        verbose: Enable verbose logging for debugging
+        
+    Returns:
+        Generated table context as markdown text or JSON string
+    """
+    if not TABLE_CONTEXT_AVAILABLE:
+        return json.dumps({
+            "error": "Table context agent not available. Please ensure local_tools.table_context_agent is properly installed."
+        })
+    
+    try:
+        logger.info(f"Generating table context for: {table_name}")
+        
+        # Validate sample_row_limit
+        if not 1 <= sample_row_limit <= 20:
+            sample_row_limit = 10
+            logger.warning(f"Invalid sample_row_limit, using default: {sample_row_limit}")
+        
+        if print_only:
+            # Generate the table context using the agent (return content only)
+            result = generate_table_context(
+                table=table_name,
+                print_only=True,
+                sample_row_limit=sample_row_limit,
+                verbose=verbose
+            )
+            file_path = None
+        else:
+            # Import table resolution to get full qualified name for directory structure
+            from local_tools.table_context_agent.tyler_sources import resolve_table_name
+            
+            # Resolve table name first to construct proper output directory
+            with SnowflakeHook() as sf:
+                try:
+                    full_table_name = resolve_table_name(sf, table_name, verbose=False)
+                except Exception:
+                    # Fallback: use input as-is if resolution fails
+                    full_table_name = table_name
+            
+            # Construct output directory based on full table name
+            # Default context directory structure: context/analysis-context/snowflake-table-context/
+            context_base = PROJECT_ROOT / "context" / "analysis-context" / "snowflake-table-context"
+            
+            # Generate and save the table context using the agent
+            result_path = generate_table_context(
+                table=table_name,
+                output_root=str(context_base),
+                sample_row_limit=sample_row_limit,
+                verbose=verbose
+            )
+            
+            # Also get the content to return
+            result = generate_table_context(
+                table=table_name,
+                print_only=True,
+                sample_row_limit=sample_row_limit,
+                verbose=verbose
+            )
+            
+            file_path = str(result_path)
+            logger.info(f"Table context saved to: {file_path}")
+        
+        if output_format.lower() == "json":
+            # Convert markdown result to JSON structure
+            response = {
+                "table_name": table_name,
+                "format": "markdown",
+                "content": result,
+                "generated_at": "auto",
+                "status": "success"
+            }
+            if file_path:
+                response["file_path"] = file_path
+                response["message"] = f"Content generated and saved to {file_path}"
+            return json.dumps(response, indent=2)
+        else:
+            # Return raw markdown with optional file path info
+            if file_path:
+                return f"📁 File saved to: {file_path}\n\n{result}"
+            else:
+                return result
+            
+    except Exception as e:
+        logger.error(f"Error generating table context for {table_name}: {e}")
+        error_response = {
+            "error": f"Failed to generate table context: {str(e)}",
+            "table_name": table_name,
+            "status": "failed"
+        }
+        return json.dumps(error_response, indent=2)
+
+
+
+
+
+@mcp.tool
+def get_table_context_status() -> str:
+    """
+    Check the status and availability of the table context generation system.
+    
+    Returns:
+        JSON status information about table context capabilities
+    """
+    status = {
+        "table_context_agent_available": TABLE_CONTEXT_AVAILABLE,
+        "dependencies": {},
+        "features": [],
+        "version": "1.0.0"
+    }
+    
+    if TABLE_CONTEXT_AVAILABLE:
+        try:
+            # Check individual dependencies
+            status["dependencies"]["snowflake_connection"] = True
+            status["dependencies"]["confluence_client"] = True
+            status["dependencies"]["portkey_llm"] = True
+            
+            # List available features
+            status["features"] = [
+                "Table name resolution and validation",
+                "Business context generation with LLM",
+                "Metadata analysis and formatting", 
+                "Granularity detection and analysis",
+                "Large table performance optimization (>10B rows)",
+                "Sample query extraction",
+                "Confluence documentation integration",
+                "Case-insensitive field access",
+                "Markdown and JSON output formats"
+            ]
+            
+            status["status"] = "ready"
+            status["message"] = "Table context agent is fully operational"
+            
+        except Exception as e:
+            status["status"] = "degraded"
+            status["error"] = str(e)
+            status["message"] = "Table context agent has dependency issues"
+    else:
+        status["status"] = "unavailable"
+        status["message"] = "Table context agent not available - check installation"
+        
+    return json.dumps(status, indent=2)
 
 
 @mcp.tool

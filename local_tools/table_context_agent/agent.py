@@ -135,30 +135,30 @@ def synthesize_descriptions(llm: PortkeyLLM, payload_json: str, confluence_hits:
         "You are an analytics documentation assistant. Given Snowflake metadata and optional "
         "Confluence context, produce concise, accurate business-facing descriptions. "
         "Focus on practical business understanding. Use table and column comments as primary source. "
-        "Avoid speculation; if unknown, say 'TBD'."
+        "Avoid speculation and repetition; if unknown, say 'TBD'. Keep sections distinct and non-redundant."
     )
     
-    # Enhanced prompt based on whether we have Confluence docs
+    # Enhanced prompt for concise, non-repetitive content
     if confluence_hits and len(confluence_hits) > 0:
         user = (
-            "Using the following JSON context AND Confluence documentation, write:\n"
-            "- General table description (focus on business purpose)\n"
-            "- Business Context (what business process/domain this supports)\n"
-            "- Who maintains it (from metadata or Confluence, otherwise 'TBD')\n"
-            "- Primary use cases (based on column usage and comments)\n"
-            "\nPrioritize Confluence content for business context, but use table/column comments "
-            "from metadata for technical details. Keep each section concise (2-4 sentences).\n\n"
+            "Write a concise business summary using the JSON context and Confluence docs. "
+            "Create ONE cohesive paragraph (3-5 sentences) that covers:\n"
+            "• What this table contains and its business purpose\n"
+            "• Which domain/team uses it and key use cases\n"
+            "• Who maintains it (from metadata/Confluence)\n\n"
+            "Avoid repetition - don't restate the same information multiple times. "
+            "Focus on business value, not technical details.\n\n"
             f"Context JSON:\n{payload_json}"
         )
     else:
         user = (
-            "Using the following JSON context (no Confluence docs available), write:\n"
-            "- General table description (infer from table name, comments, and column structure)\n"
-            "- Business Context (infer business domain from schema/database and column types)\n"
-            "- Who maintains it (from TABLE_OWNER field, otherwise 'TBD')\n"
-            "- Primary use cases (based on column usage patterns and comments)\n"
-            "\nPay special attention to the 'comment' fields in both table and column metadata. "
-            "Use column names and types to infer business purpose. Keep each section concise (2-4 sentences).\n\n"
+            "Write a concise business summary using the JSON context. "
+            "Create ONE cohesive paragraph (3-5 sentences) that covers:\n"
+            "• What this table contains (infer from name, comments, columns)\n"
+            "• Business domain and likely use cases\n"
+            "• Who maintains it (from TABLE_OWNER, otherwise 'TBD')\n\n"
+            "Avoid repetition - don't restate the same information. "
+            "Focus on business purpose inferred from column patterns.\n\n"
             f"Context JSON:\n{payload_json}"
         )
     
@@ -180,10 +180,10 @@ def safe_generate_narrative(payload_json: str, confluence_hits: Optional[List[Di
         return synthesize_descriptions(llm, payload_json, confluence_hits)
     except Exception as e:
         placeholder = (
-            "General table description: TBD.\n\n"
-            "Business Context: TBD.\n\n"
-            "Who maintains it: TBD.\n\n"
-            "Primary use cases: TBD."
+            "Business context and purpose of this table is currently unknown (TBD). "
+            "Unable to determine the business domain, primary use cases, or maintenance team "
+            "from the available metadata. Additional context or documentation would be helpful "
+            "to provide a comprehensive business description."
         )
         return {"narrative": placeholder}
 
@@ -231,13 +231,6 @@ def build_enhanced_markdown_content(enhanced_data: Dict[str, Any]) -> str:
     content.append(business_context)
     content.append("")
     
-    # Confluence References (if available)
-    if confluence_hits:
-        content.append("### Related Documentation")
-        for hit in confluence_hits[:3]:  # Show top 3
-            content.append(f"- [{hit.get('title', 'Confluence Page')}]({hit.get('url', '#')})")
-        content.append("")
-    
     # Metadata Section
     content.append("## Metadata")
     content.append("")
@@ -246,13 +239,42 @@ def build_enhanced_markdown_content(enhanced_data: Dict[str, Any]) -> str:
     content.append("### Table Metadata")
     content.append("")
     table_meta = metadata['table_metadata']
-    if table_meta.get('TABLE_TYPE'):
-        content.append(f"**Type:** {table_meta['TABLE_TYPE']}")
-    if table_meta.get('BYTES'):
-        bytes_mb = int(table_meta['BYTES']) / (1024 * 1024) if table_meta['BYTES'] else 0
-        content.append(f"**Size:** {bytes_mb:.1f} MB")
-    if table_meta.get('IS_TRANSIENT'):
-        content.append(f"**Transient:** {table_meta['IS_TRANSIENT']}")
+    
+    # Use case-insensitive helper for all metadata fields
+    def get_meta(key, default=None):
+        # Try exact key first, then case-insensitive
+        if key in table_meta:
+            return table_meta[key]
+        for k, v in table_meta.items():
+            if k.upper() == key.upper():
+                return v
+        return default
+    
+    table_type = get_meta('TABLE_TYPE')
+    if table_type:
+        content.append(f"**Type:** {table_type}")
+    
+    bytes_val = get_meta('BYTES')
+    if bytes_val:
+        try:
+            bytes_mb = int(bytes_val) / (1024 * 1024)
+            content.append(f"**Size:** {bytes_mb:.1f} MB")
+        except (ValueError, TypeError):
+            content.append(f"**Size:** {bytes_val}")
+    
+    is_transient = get_meta('IS_TRANSIENT')
+    if is_transient is not None:
+        content.append(f"**Transient:** {is_transient}")
+    
+    retention_time = get_meta('RETENTION_TIME')
+    if retention_time is not None:
+        content.append(f"**Retention Time:** {retention_time} days")
+        
+    # Show raw row count for reference
+    raw_row_count = get_meta('ROW_COUNT')
+    if raw_row_count is not None:
+        content.append(f"**Raw Row Count:** {raw_row_count:,}")
+    
     content.append("")
     
     # Most Common Joins
@@ -319,6 +341,15 @@ def build_enhanced_markdown_content(enhanced_data: Dict[str, Any]) -> str:
             content.append("")
     else:
         content.append("No sample queries available.")
+    content.append("")
+    
+    # Related Documentation at the bottom
+    if confluence_hits:
+        content.append("## Related Documentation")
+        content.append("")
+        for hit in confluence_hits[:3]:  # Show top 3
+            content.append(f"- [{hit.get('title', 'Confluence Page')}]({hit.get('url', '#')})")
+        content.append("")
     
     return "\n".join(content)
 
@@ -496,7 +527,9 @@ def main(
             'schema': table_id.schema,
             'table': table_id.table,
             'owner': case_insensitive_get(overview, 'TABLE_OWNER', 'TBD'),
-            'row_count': case_insensitive_get(overview, 'FORMATTED_ROW_COUNT', 'Unknown'),
+            'row_count': case_insensitive_get(overview, 'FORMATTED_ROW_COUNT') or (
+                lambda rc: f"{rc:,} rows" if rc else 'Unknown'
+            )(case_insensitive_get(overview, 'ROW_COUNT')),
             'comment': case_insensitive_get(overview, 'COMMENT', 'No description available'),
             'created': case_insensitive_get(overview, 'CREATED'),
             'last_altered': case_insensitive_get(overview, 'LAST_ALTERED')

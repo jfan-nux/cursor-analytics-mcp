@@ -18,6 +18,68 @@ This document provides practical examples of using the cursor-analytics-mcp serv
 
 ## Tool Usage Examples
 
+### 📊 Table Context Generation
+
+#### Generate Table Context Documentation
+```json
+{
+  "name": "generate_snowflake_table_context",
+  "arguments": {
+    "table_name": "dimension_deliveries",
+    "output_format": "markdown",
+    "sample_row_limit": 10,
+    "verbose": false
+  }
+}
+```
+
+#### Save Table Context to File
+```json
+{
+  "name": "save_snowflake_table_context",
+  "arguments": {
+    "table_name": "iguazu.consumer.m_card_view",
+    "output_directory": "context/analysis-context/snowflake-table-context",
+    "sample_row_limit": 5,
+    "verbose": true
+  }
+}
+```
+
+#### Check Table Context System Status
+```json
+{
+  "name": "get_table_context_status",
+  "arguments": {}
+}
+```
+
+**Example Response:**
+```json
+{
+  "table_context_agent_available": true,
+  "dependencies": {
+    "snowflake_connection": true,
+    "confluence_client": true,
+    "portkey_llm": true
+  },
+  "features": [
+    "Table name resolution and validation",
+    "Business context generation with LLM",
+    "Metadata analysis and formatting",
+    "Granularity detection and analysis",
+    "Large table performance optimization (>10B rows)",
+    "Sample query extraction",
+    "Confluence documentation integration",
+    "Case-insensitive field access",
+    "Markdown and JSON output formats"
+  ],
+  "version": "1.0.0",
+  "status": "ready",
+  "message": "Table context agent is fully operational"
+}
+```
+
 ### 🗄️ Snowflake Operations
 
 #### Execute a Simple Query
