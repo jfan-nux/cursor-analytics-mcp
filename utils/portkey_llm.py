@@ -15,9 +15,17 @@ from utils.logger import get_logger
 
 try:
     from portkey_ai import Portkey
+    import openai
     PORTKEY_AVAILABLE = True
+    OPENAI_AVAILABLE = True
 except ImportError:
-    PORTKEY_AVAILABLE = False
+    try:
+        import openai
+        PORTKEY_AVAILABLE = False
+        OPENAI_AVAILABLE = True
+    except ImportError:
+        PORTKEY_AVAILABLE = False
+        OPENAI_AVAILABLE = False
 
 
 class PortkeyLLM:
@@ -39,27 +47,34 @@ class PortkeyLLM:
     
     def _initialize_client(self):
         """Initialize Portkey client with configuration from environment."""
-        if not PORTKEY_AVAILABLE:
-            self.logger.debug("Portkey AI library not available. Please install portkey-ai")
+        if not OPENAI_AVAILABLE:
+            self.logger.debug("OpenAI library not available. Please install openai")
             return
         
         try:
             # Get Portkey configuration from environment
-            base_url = os.getenv('PORTKEY_BASE_URL')
-            api_key = os.getenv('PORTKEY_API_KEY')
-            virtual_key = os.getenv('PORTKEY_OPENAI_VIRTUAL_KEY')
+            portkey_api_key = os.getenv('PORTKEY_API_KEY')
+            portkey_virtual_key = os.getenv('PORTKEY_OPENAI_VIRTUAL_KEY')
             
-            if not all([base_url, api_key, virtual_key]):
+            if not all([portkey_api_key, portkey_virtual_key]):
                 self.logger.debug("Missing Portkey configuration in environment variables - LLM features disabled")
+                self.logger.debug("Expected: PORTKEY_API_KEY and PORTKEY_OPENAI_VIRTUAL_KEY")
                 return
             
-            self.client = Portkey(
+            # Use OpenAI client pointed at Portkey gateway (as per your instructions)
+            # Use custom base URL from environment (DoorDash internal gateway)
+            base_url = os.getenv('PORTKEY_BASE_URL', 'https://api.portkey.ai/v1')
+            
+            self.client = openai.OpenAI(
+                api_key="dummy",  # Required by OpenAI SDK but ignored by Portkey
                 base_url=base_url,
-                api_key=api_key,
-                virtual_key=virtual_key
+                default_headers={
+                    "X-Portkey-API-Key": portkey_api_key,
+                    "X-Portkey-Virtual-Key": portkey_virtual_key
+                }
             )
             
-            self.logger.info("Successfully initialized Portkey client")
+            self.logger.info("Successfully initialized Portkey client via OpenAI SDK")
             
         except Exception as e:
             self.logger.debug(f"Failed to initialize Portkey client: {e}")

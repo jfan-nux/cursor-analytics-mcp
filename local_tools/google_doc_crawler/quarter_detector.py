@@ -283,91 +283,7 @@ Example responses:
         
         return None
     
-    def analyze_images_for_timeline(self, image_folder: Path) -> Optional[str]:
-        """
-        Analyze downloaded images for timeline information using LLM vision.
-        
-        Args:
-            image_folder: Path to folder containing downloaded images
-            
-        Returns:
-            Quarter string in yyyy-qq format or None
-        """
-        if not image_folder.exists():
-            return None
-        
-        if not self.llm or not self.llm.is_available():
-            self.logger.warning("LLM not available for image analysis")
-            return None
-        
-        image_files = list(image_folder.glob("*.png")) + list(image_folder.glob("*.jpg"))
-        
-        if not image_files:
-            return None
-        
-        self.logger.info(f"Found {len(image_files)} images for timeline analysis")
-        
-        # Analyze images for timeline dates
-        prompt = """
-Analyze this image for experiment timeline information.
 
-Look for:
-- Test launch dates
-- Experiment start/end dates
-- Final readout dates
-- Measurement period dates
-- Timeline diagrams with dates
-- Any other relevant experiment dates
-
-Common date formats to look for:
-- MM/DD/YY (e.g., 7/25/23)
-- MM/DD/YYYY (e.g., 8/1/2023)
-- Month names with years
-
-DoorDash quarters are:
-- Q1: January, February, March
-- Q2: April, May, June  
-- Q3: July, August, September
-- Q4: October, November, December
-
-Return ONLY the quarter in yyyy-qq format (e.g., "2023-q3") based on the experiment timeline dates you see.
-If you cannot find any clear dates in this image, return "NONE".
-
-Example responses:
-- "2023-q3" (for July 2023)
-- "2024-q1" (for February 2024)
-- "NONE" (if no dates found)
-"""
-        
-        # Analyze each image
-        for image_path in image_files:
-            try:
-                response = self.llm.analyze_image(
-                    image_path=image_path,
-                    prompt=prompt,
-                    model="gpt-4o",
-                    max_tokens=50,
-                    temperature=0.0
-                )
-                
-                if response and response.strip() != "NONE":
-                    # Validate the format
-                    quarter_pattern = r'^\d{4}-q[1-4]$'
-                    clean_response = response.strip().lower()
-                    # Remove any quotes or extra characters
-                    clean_response = re.sub(r'["\'\s]', '', clean_response)
-                    if re.match(quarter_pattern, clean_response):
-                        self.logger.info(f"LLM extracted quarter from image {image_path.name}: {clean_response}")
-                        return clean_response
-                    else:
-                        self.logger.warning(f"LLM returned invalid quarter format from image: '{response}' -> '{clean_response}'")
-                
-            except Exception as e:
-                self.logger.error(f"Error analyzing image {image_path.name}: {e}")
-                continue
-        
-        self.logger.info("No dates found in any timeline images")
-        return None
     
     def detect_experiment_quarter(self, document: Dict[str, Any], 
                                 image_folder: Optional[Path] = None) -> str:
@@ -387,12 +303,7 @@ Example responses:
             self.logger.info(f"Quarter detected from text: {quarter}")
             return quarter
         
-        # Method 2: Analyze images (if available)
-        if image_folder:
-            quarter = self.analyze_images_for_timeline(image_folder)
-            if quarter:
-                self.logger.info(f"Quarter detected from images: {quarter}")
-                return quarter
+        # Method 2: Image analysis removed - no longer using LLM for image analysis
         
         # Fallback: Use current quarter
         current_month = datetime.now().month
