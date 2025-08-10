@@ -35,7 +35,7 @@ from .config import (
     SQL_TEMPLATES_DIR,
     EXPERIMENT_DEFAULTS,
     get_default_share_email,
-    SERVICE_ACCOUNT_FILE,
+    get_google_credentials,
     SCOPES
 )
 
@@ -479,15 +479,16 @@ def get_google_sheets_client(use_oauth=False):
             # Service account authentication (existing code)
             logger.info("Using service account authentication for Google Sheets")
 
-            # Get service account file from config
-            from .config import SERVICE_ACCOUNT_FILE, SCOPES
-
-            if not os.path.exists(SERVICE_ACCOUNT_FILE):
-                logger.error(f"Service account file not found at {SERVICE_ACCOUNT_FILE}")
-                raise FileNotFoundError(f"Service account file not found at {SERVICE_ACCOUNT_FILE}")
+            # Get service account file from config (handles environment variables)
+            try:
+                service_account_file = get_google_credentials()
+                logger.info(f"Using Google credentials from: {service_account_file}")
+            except FileNotFoundError as e:
+                logger.error(f"Google credentials configuration error: {e}")
+                raise
 
             creds = service_account.Credentials.from_service_account_file(
-                SERVICE_ACCOUNT_FILE, scopes=SCOPES
+                service_account_file, scopes=SCOPES
             )
             client = gspread.authorize(creds)
             logger.info("Successfully authenticated with service account")

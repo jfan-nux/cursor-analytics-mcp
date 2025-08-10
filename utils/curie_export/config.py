@@ -14,10 +14,19 @@ from datetime import datetime
 # Function to get default share email from credentials file
 def get_default_share_email():
     """
-    Get the default share email from credentials file.
-    If not found, returns None.
+    Get the default share email from environment variable or credentials file.
+    
+    Priority order:
+    1. GOOGLE_SHEETS_DEFAULT_EMAIL environment variable
+    2. default_share_email.json credentials file
+    3. None (no default)
     """
-    # Get path to credentials file
+    # Option 1: Environment variable
+    env_email = os.getenv('GOOGLE_SHEETS_DEFAULT_EMAIL')
+    if env_email:
+        return env_email
+    
+    # Option 2: Credentials file
     project_root = Path(__file__).parent.parent.parent
     email_file = project_root / "credentials" / "default_share_email.json"
     
@@ -161,18 +170,81 @@ COLUMN_DISPLAY_NAMES = {
     'absolute_impact_ci_upper': 'Abs Impact CI Upper'
 }
 
-# Google Sheets API configuration
-SERVICE_ACCOUNT_FILE = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
-    "credentials",
-    "google_sheets_credentials.json"
-)
-
 # Google API scopes needed for Sheets and Drive operations
 SCOPES = [
     'https://www.googleapis.com/auth/spreadsheets',
     'https://www.googleapis.com/auth/drive'
 ]
+
+def get_service_account_file():
+    """
+    Get Google Service Account credentials file path for Google Sheets.
+    
+    Priority order:
+    1. GOOGLE_SHEETS_CREDENTIALS_JSON environment variable (JSON string)
+    2. GOOGLE_SHEETS_CREDENTIALS_FILE environment variable (file path)
+    3. Default credentials file location
+    
+    Returns:
+        Path to service account JSON file
+    """
+    import tempfile
+    
+    # Option 1: JSON string in environment variable
+    credentials_json = os.getenv('GOOGLE_SHEETS_CREDENTIALS_JSON')
+    if credentials_json:
+        try:
+            # Validate JSON format
+            json.loads(credentials_json)
+            # Create temporary file with credentials
+            temp_file = tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False)
+            temp_file.write(credentials_json)
+            temp_file.close()
+            return temp_file.name
+        except json.JSONDecodeError:
+            print("Warning: GOOGLE_SHEETS_CREDENTIALS_JSON is not valid JSON")
+    
+    # Option 2: File path in environment variable
+    credentials_file = os.getenv('GOOGLE_SHEETS_CREDENTIALS_FILE')
+    if credentials_file and os.path.exists(credentials_file):
+        return credentials_file
+    
+    # Option 3: Default location (for local development)
+    default_file = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+        "credentials",
+        "google_sheets_credentials.json"
+    )
+    if os.path.exists(default_file):
+        return default_file
+    
+    # Option 4: Keys directory location
+    keys_file = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+        "keys",
+        "google_service_account_key.json"
+    )
+    if os.path.exists(keys_file):
+        return keys_file
+    
+    raise FileNotFoundError(
+        "Google credentials not found. Please set either:\n"
+        "  - GOOGLE_CREDENTIALS_JSON environment variable (JSON string)\n"
+        "  - GOOGLE_SHEET_CREDENTIALS_FILE environment variable (file path)\n"
+        "  - Or place credentials at: credentials/google_sheets_credentials.json"
+    )
+
+# Google Sheets API configuration
+def get_google_credentials():
+    """
+    Get Google credentials, preferring JSON string over file path.
+    
+    Returns:
+        Path to service account JSON file or raises FileNotFoundError
+    """
+    return get_service_account_file()
+
+SERVICE_ACCOUNT_FILE = get_google_credentials()
 
 # Output directory for CSV files
 OUTPUT_DIR = os.path.join(

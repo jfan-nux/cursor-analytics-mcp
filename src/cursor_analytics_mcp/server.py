@@ -31,6 +31,12 @@ try:
         export_curie_with_explicit_params,
         get_experiment_metadata
     )
+    from utils.sql_to_sheets.sql_to_sheets_helper import export_sql_to_sheets
+    from local_tools.google_doc_crawler.doc_crawler import (
+        process_google_docs_batch,
+        convert_single_google_doc,
+        GoogleDocCrawler
+    )
     from utils.logger import get_logger
     # Setup logging
     logger = get_logger(__name__)
@@ -295,6 +301,203 @@ def query_search(
     except Exception as e:
         logger.error(f"Table query search error: {str(e)}")
         return f"Error searching queries for table '{table_name}': {str(e)}"
+
+
+# ============================================================================
+# SQL TO GOOGLE SHEETS EXPORT
+# ============================================================================
+
+@mcp.tool
+def sql_to_google_sheets(
+    query: str,
+    sheet_name: str,
+    max_rows: int = 20000
+) -> str:
+    """
+    Execute SQL query and export results to Google Sheets tab.
+    
+    Simple function that takes a SQL query and tab name, executes the query,
+    and writes results to a new tab if the row count is reasonable (<20k).
+    
+    Args:
+        query: SQL query string to execute on Snowflake
+        sheet_name: Name of the sheet/tab to create
+        max_rows: Maximum number of rows allowed (default 20,000)
+        
+    Returns:
+        Export results including status and Google Sheets URL
+    """
+    try:
+        logger.info(f"Starting SQL to Google Sheets export...")
+        
+        # Execute the export using the simplified helper function
+        result = export_sql_to_sheets(
+            query=query,
+            sheet_name=sheet_name,
+            max_rows=max_rows
+        )
+        
+        if result['status'] == 'error':
+            return f"❌ Export failed: {result['message']}"
+        
+        if result['status'] == 'warning':
+            return f"⚠️ {result['message']}\nExecution time: {result['execution_time']:.2f} seconds"
+        
+        # Format successful response
+        response = f"✅ SQL exported to Google Sheets successfully!\n\n"
+        response += f"📊 **Results:**\n"
+        response += f"- Rows exported: {result.get('row_count', 'N/A'):,}\n"
+        response += f"- Sheet name: {sheet_name}\n"
+        
+        # Add URL if available
+        if 'google_sheets_url' in result:
+            response += f"- URL: {result['google_sheets_url']}\n"
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"SQL to Google Sheets export error: {str(e)}")
+        return f"❌ Error in SQL to Google Sheets export: {str(e)}"
+
+
+# ============================================================================
+# GOOGLE DOCS CRAWLER AND CONVERTER
+# ============================================================================
+
+@mcp.tool
+def crawl_and_convert_google_docs(
+    master_doc_url: str,
+    output_path: str = "context/experiment-readouts"
+) -> str:
+    """
+    Crawl all Google Docs links from a master document and convert them to markdown.
+    
+    This tool performs the complete workflow:
+    1. Crawls all Google Docs links from the master document
+    2. Converts each document to markdown with proper formatting
+    3. Organizes files by team structure (e.g., growth/nux)
+    4. Preserves formatting (bold, italic, highlights, tables, lists)
+    5. Downloads images to team-specific folders
+    
+    Args:
+        master_doc_url: URL of the Google Doc containing links to other docs
+        output_path: Base directory to save converted markdown files
+        
+    Returns:
+        Summary of batch conversion results
+    """
+    try:
+        logger.info(f"Starting Google Docs batch conversion from: {master_doc_url}")
+        
+        result_json = process_google_docs_batch(master_doc_url, output_path)
+        result = json.loads(result_json)
+        
+        if result['status'] == 'warning':
+            return f"⚠️ {result['message']}"
+        
+        # Format successful response
+        response = f"✅ Google Docs batch conversion completed!\n\n"
+        response += f"📊 **Results:**\n"
+        response += f"- Total links found: {result['total_links']}\n"
+        response += f"- Successfully processed: {result['processed_successfully']}\n"
+        response += f"- Failed: {result['failed']}\n"
+        response += f"- Output path: {result['output_path']}\n\n"
+        
+        if result['results']:
+            response += f"📝 **Converted Documents:**\n"
+            for doc_result in result['results'][:10]:  # Show first 10
+                if doc_result['status'] == 'success':
+                    response += f"- {doc_result['title']} → {doc_result['team_path']}\n"
+                else:
+                    response += f"- ❌ Failed: {doc_result.get('doc_url', 'Unknown')}\n"
+            
+            if len(result['results']) > 10:
+                response += f"- ... and {len(result['results']) - 10} more\n"
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"Google Docs batch conversion error: {str(e)}")
+        return f"❌ Error in Google Docs batch conversion: {str(e)}"
+
+
+@mcp.tool
+def convert_single_google_doc_to_markdown(
+    doc_url: str,
+    output_path: str = "context/experiment-readouts"
+) -> str:
+    """
+    Convert a single Google Doc to markdown format.
+    
+    This tool converts a Google Doc to markdown while preserving:
+    - Text formatting (bold, italic, highlights)
+    - Document structure (headings, paragraphs)
+    - Tables with proper markdown syntax
+    - Bullet points and numbered lists
+    - Links and footnotes
+    - Team-based file organization
+    
+    Args:
+        doc_url: URL of the Google Doc to convert
+        output_path: Base directory to save the markdown file
+        
+    Returns:
+        Conversion results and file location
+    """
+    try:
+        logger.info(f"Converting single Google Doc: {doc_url}")
+        
+        result_json = convert_single_google_doc(doc_url, output_path)
+        result = json.loads(result_json)
+        
+        if result['status'] == 'success':
+            response = f"✅ Google Doc converted successfully!\n\n"
+            response += f"📄 **Document:** {result['title']}\n"
+            response += f"👥 **Team:** {result['team_path']}\n"
+            response += f"📁 **File:** {result['markdown_file']}\n"
+            response += f"🖼️ **Images:** {result['images_downloaded']} downloaded\n"
+            response += f"🔗 **Source:** {result['doc_url']}\n"
+        else:
+            response = f"❌ Conversion failed: {result.get('error', 'Unknown error')}"
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"Single Google Doc conversion error: {str(e)}")
+        return f"❌ Error converting Google Doc: {str(e)}"
+
+
+@mcp.tool
+def get_google_doc_links(doc_url: str) -> str:
+    """
+    Extract all Google Docs links from a document without converting them.
+    
+    Useful for previewing what documents would be processed in a batch operation.
+    
+    Args:
+        doc_url: URL of the Google Doc to scan for links
+        
+    Returns:
+        List of Google Docs links found in the document
+    """
+    try:
+        logger.info(f"Extracting links from Google Doc: {doc_url}")
+        
+        crawler = GoogleDocCrawler()
+        links = crawler.crawl_links_from_doc(doc_url)
+        
+        if not links:
+            return "ℹ️ No Google Docs links found in the document."
+        
+        response = f"📋 Found {len(links)} Google Docs links:\n\n"
+        for i, link in enumerate(links, 1):
+            response += f"{i}. {link}\n"
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"Error extracting Google Doc links: {str(e)}")
+        return f"❌ Error extracting links: {str(e)}"
 
 
 # ============================================================================
