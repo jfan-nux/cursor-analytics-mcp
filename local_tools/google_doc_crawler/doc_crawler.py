@@ -21,20 +21,18 @@ import json
 import requests
 import tempfile
 from pathlib import Path
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Optional, Tuple, Any
 from urllib.parse import urlparse, parse_qs
 import logging
 
 try:
     from googleapiclient.discovery import build
-    from google.oauth2.service_account import Credentials
     GOOGLE_API_AVAILABLE = True
 except ImportError:
     GOOGLE_API_AVAILABLE = False
 
 from utils.logger import get_logger
-from .credentials_config import get_google_docs_credentials_file, get_google_docs_scopes
-from .oauth_credentials_config import get_google_docs_oauth_credentials
+from .google_docs_credentials import get_google_docs_credentials, get_google_docs_scopes
 from .enhanced_converter import EnhancedGoogleDocConverter
 
 
@@ -76,30 +74,13 @@ class GoogleDocCrawler:
             return
         
         try:
-            # Try OAuth2 credentials first (matches TypeScript MCP)
-            try:
-                self.logger.info("Attempting OAuth2 authentication...")
-                credentials = get_google_docs_oauth_credentials()
-                self.docs_service = build('docs', 'v1', credentials=credentials)
-                self.drive_service = build('drive', 'v3', credentials=credentials)
-                self.enhanced_converter.initialize_services(credentials)
-                self.logger.info("Successfully initialized Google API services with OAuth2")
-                return
-            except Exception as oauth_error:
-                self.logger.warning(f"OAuth2 authentication failed: {oauth_error}")
-                self.logger.info("Falling back to service account credentials...")
-            
-            # Fallback to service account credentials
-            credentials_file = get_google_docs_credentials_file()
-            credentials = Credentials.from_service_account_file(
-                credentials_file,
-                scopes=get_google_docs_scopes()
-            )
+            self.logger.info("Initializing Google API services with unified credential system...")
+            credentials = get_google_docs_credentials()
             
             self.docs_service = build('docs', 'v1', credentials=credentials)
             self.drive_service = build('drive', 'v3', credentials=credentials)
             self.enhanced_converter.initialize_services(credentials)
-            self.logger.info("Successfully initialized Google API services with service account")
+            self.logger.info("Successfully initialized Google API services")
             
         except Exception as e:
             self.logger.error(f"Failed to initialize Google API services: {e}")
@@ -404,3 +385,120 @@ def convert_single_google_doc(doc_url: str, output_path: str = "context/experime
     crawler = GoogleDocCrawler()
     result = crawler.convert_doc_to_markdown(doc_url, output_path)
     return json.dumps(result, indent=2)
+
+
+def convert_google_doc_to_markdown_string(doc_url: str, write_file: bool = False, output_path: str = "context/experiment-readouts") -> Dict[str, Any]:
+    """
+    Convert a Google Doc to markdown string with optional file writing.
+    
+    Args:
+        doc_url: URL of the Google Doc to convert
+        write_file: Whether to save the markdown to a file
+        output_path: Base path for saving the converted document (only used if write_file=True)
+        
+    Returns:
+        Dictionary with markdown content and metadata
+    """
+    crawler = GoogleDocCrawler()
+    
+    # Get document ID and title first
+    doc_id = crawler.extract_doc_id(doc_url)
+    if not doc_id:
+        raise ValueError(f"Invalid Google Docs URL: {doc_url}")
+    
+    if not crawler.enhanced_converter.docs_service:
+        raise RuntimeError("Enhanced converter not initialized")
+    
+    try:
+        # Get document title for team path determination
+        document = crawler.enhanced_converter.docs_service.documents().get(documentId=doc_id).execute()
+        title = document.get('title', 'Untitled Document')
+        team_path = crawler.determine_team_path(title, doc_url)
+        
+        if write_file:
+            # Use the existing conversion method that saves to file
+            result = crawler.enhanced_converter.convert_document_to_markdown(
+                doc_url=doc_url,
+                output_path=output_path,
+                team_path=team_path
+            )
+            
+            # Read the saved markdown file to include in response
+            with open(result['markdown_file'], 'r', encoding='utf-8') as f:
+                markdown_content = f.read()
+            
+            result['markdown_content'] = markdown_content
+            return result
+        else:
+            # Convert to markdown without saving to file
+            # We'll need to modify the converter to support this mode
+            import tempfile
+            with tempfile.TemporaryDirectory() as temp_dir:
+                temp_result = crawler.enhanced_converter.convert_document_to_markdown(
+                    doc_url=doc_url,
+                    output_path=temp_dir,
+                    team_path=team_path
+                )
+                
+                # Read the markdown content from temp file
+                with open(temp_result['markdown_file'], 'r', encoding='utf-8') as f:
+                    markdown_content = f.read()
+                
+                # Return result without file path
+                return {
+                    'status': 'success',
+                    'title': temp_result['title'],
+                    'original_title': temp_result['original_title'],
+                    'detected_quarter': temp_result['detected_quarter'],
+                    'team_path': temp_result['team_path'],
+                    'doc_url': doc_url,
+                    'doc_id': doc_id,
+                    'images_downloaded': temp_result['images_downloaded'],
+                    'footnotes_processed': temp_result['footnotes_processed'],
+                    'enhanced_conversion': True,
+                    'markdown_content': markdown_content,
+                    'file_saved': False
+                }
+                
+    except Exception as e:
+        raise RuntimeError(f"Error converting Google Doc to markdown: {str(e)}")
+
+
+def convert_google_docs_to_markdown_strings(doc_urls: List[str], write_files: bool = False, output_path: str = "context/experiment-readouts") -> Dict[str, Any]:
+    """
+    Convert multiple Google Docs to markdown strings with optional file writing.
+    
+    Args:
+        doc_urls: List of Google Doc URLs to convert
+        write_files: Whether to save the markdown files
+        output_path: Base path for saving converted documents (only used if write_files=True)
+        
+    Returns:
+        Dictionary with list of markdown contents and metadata
+    """
+    results = []
+    successful_conversions = 0
+    failed_conversions = 0
+    
+    for i, doc_url in enumerate(doc_urls):
+        try:
+            result = convert_google_doc_to_markdown_string(doc_url, write_files, output_path)
+            results.append(result)
+            successful_conversions += 1
+        except Exception as e:
+            error_result = {
+                'status': 'error',
+                'doc_url': doc_url,
+                'error': str(e),
+                'markdown_content': None
+            }
+            results.append(error_result)
+            failed_conversions += 1
+    
+    return {
+        'status': 'completed',
+        'total_documents': len(doc_urls),
+        'successful_conversions': successful_conversions,
+        'failed_conversions': failed_conversions,
+        'results': results
+    }

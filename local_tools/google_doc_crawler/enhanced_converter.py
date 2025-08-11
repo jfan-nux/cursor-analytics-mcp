@@ -1930,11 +1930,19 @@ For more complex diagrams, refer to: https://mermaid.js.org/
             # Clean up title and add quarter prefix
             clean_title = self.quarter_detector.clean_document_title(title, detected_quarter)
             
-            # Setup directories - new structure: experiment-readouts/team/subteam/document-title/
+            # Setup directories - check if using custom path structure
             base_output_path = Path(output_path)
-            team_output_path = base_output_path / team_path
             
-            # Create document-specific folder (experiment-readouts/team/subteam/document-title/)
+            # For custom paths (like deep-dives), use the path directly without adding team_path
+            # For default experiment-readouts, use the team structure
+            if str(base_output_path).startswith('context/experiment-readouts'):
+                # Use team-based structure for experiment readouts
+                team_output_path = base_output_path / team_path
+            else:
+                # For custom paths (deep-dives, analysis, etc.), use the path directly
+                team_output_path = base_output_path
+            
+            # Create document-specific folder (base-path/document-title/)
             sanitized_doc_name = re.sub(r'[^\w\s-]', '', title).strip()
             sanitized_doc_name = re.sub(r'[-\s]+', '-', sanitized_doc_name)
             

@@ -35,7 +35,9 @@ try:
     from local_tools.google_doc_crawler.doc_crawler import (
         process_google_docs_batch,
         convert_single_google_doc,
-        GoogleDocCrawler
+        GoogleDocCrawler,
+        convert_google_doc_to_markdown_string,
+        convert_google_docs_to_markdown_strings
     )
     from utils.logger import get_logger
     # Setup logging
@@ -498,6 +500,117 @@ def get_google_doc_links(doc_url: str) -> str:
     except Exception as e:
         logger.error(f"Error extracting Google Doc links: {str(e)}")
         return f"❌ Error extracting links: {str(e)}"
+
+
+@mcp.tool
+def convert_google_doc_to_markdown(
+    doc_url: str,
+    write_file: bool = False,
+    output_path: str = "context/experiment-readouts"
+) -> str:
+    """
+    Convert a single Google Doc to markdown with optional file writing.
+    
+    Returns the markdown content as a string, with option to save to local context folder.
+    Preserves all formatting including tables, lists, images, footnotes, and team organization.
+    
+    Args:
+        doc_url: URL of the Google Doc to convert
+        write_file: Whether to save markdown to local context folder (default: False)
+        output_path: Base directory for saving files (only used if write_file=True)
+        
+    Returns:
+        Markdown content as string, plus metadata about the conversion
+    """
+    try:
+        logger.info(f"Converting Google Doc to markdown: {doc_url}, write_file={write_file}")
+        
+        result = convert_google_doc_to_markdown_string(doc_url, write_file, output_path)
+        
+        if result['status'] == 'success':
+            response = f"✅ Google Doc converted to markdown successfully!\n\n"
+            response += f"📄 **Document:** {result['title']}\n"
+            response += f"👥 **Team:** {result['team_path']}\n"
+            response += f"🎯 **Quarter:** {result['detected_quarter']}\n"
+            response += f"🖼️ **Images:** {result['images_downloaded']} processed\n"
+            response += f"📝 **Footnotes:** {result['footnotes_processed']} processed\n"
+            
+            if write_file:
+                response += f"📁 **File saved:** {result['markdown_file']}\n"
+            else:
+                response += f"📁 **File saved:** No (returned as string only)\n"
+            
+            response += f"🔗 **Source:** {result['doc_url']}\n\n"
+            response += "---\n\n"
+            response += "**Markdown Content:**\n\n"
+            response += result['markdown_content']
+        else:
+            response = f"❌ Conversion failed: {result.get('error', 'Unknown error')}"
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"Google Doc markdown conversion error: {str(e)}")
+        return f"❌ Error converting Google Doc to markdown: {str(e)}"
+
+
+@mcp.tool
+def convert_google_docs_to_markdown_bulk(
+    doc_urls: List[str],
+    write_files: bool = False,
+    output_path: str = "context/experiment-readouts"
+) -> str:
+    """
+    Convert multiple Google Docs to markdown with optional file writing.
+    
+    Returns a list of markdown contents as strings, with option to save to local context folder.
+    Processes documents in parallel for efficiency.
+    
+    Args:
+        doc_urls: List of Google Doc URLs to convert
+        write_files: Whether to save markdown files to local context folder (default: False)
+        output_path: Base directory for saving files (only used if write_files=True)
+        
+    Returns:
+        Summary of bulk conversion with markdown content for each document
+    """
+    try:
+        logger.info(f"Starting bulk Google Docs to markdown conversion: {len(doc_urls)} documents, write_files={write_files}")
+        
+        result = convert_google_docs_to_markdown_strings(doc_urls, write_files, output_path)
+        
+        response = f"✅ Bulk Google Docs conversion completed!\n\n"
+        response += f"📊 **Summary:**\n"
+        response += f"- Total documents: {result['total_documents']}\n"
+        response += f"- Successfully converted: {result['successful_conversions']}\n"
+        response += f"- Failed: {result['failed_conversions']}\n"
+        response += f"- Files saved: {'Yes' if write_files else 'No (returned as strings only)'}\n\n"
+        
+        if result['results']:
+            response += f"📝 **Converted Documents:**\n\n"
+            for i, doc_result in enumerate(result['results'], 1):
+                if doc_result['status'] == 'success':
+                    response += f"**{i}. {doc_result['title']}**\n"
+                    response += f"   - Team: {doc_result['team_path']}\n"
+                    response += f"   - Quarter: {doc_result['detected_quarter']}\n"
+                    response += f"   - Images: {doc_result['images_downloaded']}\n"
+                    response += f"   - Footnotes: {doc_result['footnotes_processed']}\n"
+                    if write_files and 'markdown_file' in doc_result:
+                        response += f"   - File: {doc_result['markdown_file']}\n"
+                    response += f"   - Source: {doc_result['doc_url']}\n\n"
+                    response += "   **Markdown Content:**\n\n"
+                    response += f"   {doc_result['markdown_content'][:500]}...\n\n"  # Show first 500 chars
+                    response += "   ---\n\n"
+                else:
+                    response += f"**{i}. ❌ Failed Document**\n"
+                    response += f"   - URL: {doc_result['doc_url']}\n"
+                    response += f"   - Error: {doc_result['error']}\n\n"
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"Bulk Google Docs markdown conversion error: {str(e)}")
+        return f"❌ Error in bulk Google Docs markdown conversion: {str(e)}"
 
 
 # ============================================================================

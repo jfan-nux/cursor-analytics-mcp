@@ -212,6 +212,14 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 
+# Credentials and OAuth tokens
+*.pickle
+config/google_docs_token.pickle
+config/*.pickle
+*.token
+credentials/
+config/*token*
+
 # Marimo
 marimo/_static/
 marimo/_lsp/
