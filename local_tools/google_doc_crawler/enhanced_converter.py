@@ -95,6 +95,7 @@ class EnhancedGoogleDocConverter:
             # Fix 5: Harden bullet-spacing logic - accept -**Thing** and rewrite as - **Thing**
             # Handle various bullet patterns
             fixed_md = re.sub(r'^-\s*\*\*', r'- **', fixed_md, flags=re.MULTILINE)
+            fixed_md = re.sub(r'(\|[^\n]*\|)(\S)', r'\1\n\n\2', fixed_md)
             fixed_md = re.sub(r'^-\*\*', r'- **', fixed_md, flags=re.MULTILINE)
             
             # Fix bullet patterns with text glued: -**Text**: → - **Text**:
@@ -118,15 +119,32 @@ class EnhancedGoogleDocConverter:
             #       • normalise table pipes | like this |
             formatted = mdformat.text(fixed_md, options={"number": False})
 
-            # --- 3️⃣ Final polish for stubborn upstream artifacts ------------ #
-            # A. Convert any remaining underline-only lines to '---'
+            # # --- 3️⃣ Final polish for stubborn upstream artifacts ------------ #
+            # A. Horizontal rules: lines of 3+ underscores → '---'
             formatted = re.sub(r'(?m)^\s*_{3,}\s*$', '---', formatted)
-            # B. Unescape bold/italic that arrived as literal \*\*...\*\*
-            formatted = re.sub(r'\\\*\\\*([^*\n]+?)\\\*\\\*', r'**\1**', formatted)
-            formatted = re.sub(r'\\\*([^*\n]+?)\\\*', r'*\1*', formatted)
-            # C. Bullet edge-case: '- Text:**Bold**' → '- Text: **Bold**'
-            formatted = re.sub(r'(?m)^(\-\s+[^\n:]*:)(\*\*)', r'\1 **', formatted)
 
+            # B. Normalise bold / italic — handles *both* escaped (\*\*) and regular (**) forms,
+            #    trims inner whitespace, and keeps the markers.
+            formatted = re.sub(
+                r'(\\\*\\\*|\*\*)\s*([^*\n]+?)\s*(\\\*\\\*|\*\*)',
+                lambda m: f'**{m.group(2).strip()}**',
+                formatted,
+            )
+            formatted = re.sub(
+                r'(\\\*|\*)\s*([^*\n]+?)\s*(\\\*|\*)',
+                lambda m: f'*{m.group(2).strip()}*',
+                formatted,
+            )
+
+            # C. Bullet-point edge-cases
+            #    1) make sure there’s exactly one space after the dash before any bold
+            #    2) pull the colon *inside* the bold and add a trailing space
+            formatted = re.sub(r'(?m)^-\s*(\*\*)', r'- **', formatted)
+            formatted = re.sub(
+                r'(?m)(-\s+\*\*[^*:\n]+?)\s*:?\s*\*\*\s*(?=\S)',
+                lambda m: f"{m.group(1).strip()}:** ",
+                formatted,
+            )
             self.logger.debug("postprocess_github_syntax completed successfully")
             return formatted
             
@@ -1208,63 +1226,36 @@ class EnhancedGoogleDocConverter:
     
     def _extract_from_thumbnail(self, doc_id: str, image_counter: int, 
                               image_folder: Path, element_type: str) -> Optional[Path]:
-        """Create a placeholder image instead of using PDF thumbnail."""
+        """Extract drawing using Google Drive's thumbnail API."""
         try:
-            self.logger.debug(f"Creating placeholder for drawing {image_counter} (avoiding PDF processing)")
+            self.logger.debug(f"Attempting thumbnail method for drawing {image_counter}")
             
-            # Create a simple placeholder image
-            image_filename = f"drawing_{image_counter}_placeholder.png"
-            image_path = image_folder / image_filename
+            # Get file metadata with thumbnail link
+            file_metadata = self.drive_service.files().get(
+                fileId=doc_id, 
+                fields='thumbnailLink,webViewLink'
+            ).execute()
             
-            # Create a simple placeholder using PIL if available, otherwise use a 1x1 transparent PNG
-            try:
-                from PIL import Image, ImageDraw, ImageFont
+            thumbnail_link = file_metadata.get('thumbnailLink')
+            if thumbnail_link:
+                # Modify thumbnail URL for higher resolution
+                # Google Drive thumbnails can be resized by changing the size parameter
+                high_res_thumbnail = thumbnail_link.replace('=s220', '=s1600')  # Increase size
                 
-                # Create a 400x200 placeholder image
-                width, height = 400, 200
-                img = Image.new('RGB', (width, height), color='#f8f9fa')
-                draw = ImageDraw.Draw(img)
+                response = requests.get(high_res_thumbnail)
+                response.raise_for_status()
                 
-                # Add border
-                draw.rectangle([1, 1, width-2, height-2], outline='#dee2e6', width=2)
+                image_filename = f"drawing_{image_counter}_thumbnail.png"
+                image_path = image_folder / image_filename
                 
-                # Add text
-                try:
-                    font = ImageFont.truetype("/System/Library/Fonts/Arial.ttf", 16)
-                except:
-                    font = ImageFont.load_default()
+                with open(image_path, 'wb') as f:
+                    f.write(response.content)
                 
-                text_lines = [
-                    f"{element_type} Not Available",
-                    "Drawing could not be extracted",
-                    "View original document for details"
-                ]
-                
-                y_start = height // 2 - (len(text_lines) * 20) // 2
-                for i, text in enumerate(text_lines):
-                    bbox = draw.textbbox((0, 0), text, font=font)
-                    text_width = bbox[2] - bbox[0]
-                    x = (width - text_width) // 2
-                    y = y_start + i * 25
-                    draw.text((x, y), text, fill='#6c757d', font=font)
-                
-                img.save(image_path, "PNG")
-                
-            except ImportError:
-                # Fallback: Create a minimal 1x1 transparent PNG
-                png_data = (
-                    b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01"
-                    b"\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\rIDATx\x9cc\xf8"
-                    b"\x0f\x00\x00\x01\x00\x01\x00\x00\x00\x00\x18\xdd\x8d\xb4\x00\x00"
-                    b"\x00\x00IEND\xaeB`\x82"
-                )
-                image_path.write_bytes(png_data)
-            
-            self.logger.info(f"Created placeholder image: {image_filename}")
-            return image_path
+                self.logger.info(f"Extracted drawing using thumbnail API: {image_filename}")
+                return image_path
                 
         except Exception as e:
-            self.logger.error(f"Failed to create placeholder image: {e}")
+            self.logger.debug(f"Thumbnail method failed: {e}")
             
         return None
 
@@ -1352,7 +1343,7 @@ For more complex diagrams, refer to: https://mermaid.js.org/
                 )
                 if para_text.strip():
                     cell_parts.append(para_text.strip())
-        return ' '.join(cell_parts), image_counter
+        return '<br>'.join(cell_parts), image_counter
 
     
     # ────────────────────────────────────────────────────────────────────────────────
@@ -1419,6 +1410,14 @@ For more complex diagrams, refer to: https://mermaid.js.org/
             "trimmed nested spaces inside bold/italic")
 
         # ❷ guarantee SINGLE space BEFORE opening ** in lists / headers -----------
+        # ❷ guarantee SINGLE space AFTER list/number marker (fixes -**Problem…)
+        sub(r'^([*+\-]|\d+\.)\s*(\*\*|\w)', r'\1 \2',
+            "added space after list marker")
+
+        # ❷a (existing) – keep bold aligned when marker already has a space
+        sub(r'^([-+*]|\d+\.)\s*(\*\*)', r'\1 \2',
+             "added space before bold in list items")
+
         #   -**Problem:**  →  - **Problem:**
         sub(r'^([-+*]|\d+\.)\s*(\*\*)', r'\1 \2',
             "added space before bold in list items")
@@ -1426,10 +1425,15 @@ For more complex diagrams, refer to: https://mermaid.js.org/
         sub(r'^(#{1,6})\s*(\*\*)', r'\1 \2',
             "added space before bold in headers")
 
-        # ❸ ensure space AFTER closing ** if letter/number follows (but not % or symbols) ------
-        # Handle cases like **Order rate**15.69% but preserve **+2.64%** and **−0.69%**
-        sub(r'(\*\*[^\n*]+?[^%\+\-]\*\*)([A-Za-z0-9])', r'\1 \2',
-            "inserted space after closing bold before alphanumeric")
+        # ❸ ensure space AFTER closing ** in *all* cases where the next char is
+        #    a letter, digit or currency symbol – *including* when the bold text
+        #    ends with a colon.
+        sub(r'(\*\*[^\n*]+?\*\*)([A-Za-z0-9$£€¥])', r'\1 \2',
+            "inserted space after closing bold")
+
+        # ❸b colon‑terminated bold blocks (**Problem:**We → **Problem:** We)
+        sub(r'(\*\*[^*\n]+?:\*\*)(\S)', r'\1 \2',
+            "space after colon‑terminated bold")
 
         # ❹ tables: clean bold & keep cell paddings -------------------------------
         # remove inner spaces
@@ -1833,11 +1837,9 @@ For more complex diagrams, refer to: https://mermaid.js.org/
             line = lines[i].strip()
             
             # Look for potential summary headers (case insensitive patterns)
-            # Expanded patterns to catch more collapsible content
             summary_patterns = [
-                r'^#+\s*(key\s+metrics?|results?\s+summary|summary|details?|methodology|experiment\s+timeline|impacts?\s+breakdown|next\s+steps?|method|findings?|recommendations?)\s*$',
-                r'^[*\-]\s*(key\s+metrics?|results?\s+summary|summary|details?|methodology|experiment\s+timeline|impacts?\s+breakdown|next\s+steps?|method|findings?|recommendations?)\s*$',
-                r'^\*\*\s*(key\s+metrics?|results?\s+summary|summary|details?|methodology|experiment\s+timeline|impacts?\s+breakdown|next\s+steps?|method|findings?|recommendations?)\s*\*\*\s*$'
+                r'^#+\s*(key\s+metrics?|results?\s+summary|summary|details?)\s*$',
+                r'^[*\-]\s*(key\s+metrics?|results?\s+summary|summary|details?)\s*$'
             ]
             
             is_summary = any(re.match(pattern, line, re.IGNORECASE) for pattern in summary_patterns)
@@ -1845,7 +1847,6 @@ For more complex diagrams, refer to: https://mermaid.js.org/
             if is_summary and i + 1 < len(lines):
                 # Found a potential summary, look for content that follows
                 summary_text = re.sub(r'^[#*\-\s]+', '', line).strip()
-                self.logger.debug(f"Found potential collapsible section: '{summary_text}'")
                 
                 # Collect content until we hit the next major section or end
                 content_lines = []
@@ -1872,7 +1873,6 @@ For more complex diagrams, refer to: https://mermaid.js.org/
                 
                 # If we found substantial content, make it collapsible
                 if len(content_lines) > 3:  # Only collapse if there's enough content
-                    self.logger.debug(f"Creating collapsible section for '{summary_text}' with {len(content_lines)} lines")
                     result_lines.append(f"<details>")
                     result_lines.append(f"<summary>{summary_text}</summary>")
                     result_lines.append("")
@@ -1883,7 +1883,6 @@ For more complex diagrams, refer to: https://mermaid.js.org/
                     i = j
                 else:
                     # Not enough content, keep as regular section
-                    self.logger.debug(f"Not enough content for collapsible section '{summary_text}' ({len(content_lines)} lines)")
                     result_lines.append(lines[i])
                     i += 1
             else:
@@ -2090,6 +2089,7 @@ For more complex diagrams, refer to: https://mermaid.js.org/
                         
                         # Add the table to markdown
                         markdown_lines.extend(markdown_table)
+                        markdown_lines.append("")
                         markdown_lines.append("")
                 
                 elif 'sectionBreak' in element:

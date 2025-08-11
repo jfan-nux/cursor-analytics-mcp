@@ -6,13 +6,13 @@ Working team: [Omung Goyal](mailto:omung.goyal@doordash.com) (eng), [Helena Huan
 
 ### TL;DR
 
-- ** Problem: **We currently do not have any consistent messaging around downloading the app in the first entry point for over 50% of Cx visiting the DoorDash experience on a web platform.
+- **Problem:** We currently do not have any consistent messaging around downloading the app in the first entry point for over 50% of Cx visiting the DoorDash experience on a web platform.
 
--** Solution**: Import the same upsell prompt to the store page that has currently been testing on the home page.
+- **Solution:** : Import the same upsell prompt to the store page that has currently been testing on the home page.
 
 | **Control (No App Download Banner)**|**Treatment (With App Banner)**|
 | --- | --- |
-| ![Drawing 1](images/image_1.png) | ![Drawing 2](images/image_3.png) |\*\* Results Summary**The App Download Prompt From Store Page experiment drove 15k incremental orders over a 4 week experiment period,**leading to an estimated +$3.2M**[^1] \*\* GMV at 12 month exit** and +**$543k GMV at Q3 exit;**
+| ![Drawing 1](images/image_1.png) | ![Drawing 2](images/image_3.png) |**Results Summary**The App Download Prompt From Store Page experiment drove 15k incremental orders over a 4 week experiment period,**leading to an estimated +$3.2M**[^1]**GMV at 12 month exit**and +**$543k GMV at Q3 exit;**
 
 - <u>Success Metrics
   </u>
@@ -41,7 +41,7 @@ Working team: [Omung Goyal](mailto:omung.goyal@doordash.com) (eng), [Helena Huan
 
 #### Overview
 
-\*\* Test mechanism:**A/B test** Test platform:**mWeb** Country:**Global** Experience:**DoorDash only** Target Population:**Guest users on mobile web** Test duration:**4 weeks at 50/50** Control/Treatment Split:\*\*50/50
+**Test mechanism:**A/B test**Test platform:**mWeb**Country:**Global**Experience:**DoorDash only**Target Population:**Guest users on mobile web**Test duration:**4 weeks at 50/50**Control/Treatment Split:**50/50
 
 ### Result Details
 
@@ -68,9 +68,7 @@ Working team: [Omung Goyal](mailto:omung.goyal@doordash.com) (eng), [Helena Huan
 | SUMA | <mark>0.83%</mark> | <mark>0.82%</mark> | +<mark>1.26%</mark> | NO |
 | App Downloads | <mark>3.65%</mark> | <mark>2.61%</mark> | +<mark>39.76%</mark> | YES |
 
-Impacts breakdown:** Experiment Context**: This experiment implemented adjust links to take users from mweb to the app, which capture both the mweb device id (the experiment bucket key) and the app device id. Through these links we are able to attribute user behavior in the app to the devices in the treatment group in the experiment. There are 2 shortcomings with this experiment design. First, we only have tracking for treatment devices who go to the app but inevitably some control devices will also go to the app through other methods besides this button and we won’t have any tracking on that. Second, we only ran this experiment for around 2 weeks and during that period drove many incremental users to the app, but due to the short experiment period, we aren’t capturing the long term benefits to a user of the app over mweb. To account for this, we came up with the following methodology:
-
-** Method**: After investigating we found that 53% of users who sign up on mweb eventually make their way to the app, so we took a 50% haircut on our results to account for the control users that converted on the app that we have no way of tracking. We also found that New Cx on the App vs. mWeb have significantly higher 12 month order rate and 12 month retention, so we added multipliers to our annualized numbers to account for the long term benefits of the app.
+Impacts breakdown:**Experiment Context**: This experiment implemented adjust links to take users from mweb to the app, which capture both the mweb device id (the experiment bucket key) and the app device id. Through these links we are able to attribute user behavior in the app to the devices in the treatment group in the experiment. There are 2 shortcomings with this experiment design. First, we only have tracking for treatment devices who go to the app but inevitably some control devices will also go to the app through other methods besides this button and we won’t have any tracking on that. Second, we only ran this experiment for around 2 weeks and during that period drove many incremental users to the app, but due to the short experiment period, we aren’t capturing the long term benefits to a user of the app over mweb. To account for this, we came up with the following methodology:**Method**: After investigating we found that 53% of users who sign up on mweb eventually make their way to the app, so we took a 50% haircut on our results to account for the control users that converted on the app that we have no way of tracking. We also found that New Cx on the App vs. mWeb have significantly higher 12 month order rate and 12 month retention, so we added multipliers to our annualized numbers to account for the long term benefits of the app.
 
 Original numbers:
 
@@ -93,9 +91,7 @@ App vs. Web multipliers:
 
 Updated Numbers:
 
-- Annualized: **+3.2M GMV**
-
-- Incremental GMV from orders: 3.5M*1.82*.5= $3.2M
+- Annualized:**+3.2M GMV**- Incremental GMV from orders: 3.5M*1.82*.5= $3.2M
 
 Note on the average GOV/order decrease:
 
@@ -110,7 +106,7 @@ Note on the average GOV/order decrease:
 
 Note on login decrease:
 
-- The decrease in logins is accounted for by control users being redirected to the App and already being logged in (we see more treatment users viewing the explore page than treatment users logging in on or signing up on the mobile app).** Next steps: **
+- The decrease in logins is accounted for by control users being redirected to the App and already being logged in (we see more treatment users viewing the explore page than treatment users logging in on or signing up on the mobile app).**Next steps:**
 
 - Ramp-up plan: Rollout to 100% and pursue other areas where we can drive mobile web users to the app
 

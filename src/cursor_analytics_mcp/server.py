@@ -27,11 +27,11 @@ sys.path.insert(0, str(PROJECT_ROOT))
 # Import local modules
 try:
     from utils.snowflake_connection import SnowflakeHook
-    from utils.curie_export.export_helper import (
+    from local_tools.curie_export.export_helper import (
         export_curie_with_explicit_params,
         get_experiment_metadata
     )
-    from utils.sql_to_sheets.sql_to_sheets_helper import export_sql_to_sheets
+    from local_tools.sql_to_sheets.sql_to_sheets_helper import export_sql_to_sheets
     from local_tools.google_doc_crawler.doc_crawler import (
         process_google_docs_batch,
         convert_single_google_doc,
@@ -50,7 +50,7 @@ except ImportError as e:
 
 # Try to import hybrid search functionality
 try:
-    from utils.document_indexer.hybrid_search import HybridSearcher
+    from local_tools.document_indexer.hybrid_search import HybridSearcher
     HYBRID_SEARCH_AVAILABLE = True
 except ImportError:
     print("Warning: Hybrid search not available. Document indexing may not be set up.")

@@ -14,10 +14,10 @@ A general-purpose utility to execute SQL queries against Snowflake and export re
 
 ```bash
 # Using shell wrapper (recommended)
-./utils/sql_to_sheets.sh -f path/to/query.sql -s "spreadsheet_id" -n "sheet_name"
+./local_tools/sql_to_sheets.sh -f path/to/query.sql -s "spreadsheet_id" -n "sheet_name"
 
 # Using Python directly
-python utils/sql_to_sheets_mcp.py -f path/to/query.sql -s "spreadsheet_id" -n "sheet_name"
+python local_tools/sql_to_sheets/sql_to_sheets_mcp.py -f path/to/query.sql -s "spreadsheet_id" -n "sheet_name"
 ```
 
 ### Parameters

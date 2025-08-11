@@ -50,19 +50,19 @@ pip install -e .
 ### 1. Index Documents
 ```bash
 # Full indexing pipeline
-python utils/document_indexer/index_documents.py
+python local_tools/document_indexer/index_documents.py
 
 # Clear existing table and reindex
-python utils/document_indexer/index_documents.py --clear-table
+python local_tools/document_indexer/index_documents.py --clear-table
 
 # Save processed documents to JSON for inspection
-python utils/document_indexer/index_documents.py --save-json processed_docs.json
+python local_tools/document_indexer/index_documents.py --save-json processed_docs.json
 
 # Skip embeddings (for testing)
-python utils/document_indexer/index_documents.py --skip-embeddings
+python local_tools/document_indexer/index_documents.py --skip-embeddings
 
 # Run quick test
-python utils/document_indexer/index_documents.py test
+python local_tools/document_indexer/index_documents.py test
 ```
 
 ### 2. Use Search Functions in MCP Server
@@ -195,7 +195,7 @@ Default weights:
 ### Model Download Issues
 ```bash
 # Manually download model
-python -c "from utils.document_indexer.embedding_generator import BGEEmbeddingGenerator; BGEEmbeddingGenerator().download_model()"
+python -c "from local_tools.document_indexer.embedding_generator import BGEEmbeddingGenerator; BGEEmbeddingGenerator().download_model()"
 ```
 
 ### Snowflake Connection Issues

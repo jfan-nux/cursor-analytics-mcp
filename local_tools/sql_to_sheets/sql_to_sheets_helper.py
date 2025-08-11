@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union, Any
 
 # Import curie_export configuration for Google Sheets setup
-from utils.curie_export.config import (
+from local_tools.curie_export.config import (
     get_default_share_email,
     get_google_credentials,
     SCOPES,
