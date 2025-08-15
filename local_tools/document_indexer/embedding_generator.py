@@ -17,7 +17,10 @@ except ImportError:
     print("Warning: sentence-transformers not available. Install with: pip install sentence-transformers")
     EMBEDDINGS_AVAILABLE = False
 
-from .config import BGE_MODEL_NAME, BGE_MODEL_LOCAL_PATH
+try:
+    from .config import BGE_MODEL_NAME, BGE_MODEL_LOCAL_PATH
+except ImportError:
+    from config import BGE_MODEL_NAME, BGE_MODEL_LOCAL_PATH
 
 
 class BGEEmbeddingGenerator:

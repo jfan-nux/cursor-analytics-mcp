@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test script for document indexer components
+Test script for dual-table document indexer components
 """
 
 import sys
@@ -82,9 +82,9 @@ def test_snowflake_uploader():
     print("\nTesting Snowflake uploader...")
     
     try:
-        from .snowflake_uploader import DocumentIndexUploader
+        from .dual_table_uploader import DualTableUploader
         
-        uploader = DocumentIndexUploader()
+        uploader = DualTableUploader()
         
         # Test table creation
         if uploader.create_table_if_not_exists():
@@ -111,9 +111,9 @@ def test_hybrid_search():
     print("\nTesting hybrid search...")
     
     try:
-        from .hybrid_search import HybridSearcher
+        from .dual_table_search import DualTableHybridSearcher
         
-        searcher = HybridSearcher(database="proddb", schema="fionafan", table="document_index")
+        searcher = DualTableHybridSearcher(database="proddb", schema="fionafan")
         
         # Test search (will be empty if no data indexed yet)
         results = searcher.search_documents("test query", top_k=1)

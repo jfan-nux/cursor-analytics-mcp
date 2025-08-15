@@ -50,12 +50,12 @@ except ImportError as e:
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)
 
-# Try to import hybrid search functionality
+# Try to import dual-table hybrid search functionality
 try:
-    from local_tools.document_indexer.hybrid_search import HybridSearcher
+    from local_tools.document_indexer.dual_table_search import DualTableHybridSearcher
     HYBRID_SEARCH_AVAILABLE = True
 except ImportError:
-    print("Warning: Hybrid search not available. Document indexing may not be set up.")
+    print("Warning: Dual-table hybrid search not available. Document indexing may not be set up.")
     HYBRID_SEARCH_AVAILABLE = False
 
 # Try to import table context agent functionality
@@ -76,17 +76,17 @@ mcp = FastMCP("Cursor Analytics MCP Server 🚀")
 
 def get_configured_hybrid_searcher():
     """
-    Get a properly configured HybridSearcher with error handling
+    Get a properly configured DualTableHybridSearcher with error handling
     
     Returns:
-        HybridSearcher instance or None if initialization fails
+        DualTableHybridSearcher instance or None if initialization fails
     """
     if not HYBRID_SEARCH_AVAILABLE:
         return None
     
     try:
-        # Explicit table configuration for clarity
-        searcher = HybridSearcher(database="proddb", schema="fionafan", table="document_index")
+        # Explicit configuration for dual-table structure
+        searcher = DualTableHybridSearcher(database="proddb", schema="fionafan")
         
         # Validate Snowflake connection
         hook = searcher.get_snowflake_hook()
@@ -96,7 +96,7 @@ def get_configured_hybrid_searcher():
             
         return searcher
     except Exception as e:
-        logger.error(f"Failed to initialize HybridSearcher: {str(e)}")
+        logger.error(f"Failed to initialize DualTableHybridSearcher: {str(e)}")
         return None
 
 
@@ -740,7 +740,7 @@ def curie_get_metadata(experiment_name: str) -> str:
 # ============================================================================
 
 @mcp.tool
-def fetch_table_context(query: str, top_k: int = 5) -> str:
+def fetch_table_context(query: str, top_k: int = 5, team: Optional[str] = None) -> str:
     """
     Search for Snowflake table context using hybrid search (BM25 + embeddings).
     Use natural language queries like 'user dimensions table', 'delivery facts', etc.
@@ -748,6 +748,7 @@ def fetch_table_context(query: str, top_k: int = 5) -> str:
     Args:
         query: Natural language search query for table context
         top_k: Number of top results to return (default: 5)
+        team: Optional team/subcategory filter (e.g., 'growth/nux', 'edw/consumer')
     
     Returns:
         Table context search results with relevance scores
@@ -762,7 +763,7 @@ def fetch_table_context(query: str, top_k: int = 5) -> str:
             return "Error: Unable to initialize search system. Please check Snowflake connectivity and ensure the document index table exists."
         
         # Perform search
-        results = searcher.search_table_context(query, top_k=top_k)
+        results = searcher.search_table_context(query, top_k=top_k, team=team)
         
         if not results:
             return f"No table context found for query: '{query}'. The document index may be empty or the query didn't match any content."
@@ -775,7 +776,7 @@ def fetch_table_context(query: str, top_k: int = 5) -> str:
 
 
 @mcp.tool
-def fetch_pod_queries(query: str, top_k: int = 3) -> str:
+def fetch_pod_queries(query: str, top_k: int = 3, team: Optional[str] = None) -> str:
     """
     Search for validated master queries using hybrid search (BM25 + embeddings).
     Use natural language queries like 'pricing analysis', 'affordability metrics', etc.
@@ -783,6 +784,7 @@ def fetch_pod_queries(query: str, top_k: int = 3) -> str:
     Args:
         query: Natural language search query for SQL queries (use 'list' to see all available queries)
         top_k: Number of top results to return (default: 3)
+        team: Optional team/subcategory filter (e.g., 'growth/nux', 'growth/pricing-and-affordability')
     
     Returns:
         Query search results with relevance scores
@@ -810,7 +812,7 @@ def fetch_pod_queries(query: str, top_k: int = 3) -> str:
             return "Error: Unable to initialize search system. Please check Snowflake connectivity and ensure the document index table exists."
         
         # Perform search
-        results = searcher.search_pod_queries(query, top_k=top_k)
+        results = searcher.search_pod_queries(query, top_k=top_k, team=team)
         
         if not results:
             return f"No pod-level queries found for query: '{query}'. The document index may be empty or the query didn't match any content."
@@ -823,7 +825,7 @@ def fetch_pod_queries(query: str, top_k: int = 3) -> str:
 
 
 @mcp.tool
-def fetch_user_context(query: str, top_k: int = 5) -> str:
+def fetch_user_context(query: str, top_k: int = 5, team: Optional[str] = None) -> str:
     """
     Search for user-specific context using hybrid search (BM25 + embeddings).
     Use natural language queries to find relevant user context documents.
@@ -831,6 +833,7 @@ def fetch_user_context(query: str, top_k: int = 5) -> str:
     Args:
         query: Natural language search query for user context (use 'list' to see all available files)
         top_k: Number of top results to return (default: 5)
+        team: Optional team/subcategory filter (e.g., 'fiona.fan', 'team.lead')
     
     Returns:
         User context search results with relevance scores
@@ -866,7 +869,7 @@ def fetch_user_context(query: str, top_k: int = 5) -> str:
             return "Error: Unable to initialize search system. Please check Snowflake connectivity and ensure the document index table exists."
         
         # Perform search
-        results = searcher.search_user_context(query, top_k=top_k)
+        results = searcher.search_user_context(query, top_k=top_k, team=team)
         
         if not results:
             return f"No user context found for query: '{query}'. The document index may be empty or the query didn't match any content."
@@ -876,6 +879,78 @@ def fetch_user_context(query: str, top_k: int = 5) -> str:
     except Exception as e:
         logger.error(f"Fetch user context error: {str(e)}")
         return f"Error fetching user context: {str(e)}. Please ensure the document index table exists and is populated."
+
+
+@mcp.tool
+def fetch_experiment_readouts(query: str, top_k: int = 5, team: Optional[str] = None) -> str:
+    """
+    Search for experiment readout documents using hybrid search (BM25 + embeddings).
+    Use natural language queries like 'conversion experiments', 'iOS testing', etc.
+    
+    Args:
+        query: Natural language search query for experiment readouts
+        top_k: Number of top results to return (default: 5)
+        team: Optional team/subcategory filter (e.g., 'growth/nux')
+    
+    Returns:
+        Experiment readout search results with relevance scores
+    """
+    try:
+        if not HYBRID_SEARCH_AVAILABLE:
+            return "Hybrid search not available. Please run document indexing first."
+        
+        # Get configured searcher with validation
+        searcher = get_configured_hybrid_searcher()
+        if not searcher:
+            return "Error: Unable to initialize search system. Please check Snowflake connectivity and ensure the document index table exists."
+        
+        # Perform search
+        results = searcher.search_experiment_readouts(query, top_k=top_k, team=team)
+        
+        if not results:
+            return f"No experiment readouts found for query: '{query}'. The document index may be empty or the query didn't match any content."
+        
+        return searcher.format_search_results(results, query)
+                
+    except Exception as e:
+        logger.error(f"Fetch experiment readouts error: {str(e)}")
+        return f"Error fetching experiment readouts: {str(e)}. Please ensure the document index table exists and is populated."
+
+
+@mcp.tool
+def fetch_deep_dives(query: str, top_k: int = 5, team: Optional[str] = None) -> str:
+    """
+    Search for deep dive analysis documents using hybrid search (BM25 + embeddings).
+    Use natural language queries like 'MAU analysis', 'experiment insights', etc.
+    
+    Args:
+        query: Natural language search query for deep dive analyses
+        top_k: Number of top results to return (default: 5)
+        team: Optional team/subcategory filter (e.g., 'growth/nux')
+    
+    Returns:
+        Deep dive analysis search results with relevance scores
+    """
+    try:
+        if not HYBRID_SEARCH_AVAILABLE:
+            return "Hybrid search not available. Please run document indexing first."
+        
+        # Get configured searcher with validation
+        searcher = get_configured_hybrid_searcher()
+        if not searcher:
+            return "Error: Unable to initialize search system. Please check Snowflake connectivity and ensure the document index table exists."
+        
+        # Perform search
+        results = searcher.search_deep_dives(query, top_k=top_k, team=team)
+        
+        if not results:
+            return f"No deep dive analyses found for query: '{query}'. The document index may be empty or the query didn't match any content."
+        
+        return searcher.format_search_results(results, query)
+                
+    except Exception as e:
+        logger.error(f"Fetch deep dives error: {str(e)}")
+        return f"Error fetching deep dives: {str(e)}. Please ensure the document index table exists and is populated."
 
 
 @mcp.tool

@@ -9,10 +9,16 @@ from typing import Dict, List, Optional, Tuple
 import json
 from datetime import datetime
 
-from .config import (
-    CHUNK_SIZE, CHUNK_OVERLAP, SUPPORTED_EXTENSIONS, CONTEXT_CATEGORIES,
-    BM25_MIN_TOKEN_LENGTH, BM25_STOPWORDS
-)
+try:
+    from .config import (
+        CHUNK_SIZE, CHUNK_OVERLAP, SUPPORTED_EXTENSIONS, CONTEXT_CATEGORIES,
+        BM25_MIN_TOKEN_LENGTH, BM25_STOPWORDS, CONTENT_TYPE_MAPPING
+    )
+except ImportError:
+    from config import (
+        CHUNK_SIZE, CHUNK_OVERLAP, SUPPORTED_EXTENSIONS, CONTEXT_CATEGORIES,
+        BM25_MIN_TOKEN_LENGTH, BM25_STOPWORDS, CONTENT_TYPE_MAPPING
+    )
 
 
 class DocumentProcessor:
@@ -23,7 +29,7 @@ class DocumentProcessor:
         
     def extract_metadata(self, file_path: Path) -> Dict:
         """
-        Extract metadata from a file path and content
+        Extract metadata from a file path and content (UPDATED)
         
         Args:
             file_path: Path to the file
@@ -38,8 +44,12 @@ class DocumentProcessor:
             # Determine category based on path
             category = self._determine_category(relative_path)
             
-            # Create file hash for change detection
+            # Extract subcategory and document title
+            subcategory, document_title = self._extract_subcategory_and_title(relative_path, category)
+            
+            # Create hashes for change detection
             file_hash = hashlib.md5(content.encode()).hexdigest()
+            document_hash = hashlib.sha256(content.encode()).hexdigest()
             
             # Basic metadata
             metadata = {
@@ -49,8 +59,12 @@ class DocumentProcessor:
                 'file_stem': file_path.stem,
                 'file_extension': file_path.suffix,
                 'category': category,
+                'subcategory': subcategory,
+                'document_title': document_title,
+                'content_type': CONTENT_TYPE_MAPPING.get(file_path.suffix, 'unknown'),
                 'file_size': file_path.stat().st_size,
                 'file_hash': file_hash,
+                'document_hash': document_hash,
                 'last_modified': datetime.fromtimestamp(file_path.stat().st_mtime).isoformat(),
                 'processed_at': datetime.now().isoformat()
             }
@@ -77,17 +91,115 @@ class DocumentProcessor:
         
         return "general"
     
+    def _extract_subcategory_and_title(self, relative_path: Path, category: str) -> Tuple[Optional[str], str]:
+        """
+        Extract subcategory (organizational path) and document title from path
+        
+        Examples:
+        - deep-dives/growth/nux/Road-to-MAU-Deep-Dive/report.md
+          → subcategory: "growth/nux", document_title: "Road-to-MAU-Deep-Dive"
+        - pod-level-validated-master-queries/growth/nux/queries.sql  
+          → subcategory: "growth/nux", document_title: "queries.sql"
+        - snowflake-table-context/edw/consumer/users.md
+          → subcategory: "edw/consumer", document_title: "users.md"
+        """
+        path_parts = relative_path.parts
+        
+        # Find the category folder in the path
+        category_folder = None
+        for cat_path, cat_name in CONTEXT_CATEGORIES.items():
+            if cat_name == category and cat_path in str(relative_path):
+                category_folder = cat_path
+                break
+        
+        if not category_folder:
+            return None, relative_path.name
+        
+        # Find where the category ends in the path
+        category_parts = category_folder.split('/')
+        category_end_idx = None
+        
+        # Look for the category path in the file path
+        for i, part in enumerate(path_parts):
+            if part == category_parts[-1]:
+                # Check if this matches the full category path
+                if len(category_parts) == 1 or (i > 0 and path_parts[i-len(category_parts)+1:i+1] == tuple(category_parts)):
+                    category_end_idx = i
+                    break
+        
+        if category_end_idx is None:
+            return None, relative_path.name
+        
+        # Extract parts after category
+        remaining_parts = path_parts[category_end_idx + 1:]
+        
+        if not remaining_parts:
+            return None, relative_path.name
+        
+        # The logic: stop subcategory at organizational level, not document-specific folders
+        if len(remaining_parts) == 1:
+            # Direct file in category folder: no subcategory
+            subcategory = None
+            document_title = remaining_parts[0]
+        elif len(remaining_parts) == 2:
+            # One level deep: subcategory is the folder, title is the file
+            subcategory = remaining_parts[0]
+            document_title = remaining_parts[1]
+        else:
+            # Multiple levels: need to distinguish organizational vs document folders
+            # Heuristic: if the second-to-last part looks like a document folder, 
+            # it becomes the document title
+            
+            # Document folder patterns: starts with capital, contains dashes, looks like a project name
+            second_to_last = remaining_parts[-2]
+            last_part = remaining_parts[-1]
+            
+            # Check if second-to-last looks like a document/project folder
+            # More specific patterns to avoid false positives like "pricing-and-affordability"
+            is_document_folder = (
+                # Contains "Experiment-Readout" pattern (very specific)
+                'Experiment-Readout' in second_to_last or
+                # Contains "Road-to" pattern (very specific)
+                'Road-to' in second_to_last or
+                # Other very specific document patterns
+                any(pattern in second_to_last for pattern in ['Deep-Dive', 'Analysis-Report']) or
+                # Starts with year pattern (e.g., "2025-q3-...")
+                (len(second_to_last) > 4 and second_to_last[:4].isdigit()) or
+                # Multiple uppercase words separated by hyphens (title case naming)
+                (second_to_last.count('-') >= 2 and 
+                 any(part[0].isupper() for part in second_to_last.split('-')[1:]))
+            )
+            
+            if is_document_folder:
+                # Second-to-last is a document folder, so subcategory stops before it
+                subcategory = '/'.join(remaining_parts[:-2])
+                document_title = second_to_last  # Document folder name is the title
+            else:
+                # All parts except filename are organizational
+                subcategory = '/'.join(remaining_parts[:-1])
+                document_title = last_part
+        
+        return subcategory, document_title
+    
     def _extract_table_metadata(self, relative_path: Path) -> Dict:
         """Extract table-specific metadata from path"""
         parts = relative_path.parts
         
         metadata = {}
-        if len(parts) >= 3 and parts[0] == "analysis-context" and parts[1] == "snowflake-table-context":
-            if len(parts) >= 5:  # database/schema/table.md
+        # Updated to work with new category structure: snowflake-table-context/database/schema/table.md
+        if len(parts) >= 4 and "snowflake-table-context" in parts:
+            table_context_idx = None
+            for i, part in enumerate(parts):
+                if part == "snowflake-table-context":
+                    table_context_idx = i
+                    break
+            
+            if table_context_idx is not None and len(parts) >= table_context_idx + 4:
+                # database/schema/table.md after snowflake-table-context
                 metadata.update({
-                    'database': parts[2],
-                    'schema': parts[3], 
-                    'table_name': Path(parts[4]).stem
+                    'database': parts[table_context_idx + 1],
+                    'schema': parts[table_context_idx + 2], 
+                    'table_name': Path(parts[table_context_idx + 3]).stem
                 })
         
         return metadata
