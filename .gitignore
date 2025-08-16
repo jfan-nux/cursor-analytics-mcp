@@ -6,6 +6,17 @@ __pycache__/
 # C extensions
 *.so
 
+# Downloaded ML models
+utils/document_indexer/models/
+*.bin
+*.safetensors
+*.h5
+**/models/pytorch_model.bin
+**/models/model.safetensors
+
+# Query search results
+context/query_search/
+
 # Distribution / packaging
 .Python
 build/
@@ -201,7 +212,18 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 
+# Credentials and OAuth tokens
+*.pickle
+config/google_docs_token.pickle
+config/*.pickle
+*.token
+credentials/
+config/*token*
+
 # Marimo
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+*.env.backup
+user-analysis/*
+session_context/*
