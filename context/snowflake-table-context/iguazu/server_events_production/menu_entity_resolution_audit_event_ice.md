@@ -1,119 +1,126 @@
 # iguazu.server_events_production.menu_entity_resolution_audit_event_ice
 
 ## Table Overview
-Audit table that tracks entity resolution of menu updates by POS merchants. This table captures the output of DoorDash's ML-based entity resolution system that matches menu entities (items, categories, etc.) to prevent duplicate entity creation when merchants update their menus via POS systems. The system addresses the problem where menu updates would previously create new item_ids for the same logical item due to changes in merchant-supplied IDs (msid).
 
+**Database:** iguazu
+**Schema:** server_events_production
+**Table:** menu_entity_resolution_audit_event_ice
+**Owner:** SERVICE_CASPIAN
+**Row Count:** 864,839,802,918 rows
+**Created:** 2025-01-31 06:24:02.494000+00:00
+**Last Modified:** 2025-07-17 16:18:08.296000+00:00
 
-## Table Metadata
-*Unable to retrieve table metadata from Snowflake*
+**Description:** None
 
-## Schema Information
-**Core Entity Resolution Fields:**
-- `store_id`: Store identifier for the merchant
-- `business_id`: Business identifier 
-- `target_entity_id`: ID of the entity being processed for resolution
-- `target_entity_type`: Type of entity being resolved (item, category, menu, option, extra)
-- `target_entity_features`: JSON containing details about the target entity (name, msid, description, price, etc.)
-- `match_entity_id`: ID of the matched existing entity (if found)
-- `match_entity_features`: JSON containing details about the matched entity
-- `event_result`: Resolution outcome - either "ENTITY_ID_GENERATED" (new entity) or "ENTITY_ID_RECLAIMED" (matched existing)
+## Business Context
 
-**Algorithm and Matching Fields:**
-- `matching_algorithm_version`: Version of the ML algorithm used (currently 1.8.0)
-- `num_candidates`: Number of candidate entities considered for matching
-- `candidates_features`: JSON array containing details about all candidate matches with scores and match_groups
-- `candidates_selection_strategy`: Strategy used for candidate selection
-- `match_artifacts`: Additional matching metadata
+The `menu_entity_resolution_audit_event_ice` table contains detailed records of events related to the resolution of menu entities, capturing various attributes such as the matching algorithm used, event results, and associated entity IDs. This table is crucial for the analytics domain, particularly in understanding and optimizing the processes involved in menu entity matching, which can enhance operational efficiency and decision-making. It is maintained by the `SERVICE_CASPIAN` team, ensuring that the data remains accurate and up-to-date for business analysis and reporting purposes.
 
-**Event Metadata Fields:**
-- `event_type`: Type of event being tracked
-- `trace_id`, `span_id`: Distributed tracing identifiers
-- `event_origin`: Source of the event
-- `event_context`: Additional context about the event
-- `iguazu_sent_at`: Timestamp when event was sent to Iguazu
-- `iguazu_partition_date`: Date partition for the data (format: YYYY-MM-DD)
-- `iguazu_partition_hour`: Hour partition for the data
+## Metadata
 
-## Data Characteristics
-- **Estimated Row Count**: ~6.9 billion records per day (extremely high volume)
-- **Update Frequency**: Real-time streaming from POS menu updates
-- **Data Freshness**: Current day data available
-- **Partitioning**: Partitioned by date (`iguazu_partition_date`) and hour (`iguazu_partition_hour`)
-- **Time Range Coverage**: Historical data available for entity resolution analysis
+### Table Metadata
 
-## Common Use Cases
-- **Entity Resolution Analysis**: Understanding how well the ML model performs at matching entities
-- **Algorithm Performance Monitoring**: Tracking success rates of ENTITY_ID_RECLAIMED vs ENTITY_ID_GENERATED
-- **Menu Update Impact Analysis**: Analyzing how POS menu changes affect entity creation
-- **Store-Level Entity Resolution**: Understanding entity resolution patterns by store
-- **Entity Type Analysis**: Comparing resolution performance across different entity types (items, categories, etc.)
-- **Candidate Matching Analysis**: Analyzing the quality and scores of candidate matches
+**Type:** BASE TABLE
+**Size:** 233668218.7 MB
+**Transient:** NO
+**Retention Time:** 5 days
+**Raw Row Count:** 864,839,802,918
 
-## Useful Queries
-### Entity Types and Event Results - User Confirmed
+### Most Common Joins
+
+| Joined Table | Query Count |
+|--------------|-------------|
+| proddb.zhemai.erml_finaldata_eva | 2 |
+| proddb.chrischi.id_drift_recall_entity_cnt | 1 |
+
+### Column Metadata
+
+| Usage Rank | Column Name | Queries | Ordinal | Data Type | Is Cluster Key | Comment |
+|------------|-------------|---------|---------|-----------|----------------|---------|
+| 1 | MATCHING_ALGORITHM_VERSION | 7 | 7 | TEXT | 0 | No comment |
+| 2 | EVENT_RESULT | 6 | 8 | TEXT | 0 | No comment |
+| 3 | TARGET_ENTITY_ID | 5 | 10 | TEXT | 0 | No comment |
+| 4 | BUSINESS_ID | 4 | 2 | TEXT | 0 | No comment |
+| 5 | TARGET_ENTITY_TYPE | 4 | 11 | TEXT | 0 | No comment |
+| 6 | _ENTITY_ID_ | 4 | 30 | TEXT | 0 | No comment |
+| 7 | STORE_ID | 3 | 1 | TEXT | 0 | No comment |
+| 8 | TRACE_ID | 3 | 4 | TEXT | 0 | No comment |
+| 9 | EVENT_RESULT_DATA | 3 | 9 | TEXT | 0 | No comment |
+| 10 | TARGET_ENTITY_FEATURES | 3 | 12 | TEXT | 0 | No comment |
+| 11 | MATCH_ENTITY_ID | 3 | 14 | TEXT | 0 | No comment |
+| 12 | MATCH_ARTIFACTS | 3 | 16 | TEXT | 0 | No comment |
+| 13 | IGUAZU_SENT_AT | 3 | 38 | TIMESTAMP_NTZ | 0 | No comment |
+| 14 | EVENT_TYPE | 0 | 3 | TEXT | 0 | No comment |
+| 15 | SPAN_EVENT_TYPE | 0 | 5 | TEXT | 0 | No comment |
+| 16 | SPAN_ID | 0 | 6 | TEXT | 0 | No comment |
+| 17 | TARGET_ENTITY_DEBUG_DATA | 0 | 13 | TEXT | 0 | No comment |
+| 18 | MATCH_ENTITY_FEATURES | 0 | 15 | TEXT | 0 | No comment |
+| 19 | NUM_CANDIDATES | 0 | 17 | NUMBER | 0 | No comment |
+| 20 | CANDIDATES_SET_ID | 0 | 18 | TEXT | 0 | No comment |
+| 21 | CANDIDATES_SELECTION_STRATEGY | 0 | 19 | TEXT | 0 | No comment |
+| 22 | CANDIDATES_FEATURES | 0 | 20 | TEXT | 0 | No comment |
+| 23 | CANDIDATES_SELECTION_INPUT | 0 | 21 | TEXT | 0 | No comment |
+| 24 | CANDIDATES_SELECTION_RESULT | 0 | 22 | TEXT | 0 | No comment |
+| 25 | EVENT_ORIGIN | 0 | 23 | TEXT | 0 | No comment |
+| 26 | EVENT_CONTEXT | 0 | 24 | TEXT | 0 | No comment |
+| 27 | _EVENT_NAME_ | 0 | 25 | TEXT | 0 | No comment |
+| 28 | _EVENT_TIME_ | 0 | 26 | NUMBER | 0 | No comment |
+| 29 | _IDEMPOTENCY_KEY_ | 0 | 27 | TEXT | 0 | No comment |
+| 30 | _SOURCE_ | 0 | 28 | TEXT | 0 | No comment |
+| 31 | _ENTITY_NAME_ | 0 | 29 | TEXT | 0 | No comment |
+| 32 | _CUSTOM_ATTRIBUTES_ | 0 | 31 | TEXT | 0 | No comment |
+| 33 | _EVENT_VERSION_ | 0 | 32 | NUMBER | 0 | No comment |
+| 34 | _KAFKA_TIMESTAMP_ | 0 | 33 | NUMBER | 0 | No comment |
+| 35 | _KAFKA_PARTITION_ | 0 | 34 | NUMBER | 0 | No comment |
+| 36 | _KAFKA_OFFSET_ | 0 | 35 | NUMBER | 0 | No comment |
+| 37 | _KAFKA_TOPIC_ | 0 | 36 | TEXT | 0 | No comment |
+| 38 | IGUAZU_ID | 0 | 37 | TEXT | 0 | No comment |
+| 39 | IGUAZU_OTHER_PROPERTIES | 0 | 39 | TEXT | 0 | No comment |
+| 40 | _KAFKA_TIMESTAMP | 0 | 40 | TIMESTAMP_NTZ | 0 | No comment |
+| 41 | IGUAZU_PARTITION_DATE | 0 | 41 | TEXT | 0 | No comment |
+| 42 | IGUAZU_PARTITION_HOUR | 0 | 42 | NUMBER | 0 | No comment |
+
+## Granularity Analysis
+
+**Performance-Optimized Analysis**
+
+This is a very large table with 864,839,802,918 rows (>10 billion), so we used a lightweight analysis approach to avoid long query times. Based on intelligent analysis of the table structure and column usage patterns, this table appears to track data at the **STORE_ID** level.
+
+**Key Insights:**
+- **Entity Level**: Each row likely represents a store id
+- **Time Filtering**: Uses NUM_CANDIDATES for time-based analysis
+- **Recommended Lookback**: 1 days for analysis (automatically determined based on table size)
+
+For detailed granularity analysis on this large table, consider using time-filtered samples or aggregated views.
+
+## Sample Queries
+
+### Query 1
+**Last Executed:** 2025-08-05 10:47:32.882000
+
 ```sql
--- Get distinct entity types and event results for recent data
-SELECT DISTINCT target_entity_type 
-FROM IGUAZU.SERVER_EVENTS_PRODUCTION.MENU_ENTITY_RESOLUTION_AUDIT_EVENT_ICE 
-WHERE iguazu_partition_date = '2025-06-05';
-
-SELECT DISTINCT event_result 
-FROM IGUAZU.SERVER_EVENTS_PRODUCTION.MENU_ENTITY_RESOLUTION_AUDIT_EVENT_ICE 
-WHERE iguazu_partition_date = '2025-06-05';
+select match_ind,count(distinct target_entity_id) from 
+(select distinct target_entity_id, max(case when event_result = 'ENTITY_ID_RECLAIMED' then 1 else 0 end) as match_ind
+  from "IGUAZU"."SERVER_EVENTS_PRODUCTION"."MENU_ENTITY_RESOLUTION_AUDIT_EVENT_ICE" 
+  where matching_algorithm_version = '1.8.0'
+  and TO_DATE(iguazu_sent_at) = '2025-06-30'
+  group by 1
+  limit 1000000)
+group by 1
+;
 ```
 
-### Sample Entity Features Analysis - User Confirmed
+### Query 2
+**Last Executed:** 2025-08-05 10:41:17.938000
+
 ```sql
--- Sample target and candidate features for items
-SELECT target_entity_features, candidates_features 
-FROM IGUAZU.SERVER_EVENTS_PRODUCTION.MENU_ENTITY_RESOLUTION_AUDIT_EVENT_ICE 
-WHERE iguazu_partition_date = '2025-06-05' 
-AND target_entity_type = 'item' 
-LIMIT 1;
+select event_result,count(distinct target_entity_id) from 
+(select distinct target_entity_id, event_result
+  from "IGUAZU"."SERVER_EVENTS_PRODUCTION"."MENU_ENTITY_RESOLUTION_AUDIT_EVENT_ICE" 
+  where matching_algorithm_version = '1.8.0'
+  and TO_DATE(iguazu_sent_at) = '2025-06-30'
+  limit 1000000)
+group by 1
+;
 ```
 
-## Join Patterns
-- **Store Analysis**: Join with store dimension tables using `store_id`
-- **Business Analysis**: Join with business dimension tables using `business_id`
-- **Menu Analysis**: Join with menu tables using entity IDs for deeper menu structure analysis
-- **Time-Series Analysis**: Use `iguazu_sent_at` for temporal analysis of entity resolution patterns
-
-## Data Quality Notes
-- **Partitioning**: Always filter by `iguazu_partition_date` for performance - table has ~6.9B records per day
-- **JSON Fields**: `target_entity_features` and `candidates_features` contain rich JSON data that may need parsing
-- **Match Groups**: The `match_groups` field in candidates shows which attributes matched (TITLE, MSID, PARENT_ID, PRICE_EXACT, etc.)
-- **Volume Considerations**: Extremely high-volume table - always apply date filters and limit results
-- **Algorithm Evolution**: `matching_algorithm_version` tracks ML model versions (currently 1.8.0)
-
-## Related Tables
-- **Store Tables**: Store dimension tables for merchant context
-- **Menu Tables**: Menu structure tables for understanding entity relationships
-- **Business Tables**: Business dimension tables for merchant business context
-- **POS Integration Tables**: Tables tracking POS system integrations and menu updates
-
-## Entity Resolution Context
-**Problem Solved**: When merchants update menus via POS, the same logical item would get new item_ids due to msid changes, creating duplicates.
-
-**Solution**: ML-based entity resolution system that:
-- Takes a target entity and matches against existing candidates within a store
-- Uses features like name, msid, description, price for matching
-- Outputs either ENTITY_ID_GENERATED (new entity) or ENTITY_ID_RECLAIMED (matched existing)
-- Provides match scores and match_groups for analysis
-
-**Entity Types Supported**:
-- `item`: Menu items
-- `category`: Menu categories  
-- `menu`: Menu structures
-- `option`: Item options/modifiers
-- `extra`: Additional item extras
-
-**Match Groups**: Direct string matches on fields like:
-- `TITLE`: Item/category names
-- `MSID`: Merchant-supplied IDs
-- `PARENT_ID`: Parent category/menu relationships
-- `PRICE_EXACT`: Exact price matches
-- `PRICE`: Price range matches
-
----
-*This file was created during entity resolution analysis work*
-*Last updated: 2025-06-05 21:50:00* 

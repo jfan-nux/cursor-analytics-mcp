@@ -14,7 +14,7 @@
 
 ## Business Context
 
-The `fact_core_search_metrics` table contains detailed metrics related to user search activities, including search terms, user IDs, timestamps, and various search outcomes. This data is primarily utilized by the analytics team to assess search performance and user engagement, enabling insights that drive improvements in search functionalities and overall user experience. The table is maintained by the SYSADMIN team, ensuring data integrity and availability for analytical purposes. For further information on querying this data, refer to the [How to Query Search Data Model](https://doordash.atlassian.net/wiki/wiki/search?text=proddb.public.fact_core_search_metrics) documentation.
+The `fact_core_search_metrics` table contains detailed metrics related to user search activities, including search terms, user identifiers, timestamps, and various search outcomes such as clicks and conversions. This data is crucial for understanding user behavior within the search domain, enabling businesses to optimize search functionality and improve user experience. The table is maintained by the SYSADMIN, ensuring that it is managed effectively for analytical purposes. Use cases likely include performance tracking, user engagement analysis, and enhancing search algorithms based on user interactions.
 
 ## Metadata
 
@@ -30,42 +30,42 @@ The `fact_core_search_metrics` table contains detailed metrics related to user s
 
 | Joined Table | Query Count |
 |--------------|-------------|
-| proddb.public.dimension_order_item | 61 |
-| edw.cng.fact_non_rx_order_item_details | 60 |
-| edw.merchant.store_availability_consumer_pool | 57 |
-| segment_events_raw.consumer_production.engagement_program | 56 |
-| proddb.public.fact_dedup_experiment_exposure | 54 |
-| proddb.yvonneliu.occasions_lth_control_pre13may | 54 |
-| edw.growth.cx360_model_dlcopy | 54 |
-| proddb.public.dimension_deliveries | 54 |
-| proddb.achilleaszilakos.lth_control_01may_18may | 54 |
-| proddb.public.dimension_users | 46 |
+| edw.merchant.store_availability_consumer_pool | 74 |
+| proddb.public.dimension_deliveries | 71 |
+| proddb.public.dimension_order_item | 66 |
+| edw.cng.fact_non_rx_order_item_details | 65 |
+| segment_events_raw.consumer_production.engagement_program | 57 |
+| edw.cng.dimension_new_vertical_store_tags | 56 |
+| proddb.yvonneliu.occasions_lth_control_pre13may | 55 |
+| edw.growth.cx360_model_dlcopy | 55 |
+| proddb.achilleaszilakos.lth_control_01may_18may | 55 |
+| proddb.public.fact_dedup_experiment_exposure | 55 |
 
 ### Column Metadata
 
 | Usage Rank | Column Name | Queries | Ordinal | Data Type | Is Cluster Key | Comment |
 |------------|-------------|---------|---------|-----------|----------------|---------|
-| 1 | SEARCH_TERM | 151 | 10 | TEXT | 0 | No comment |
-| 2 | SUBMARKET_ID | 116 | 5 | NUMBER | 0 | No comment |
-| 3 | USER_ID | 104 | 3 | NUMBER | 0 | No comment |
-| 4 | SEARCH_TYPE | 90 | 8 | TEXT | 0 | No comment |
-| 5 | SEARCH_TIMESTAMP | 58 | 13 | TIMESTAMP_NTZ | 0 | No comment |
-| 6 | SEARCH_ID | 58 | 28 | TEXT | 0 | No comment |
+| 1 | SEARCH_TERM | 157 | 10 | TEXT | 0 | No comment |
+| 2 | SUBMARKET_ID | 131 | 5 | NUMBER | 0 | No comment |
+| 3 | USER_ID | 127 | 3 | NUMBER | 0 | No comment |
+| 4 | SEARCH_TYPE | 82 | 8 | TEXT | 0 | No comment |
+| 5 | SEARCH_TIMESTAMP | 57 | 13 | TIMESTAMP_NTZ | 0 | No comment |
+| 6 | SEARCH_ID | 55 | 28 | TEXT | 0 | No comment |
 | 7 | SUBMARKET_NAME | 47 | 25 | TEXT | 0 | No comment |
 | 8 | NUM_STORE_RESULTS | 44 | 16 | NUMBER | 0 | No comment |
-| 9 | DD_DEVICE_ID | 18 | 2 | TEXT | 0 | No comment |
+| 9 | COUNTRY_NAME | 26 | 27 | TEXT | 0 | No comment |
 | 10 | IS_SEARCH_CLICKED | 15 | 20 | NUMBER | 0 | No comment |
 | 11 | IS_SEARCH_CONVERTED | 15 | 21 | NUMBER | 0 | No comment |
-| 12 | REGION_NAME | 11 | 26 | TEXT | 0 | No comment |
-| 13 | DD_SESSION_ID | 8 | 1 | TEXT | 0 | No comment |
-| 14 | IS_USER_ID_NULL | 8 | 17 | NUMBER | 0 | No comment |
-| 15 | PLATFORM | 7 | 4 | TEXT | 0 | No comment |
-| 16 | COUNTRY_NAME | 7 | 27 | TEXT | 0 | No comment |
-| 17 | ORIGIN | 6 | 9 | TEXT | 0 | No comment |
+| 12 | DD_DEVICE_ID | 14 | 2 | TEXT | 0 | No comment |
+| 13 | REGION_NAME | 11 | 26 | TEXT | 0 | No comment |
+| 14 | PLATFORM | 8 | 4 | TEXT | 0 | No comment |
+| 15 | IS_USER_ID_NULL | 8 | 17 | NUMBER | 0 | No comment |
+| 16 | ORIGIN | 6 | 9 | TEXT | 0 | No comment |
+| 17 | DD_SESSION_ID | 5 | 1 | TEXT | 0 | No comment |
 | 18 | SEARCH_TIMESTAMP_PST | 5 | 14 | TIMESTAMP_NTZ | 0 | No comment |
-| 19 | DISTRICT_NAME | 3 | 7 | TEXT | 0 | No comment |
-| 20 | NORMALIZED_SEARCH_TERM | 3 | 11 | TEXT | 0 | No comment |
-| 21 | SEARCH_TIMESTAMP_PST_DATE | 3 | 15 | TIMESTAMP_NTZ | 0 | No comment |
+| 19 | SEARCH_TIMESTAMP_PST_DATE | 5 | 15 | TIMESTAMP_NTZ | 0 | No comment |
+| 20 | DISTRICT_NAME | 3 | 7 | TEXT | 0 | No comment |
+| 21 | NORMALIZED_SEARCH_TERM | 3 | 11 | TEXT | 0 | No comment |
 | 22 | FIRST_CLICKED_POSITION | 3 | 22 | NUMBER | 0 | No comment |
 | 23 | FIRST_CONVERTED_POSITION | 3 | 23 | NUMBER | 0 | No comment |
 | 24 | DISTRICT_ID | 0 | 6 | NUMBER | 0 | No comment |
@@ -76,12 +76,11 @@ The `fact_core_search_metrics` table contains detailed metrics related to user s
 
 ## Granularity Analysis
 
-Table is granular at DD_SESSION_ID level - each row represents a unique dd session id
 
 ## Sample Queries
 
 ### Query 1
-**Last Executed:** 2025-08-10 05:01:04.529000
+**Last Executed:** 2025-08-15 05:01:06.639000
 
 ```sql
 select a.search_id, a.submarket_id,  a.submarket_name, a.country_name
@@ -109,11 +108,11 @@ from public.fact_core_search_metrics a
 LEFT JOIN angelayuan.nls_mvp_nl_queries_05212025 b
 ON trim(lower(a.search_term)) = trim(lower(b.NL_query))
 where a.search_type = 'store_search'
-and a.search_timestamp::date = '2025-08-09'
+and a.search_timestamp::date = '2025-08-14'
 ```
 
 ### Query 2
-**Last Executed:** 2025-08-09 05:01:05.494000
+**Last Executed:** 2025-08-14 05:01:07.366000
 
 ```sql
 select a.search_id, a.submarket_id,  a.submarket_name, a.country_name
@@ -141,12 +140,6 @@ from public.fact_core_search_metrics a
 LEFT JOIN angelayuan.nls_mvp_nl_queries_05212025 b
 ON trim(lower(a.search_term)) = trim(lower(b.NL_query))
 where a.search_type = 'store_search'
-and a.search_timestamp::date = '2025-08-08'
+and a.search_timestamp::date = '2025-08-13'
 ```
 
-
-## Related Documentation
-
-- [How to Query Search Data Model](https://doordash.atlassian.net/wiki/wiki/search?text=proddb.public.fact_core_search_metrics)
-- [Intro to Meal Plan on Home Page](https://doordash.atlassian.net/wiki/wiki/search?text=proddb.public.fact_core_search_metrics)
-- [More Common Usage of fact_core_search_metrics](https://doordash.atlassian.net/wiki/wiki/search?text=proddb.public.fact_core_search_metrics)

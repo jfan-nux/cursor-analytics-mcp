@@ -33,7 +33,7 @@ def export_curie_with_explicit_params(
     # Column selection
     selected_columns: List[str] = None,
     # Export options
-    share_email: str = None,
+    share_email: str | None = None,
     export_to_sheets: bool = True,
     credentials_path: str = None,
     folder_id: str = None,  # Google Drive folder ID for organizing sheets
@@ -76,6 +76,16 @@ def export_curie_with_explicit_params(
     Returns:
         Tuple of (URL/filepath, success, detected_control)
     """
+    import os  # ensure available
+    # Determine default share email if necessary
+    if not share_email:
+        snowflake_user = os.getenv("SNOWFLAKE_USER")
+        if snowflake_user:
+            share_email = f"{snowflake_user}@doordash.com"
+        else:
+            share_email = get_default_share_email()
+        logger.info(f"Using default share_email={share_email}")
+
     logger.info(f"Starting export for experiment: {experiment_name}")
     
     # ALWAYS get metadata first to understand the experiment
@@ -210,9 +220,22 @@ def export_curie_with_explicit_params(
     print("\n🚀 Proceeding with export...\n")
     
     # Continue with the existing export logic...
+    logger.info(f"🔧 Loading experiment data for export...")
+    logger.info(f"   - experiment_name: {experiment_name}")
+    logger.info(f"   - control_variant: {control_variant}")
     
     # Load all data - raw unpivoted format
-    results_df = load_curie_results(experiment_name, control_variant=control_variant)
+    try:
+        logger.info("🔧 Calling load_curie_results...")
+        results_df = load_curie_results(experiment_name, control_variant=control_variant)
+        logger.info(f"🔧 Loaded data shape: {results_df.shape}")
+        logger.info(f"🔧 Data columns: {list(results_df.columns)}")
+    except Exception as e:
+        logger.error(f"❌ Failed to load curie results: {e}")
+        import traceback
+        logger.error(f"❌ Traceback: {traceback.format_exc()}")
+        return None, False, None
+        
     if results_df.empty:
         logger.error("No data found for the experiment")
         return None, False, None
@@ -246,15 +269,30 @@ def export_curie_with_explicit_params(
             return None, False, None
     
     # Create formatter with metadata
+    logger.info(f"🔧 Creating formatter with metadata...")
     formatter_metadata = {
         'treatment_count': metadata['treatment_count'],
         'control_variant': control_variant or metadata.get('control_variant', 'control'),
         'is_multi_treatment': metadata['is_multi_treatment'],
         'variants': metadata.get('variants', [])
     }
-    formatter = ExperimentDataFormatter(results_df, formatter_metadata)
+    logger.info(f"🔧 Formatter metadata: {formatter_metadata}")
+    
+    try:
+        formatter = ExperimentDataFormatter(results_df, formatter_metadata)
+        logger.info(f"🔧 Formatter created successfully")
+    except Exception as e:
+        logger.error(f"❌ Failed to create formatter: {e}")
+        import traceback
+        logger.error(f"❌ Traceback: {traceback.format_exc()}")
+        return None, False, None
     
     # Apply filtering on raw data first
+    logger.info(f"🔧 Starting data filtering...")
+    logger.info(f"   - metric_dimension_map: {metric_dimension_map}")
+    logger.info(f"   - dimension_names: {dimension_names}")
+    logger.info(f"   - dimension_cuts: {dimension_cuts}")
+    
     if metric_dimension_map is not None:
         # Use advanced per-metric filtering
         # Convert deprecated list format if needed
@@ -274,37 +312,68 @@ def export_curie_with_explicit_params(
                 logger.error(f"Invalid dimension specification for metric '{metric}': {type(dims_or_cuts)}")
                 new_format_map[metric] = {}
         
-        filtered_df = filter_results(
-            results_df,
-            selected_metrics=selected_metrics,
-            dimension_selection=new_format_map,
-            selected_columns=None,  # Don't apply column selection on raw data
-            treatment_variants=treatment_variants,
-            control_variant=control_variant
-        )
+        try:
+            logger.info("🔧 Applying advanced per-metric filtering...")
+            filtered_df = filter_results(
+                results_df,
+                selected_metrics=selected_metrics,
+                dimension_selection=new_format_map,
+                selected_columns=None,  # Don't apply column selection on raw data
+                treatment_variants=treatment_variants,
+                control_variant=control_variant
+            )
+            logger.info(f"🔧 Advanced filtering result: {filtered_df.shape}")
+        except Exception as e:
+            logger.error(f"❌ Failed in advanced filtering: {e}")
+            import traceback
+            logger.error(f"❌ Traceback: {traceback.format_exc()}")
+            return None, False, None
     else:
         # Use simple global filtering parameters
-        filtered_df = filter_results(
-            results_df,
-            selected_metrics=selected_metrics,
+        try:
+            logger.info("🔧 Applying simple global filtering...")
+            filtered_df = filter_results(
+                results_df,
+                selected_metrics=selected_metrics,
             dimension_names=dimension_names,
             dimension_cuts=dimension_cuts,
             selected_columns=None,  # Don't apply column selection on raw data
             treatment_variants=treatment_variants,
             control_variant=control_variant
         )
+            logger.info(f"🔧 Simple filtering result: {filtered_df.shape}")
+        except Exception as e:
+            logger.error(f"❌ Failed in simple filtering: {e}")
+            import traceback
+            logger.error(f"❌ Traceback: {traceback.format_exc()}")
+            return None, False, None
     
     if filtered_df.empty:
         logger.error("No data after filtering")
         return None, False, None
     
     # Apply formatting using ExperimentDataFormatter
-    formatter.raw_df = filtered_df  # Update with filtered data
-    formatted_df = formatter.format_for_display(selected_columns=selected_columns)
+    logger.info(f"🔧 Starting data formatting...")
+    try:
+        formatter.raw_df = filtered_df  # Update with filtered data
+        formatted_df = formatter.format_for_display(selected_columns=selected_columns)
+        logger.info(f"🔧 Formatting result: {formatted_df.shape}")
+        logger.info(f"🔧 Formatted columns: {list(formatted_df.columns)}")
+    except Exception as e:
+        logger.error(f"❌ Failed in data formatting: {e}")
+        import traceback
+        logger.error(f"❌ Traceback: {traceback.format_exc()}")
+        return None, False, None
     
-    # Get share email
+    # Get share email (share_email should already be set earlier, but double-check)
     if not share_email:
-        share_email = get_default_share_email()
+        snowflake_user = os.getenv("SNOWFLAKE_USER")
+        if snowflake_user:
+            share_email = f"{snowflake_user}@doordash.com"
+        else:
+            share_email = get_default_share_email()
+        logger.info(f"Using fallback share_email={share_email}")
+        
         if not share_email and export_to_sheets:
             logger.error("No share email provided and no default found")
             return None, False, None
@@ -320,15 +389,31 @@ def export_curie_with_explicit_params(
     
     # Export
     if export_to_sheets:
-        url, success = export_to_google_sheets(
-            formatted_df,
-            experiment_name,
-            share_email,
-            credentials_path,
-            metric_categories,
-            folder_id=folder_id,
-            use_oauth=use_oauth
-        )
+        logger.info(f"🔧 Starting Google Sheets export...")
+        logger.info(f"   - formatted_df shape: {formatted_df.shape}")
+        logger.info(f"   - experiment_name: {experiment_name}")
+        logger.info(f"   - share_email: {share_email}")
+        logger.info(f"   - use_oauth: {use_oauth}")
+        
+        try:
+            url, success = export_to_google_sheets(
+                formatted_df,
+                experiment_name,
+                share_email,
+                credentials_path,
+                metric_categories,
+                folder_id=folder_id,
+                use_oauth=use_oauth
+            )
+            logger.info(f"🔧 Google Sheets export completed:")
+            logger.info(f"   - url: {url}")
+            logger.info(f"   - success: {success}")
+        except Exception as e:
+            logger.error(f"❌ Failed in Google Sheets export: {e}")
+            import traceback
+            logger.error(f"❌ Traceback: {traceback.format_exc()}")
+            return None, False, detected_control
+            
         # Return additional info about detected control
         return url, success, detected_control
     else:
@@ -540,7 +625,7 @@ def build_dimension_map_for_categories(
 def export_to_google_sheets(
     df: pd.DataFrame,
     experiment_name: str,
-    share_email: str,
+    share_email: str | None = None,
     credentials_path: Optional[str] = None,
     metric_categories: Optional[Dict[str, List[str]]] = None,
     folder_id: Optional[str] = None,
@@ -548,6 +633,8 @@ def export_to_google_sheets(
 ) -> Tuple[str, bool]:
     """
     Export DataFrame to Google Sheets using either OAuth or service account authentication.
+    If ``share_email`` is not provided, it defaults to the current Snowflake user
+    (``SNOWFLAKE_USER`` env var) with a *doordash.com* domain.
     
     Args:
         df: DataFrame to export
@@ -561,6 +648,16 @@ def export_to_google_sheets(
     Returns:
         Tuple of (sheet_url, success)
     """
+    import os  # needed for env lookup
+    # Determine default share email if none provided
+    if not share_email:
+        snowflake_user = os.getenv("SNOWFLAKE_USER")
+        if snowflake_user:
+            share_email = f"{snowflake_user}@doordash.com"
+        else:
+            share_email = get_default_share_email()
+        logger.info(f"Using default share_email={share_email}")
+
     # Import at the beginning to avoid UnboundLocalError
     from .google_sheets_formatter import ExperimentSheetsFormatter
     
@@ -624,6 +721,13 @@ def export_to_google_sheets(
             return None, False
     
     # Call the robust export function with proper serialization handling
+    logger.info(f"🚀 Calling export_curie_experiment_results_with_categories with:")
+    logger.info(f"   - df shape: {df.shape}")
+    logger.info(f"   - experiment_name: {experiment_name}")
+    logger.info(f"   - use_oauth: {use_oauth}")
+    logger.info(f"   - share_email: {share_email}")
+    logger.info(f"   - credentials_path: {credentials_path}")
+    
     result = export_curie_experiment_results_with_categories(
         df=df,
         experiment_name=experiment_name,
@@ -639,6 +743,22 @@ def export_to_google_sheets(
     
     sheet_url = result.get('sheet_url')
     success = result.get('success', False)
+    
+    logger.info(f"🔍 Export result summary:")
+    logger.info(f"   - success: {success}")
+    logger.info(f"   - sheet_url: {sheet_url}")
+    logger.info(f"   - result keys: {list(result.keys())}")
+    
+    if not success:
+        logger.error(f"❌ Export failed. Full result details:")
+        logger.error(f"   - error: {result.get('error', 'No error message')}")
+        logger.error(f"   - validation: {result.get('validation', 'No validation info')}")
+        logger.error(f"   - validation_error: {result.get('validation_error', 'No validation error')}")
+        logger.error(f"   - all_metrics_result: {result.get('all_metrics_result', 'No all_metrics_result')}")
+        # Log any additional error details
+        for key, value in result.items():
+            if 'error' in key.lower() or 'result' in key.lower():
+                logger.error(f"   - {key}: {value}")
     
     return sheet_url, success 
 

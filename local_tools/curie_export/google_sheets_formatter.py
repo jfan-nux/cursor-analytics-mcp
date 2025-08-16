@@ -1709,8 +1709,10 @@ def export_curie_experiment_results_with_categories(
     # Ensure formatting completed successfully before proceeding
     if not all_metrics_result.get('formatting_success', False):
         logger.error(f"❌ Failed to properly format 'All Metrics' tab. Stopping export.")
+        logger.error(f"❌ All Metrics result details: {all_metrics_result}")
         results['success'] = False
         results['error'] = "Failed to format 'All Metrics' tab"
+        results['all_metrics_result'] = all_metrics_result
         return results
 
     # Export category-specific tabs if metrics are categorized
@@ -1752,8 +1754,10 @@ def export_curie_experiment_results_with_categories(
                     # Ensure formatting completed successfully before proceeding
                     if not category_result.get('formatting_success', False):
                         logger.error(f"❌ Failed to properly format '{ws_name}' tab. Stopping export.")
+                        logger.error(f"❌ Category result details: {category_result}")
                         results['success'] = False
                         results['error'] = f"Failed to format '{ws_name}' tab"
+                        results[f'{category}_result'] = category_result
                         return results
 
                     logger.info(f"✅ Exported {len(category_df)} rows to {ws_name}")
@@ -1781,7 +1785,15 @@ def export_curie_experiment_results_with_categories(
 
                 if ws_validation.get('overall_status') != 'PASSED':
                     all_passed = False
-                    logger.warning(f"❌ Validation failed for '{ws_name}' tab")
+                    logger.error(f"❌ Validation failed for '{ws_name}' tab")
+                    logger.error(f"   Validation details: {ws_validation}")
+                    # Log specific validation failures
+                    if 'checks' in ws_validation:
+                        for check_name, check_result in ws_validation['checks'].items():
+                            if not check_result.get('passed', True):
+                                logger.error(f"   - {check_name}: {check_result}")
+                else:
+                    logger.info(f"✅ Validation passed for '{ws_name}' tab")
 
             results['validation'] = {
                 'overall_status': 'PASSED' if all_passed else 'FAILED',
@@ -1808,8 +1820,12 @@ def export_curie_experiment_results_with_categories(
             logger.info("=" * 60)
 
         except Exception as e:
+            import traceback
+            tb_str = traceback.format_exc()
             logger.error(f"❌ Validation failed with error: {e}")
+            logger.error(f"❌ Full traceback: {tb_str}")
             results['validation_error'] = str(e)
+            results['validation_traceback'] = tb_str
             results['success'] = False
     else:
         results['success'] = True

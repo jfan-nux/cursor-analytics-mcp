@@ -3,6 +3,7 @@ Hybrid search functionality for dual-table structure (document_index + chunk_ind
 """
 
 import sys
+import re
 from pathlib import Path
 from typing import List, Dict, Optional, Tuple
 import numpy as np
@@ -59,6 +60,28 @@ class DualTableHybridSearcher:
             print(f"Error connecting to Snowflake: {e}")
             return None
     
+    def extract_keywords(self, query: str) -> List[str]:
+        """Extract meaningful keywords from a search query"""
+        # Convert to uppercase for matching
+        query_upper = query.upper()
+        
+        # Remove common stop words and extract words
+        stopwords = {'THE', 'IS', 'FOR', 'OF', 'AND', 'OR', 'BUT', 'IN', 'ON', 'AT', 'TO', 'A', 'AN', 'WHAT', 'WHERE', 'HOW', 'WHEN', 'WHY'}
+        
+        # Extract words (alphanumeric sequences of 3+ characters)
+        words = re.findall(r'\b[A-Z]{3,}\b', query_upper)
+        
+        # Filter out stop words and return unique keywords
+        keywords = [word for word in words if word not in stopwords]
+        return list(set(keywords))  # Remove duplicates
+    
+    def build_keyword_regex(self, keywords: List[str]) -> str:
+        """Build a regex pattern for keyword matching"""
+        if not keywords:
+            return ''
+        # Don't escape keywords since they're already clean, just join them
+        return '(' + '|'.join(keywords) + ')'
+
     def get_embedding_generator(self) -> Optional[BGEEmbeddingGenerator]:
         """Get embedding generator (lazy loading)"""
         if not self.embedding_generator:
@@ -143,6 +166,13 @@ class DualTableHybridSearcher:
             if doc_filter_conditions:
                 doc_where_clause = f"WHERE {' AND '.join(doc_filter_conditions)}"
             
+            # Extract keywords from query
+            keywords = self.extract_keywords(query)
+            if not keywords:
+                return []
+            
+            keyword_regex = self.build_keyword_regex(keywords)
+            
             # Step 2: Get filtered documents and their chunks with hybrid search
             hybrid_search_query = f"""
             WITH filtered_documents AS (
@@ -175,15 +205,11 @@ class DualTableHybridSearcher:
                     c.content_length,
                     c.chunk_start,
                     c.chunk_end,
-                    -- Calculate BM25 score
-                    CASE 
-                        WHEN CONTAINS(UPPER(c.bm25_text), UPPER('{query}')) THEN 1.0
-                        WHEN CONTAINS(UPPER(c.content), UPPER('{query}')) THEN 0.8
-                        WHEN CONTAINS(UPPER(fd.document_title), UPPER('{query}')) THEN 0.7
-                        WHEN CONTAINS(UPPER(fd.file_name), UPPER('{query}')) THEN 0.6
-                        WHEN CONTAINS(UPPER(fd.subcategory), UPPER('{query}')) THEN 0.5
-                        ELSE 0.0
-                    END as bm25_score,
+                    -- Calculate BM25 score using dynamic keyword matching
+                    (REGEXP_COUNT(UPPER(c.bm25_text), '{keyword_regex}') * 0.4 +
+                     REGEXP_COUNT(UPPER(c.content), '{keyword_regex}') * 0.3 +
+                     REGEXP_COUNT(UPPER(fd.document_title), '{keyword_regex}') * 0.2 +
+                     REGEXP_COUNT(UPPER(fd.file_name), '{keyword_regex}') * 0.1) as bm25_score,
                     -- Add row number for chunk ordering within document
                     ROW_NUMBER() OVER (PARTITION BY fd.document_id ORDER BY c.chunk_start) as chunk_order
                 FROM filtered_documents fd
@@ -242,7 +268,7 @@ class DualTableHybridSearcher:
                         semantic_score = 0.0
                 
                 # Combine BM25 and semantic scores
-                bm25_score = chunk.get('bm25_score', 0.0)
+                bm25_score = float(chunk.get('bm25_score', 0.0))
                 combined_score = (bm25_weight * bm25_score) + (embedding_weight * semantic_score)
                 
                 chunk['semantic_score'] = semantic_score
@@ -516,7 +542,7 @@ class DualTableHybridSearcher:
                             embedding_score = 0.0
                     
                     # Combined score
-                    combined_score = (bm25_weight * bm25_score) + (embedding_weight * embedding_score)
+                    combined_score = (bm25_weight * float(bm25_score)) + (embedding_weight * embedding_score)
                     
                     # Add scores to document
                     doc['bm25_score'] = bm25_score
@@ -688,13 +714,13 @@ class DualTableHybridSearcher:
                 
                 content = result.get('context_content', '')
                 if content:
-                    preview = content[:500] + "..." if len(content) > 500 else content
+                    preview = content[:5000] + "..." if len(content) > 5000 else content
                     formatted += f"```\n{preview}\n```\n"
             else:
                 # Regular search result
                 content = result.get('content', '')
                 if content:
-                    preview = content[:200] + "..." if len(content) > 200 else content
+                    preview = content[:5000] + "..." if len(content) > 5000 else content
                     formatted += f"📝 **Content Preview:**\n```\n{preview}\n```\n"
             
             # Add relevance scores (handle different score keys)

@@ -14,7 +14,7 @@
 
 ## Business Context
 
-The `DIMENSION_USERS` table in the EDW core schema contains comprehensive user data for DoorDash, including identifiers, contact information, and account status. This table is primarily utilized by the analytics and data teams to support various business functions such as user segmentation, marketing strategies, and customer support initiatives. It is maintained by the SYSADMIN team, ensuring data integrity and accessibility for analytical purposes. For further details, refer to the relevant Confluence documentation on user dimensions and consumer identity.
+The `DIMENSION_USERS` table in the EDW core schema contains comprehensive user data for DoorDash, including identifiers, contact information, and account status. This table is primarily utilized by the analytics and data teams to support various business functions such as user segmentation, marketing strategies, and customer support initiatives. It is maintained by the SYSADMIN team, ensuring data integrity and availability for ongoing business operations. For further details, refer to the related Confluence documentation on user dimensions and consumer identity.
 
 ## Metadata
 
@@ -30,45 +30,45 @@ The `DIMENSION_USERS` table in the EDW core schema contains comprehensive user d
 
 | Joined Table | Query Count |
 |--------------|-------------|
-| geo_intelligence.public.maindb_market | 13814 |
-| edw.merchant.dimension_store | 13689 |
-| delivery.public.maindblocal_delivery | 13492 |
-| proddb.static.catering_lo_sot | 10075 |
-| proddb.static.ddfb_catering_golden_market_clients | 9687 |
-| edw.consumer.dimension_consumers | 8029 |
-| proddb.public.maindblocal_order_cart | 4483 |
-| proddb.public.dimension_dasher | 3442 |
-| proddb.static.eop_gtm_mx_2025 | 3432 |
-| edw.cng.dimension_new_vertical_store_tags | 2579 |
+| geo_intelligence.public.maindb_market | 13152 |
+| edw.merchant.dimension_store | 12970 |
+| delivery.public.maindblocal_delivery | 12817 |
+| proddb.static.catering_lo_sot | 10063 |
+| proddb.static.ddfb_catering_golden_market_clients | 9675 |
+| edw.consumer.dimension_consumers | 9461 |
+| proddb.public.maindblocal_order_cart | 4531 |
+| edw.cng.dimension_new_vertical_store_tags | 3793 |
+| proddb.public.dimension_dasher | 3402 |
+| proddb.public.dimension_order_item | 3119 |
 
 ### Column Metadata
 
 | Usage Rank | Column Name | Queries | Ordinal | Data Type | Is Cluster Key | Comment |
 |------------|-------------|---------|---------|-----------|----------------|---------|
-| 1 | USER_ID | 22813 | 3 | NUMBER | 0 | Doordash user id |
-| 2 | FIRST_NAME | 14728 | 14 | TEXT | 0 | First name from account info |
-| 3 | LAST_NAME | 14073 | 15 | TEXT | 0 | last name from account info |
-| 4 | PHONE_NUMBER | 10110 | 13 | TEXT | 0 | Phone number tied to the account |
-| 5 | EMAIL | 7092 | 9 | TEXT | 0 | Email address tied to the account |
-| 6 | IS_ACTIVE | 1129 | 10 | NUMBER | 0 | whether the user is active |
-| 7 | IS_EMPLOYEE | 822 | 18 | NUMBER | 0 | user is an employee with an @doordash or @ext.doordash email address |
-| 8 | IS_GUEST | 645 | 19 | NUMBER | 0 | user is an employee with an @guest.doordash email address |
-| 9 | JOINED_DATE | 336 | 12 | DATE | 0 | date the user joined |
-| 10 | FULL_NAME | 179 | 16 | TEXT | 0 | Concatenation of first and last name |
-| 11 | EMAIL_DOMAIN | 167 | 17 | TEXT | 0 | user email domain |
-| 12 | IS_FORGOTTEN | 123 | 20 | NUMBER | 0 | user is forgotten or not |
-| 13 | __CREATED_TIMESTAMP | 27 | 1 | TIMESTAMP_NTZ | 0 | Created Date of the row |
-| 14 | HAS_DOORDASH_ACCOUNT | 19 | 4 | NUMBER | 0 | whether the user is doordash consumer |
-| 15 | NORMALIZED_EMAIL | 19 | 24 | TEXT | 0 | Consumer normalized email address from the Fraud logic: https://doordash.atlassian.net/wiki/spaces/E |
-| 16 | IS_STOREFRONT_USER | 16 | 7 | NUMBER | 0 | whether the user is a Storefront |
-| 17 | HAS_DASHER_ACCOUNT | 14 | 6 | NUMBER | 0 | whether the user is a dasher |
-| 18 | JOINED_TIMESTAMP | 14 | 11 | TIMESTAMP_NTZ | 0 | datetime the user joined |
-| 19 | LEGACY_CAVIAR_USER_ID | 13 | 8 | NUMBER | 0 | Legacy User ID of Caviar platform before acquisition |
-| 20 | LAST_UPDATED_TIMESTAMP | 12 | 22 | TIMESTAMP_NTZ | 0 | When the last update was made to user |
-| 21 | LAST_UPDATED_DATE | 7 | 21 | DATE | 1 | When the last update was made to user |
-| 22 | IS_PROHIBITED | 7 | 25 | NUMBER | 0 | Whether the user is prohibited to use doordash |
-| 23 | __MODIFIED_TIMESTAMP | 5 | 2 | TIMESTAMP_NTZ | 0 | Last Modified Date of the row |
-| 24 | HAS_CAVIAR_ACCOUNT | 4 | 5 | NUMBER | 0 | whether the user is caviar consumer |
+| 1 | USER_ID | 22500 | 3 | NUMBER | 0 | Doordash user id |
+| 2 | FIRST_NAME | 14050 | 14 | TEXT | 0 | First name from account info |
+| 3 | LAST_NAME | 13429 | 15 | TEXT | 0 | last name from account info |
+| 4 | PHONE_NUMBER | 9810 | 13 | TEXT | 0 | Phone number tied to the account |
+| 5 | EMAIL | 8666 | 9 | TEXT | 0 | Email address tied to the account |
+| 6 | IS_ACTIVE | 1139 | 10 | NUMBER | 0 | whether the user is active |
+| 7 | IS_EMPLOYEE | 948 | 18 | NUMBER | 0 | user is an employee with an @doordash or @ext.doordash email address |
+| 8 | IS_GUEST | 627 | 19 | NUMBER | 0 | user is an employee with an @guest.doordash email address |
+| 9 | JOINED_DATE | 419 | 12 | DATE | 0 | date the user joined |
+| 10 | FULL_NAME | 219 | 16 | TEXT | 0 | Concatenation of first and last name |
+| 11 | EMAIL_DOMAIN | 169 | 17 | TEXT | 0 | user email domain |
+| 12 | IS_FORGOTTEN | 127 | 20 | NUMBER | 0 | user is forgotten or not |
+| 13 | __CREATED_TIMESTAMP | 46 | 1 | TIMESTAMP_NTZ | 0 | Created Date of the row |
+| 14 | HAS_DOORDASH_ACCOUNT | 26 | 4 | NUMBER | 0 | whether the user is doordash consumer |
+| 15 | JOINED_TIMESTAMP | 21 | 11 | TIMESTAMP_NTZ | 0 | datetime the user joined |
+| 16 | NORMALIZED_EMAIL | 19 | 24 | TEXT | 0 | Consumer normalized email address from the Fraud logic: https://doordash.atlassian.net/wiki/spaces/E |
+| 17 | HAS_DASHER_ACCOUNT | 18 | 6 | NUMBER | 0 | whether the user is a dasher |
+| 18 | IS_STOREFRONT_USER | 16 | 7 | NUMBER | 0 | whether the user is a Storefront |
+| 19 | LEGACY_CAVIAR_USER_ID | 14 | 8 | NUMBER | 0 | Legacy User ID of Caviar platform before acquisition |
+| 20 | LAST_UPDATED_TIMESTAMP | 14 | 22 | TIMESTAMP_NTZ | 0 | When the last update was made to user |
+| 21 | LAST_UPDATED_DATE | 13 | 21 | DATE | 1 | When the last update was made to user |
+| 22 | __MODIFIED_TIMESTAMP | 8 | 2 | TIMESTAMP_NTZ | 0 | Last Modified Date of the row |
+| 23 | HAS_CAVIAR_ACCOUNT | 4 | 5 | NUMBER | 0 | whether the user is caviar consumer |
+| 24 | IS_PROHIBITED | 3 | 25 | NUMBER | 0 | Whether the user is prohibited to use doordash |
 | 25 | GUEST_USER_TYPE_ID | 3 | 26 | NUMBER | 0 | The type of guest user, if applicable |
 
 ## Granularity Analysis
@@ -78,7 +78,7 @@ Table is granular at USER_ID level - each row represents a unique user id
 ## Sample Queries
 
 ### Query 1
-**Last Executed:** 2025-08-07 18:59:13.476000
+**Last Executed:** 2025-08-14 18:58:19.023000
 
 ```sql
 WITH order_data AS (
@@ -200,11 +200,11 @@ LEFT JOIN GEO_INTELLIGENCE.PUBLIC.MAINDB_MARKET gm ON gm.id = md.market
 WHERE CONVERT_TIMEZONE('UTC', gm.timezone, md.quoted_delivery_time)::date >= current_date
 GROUP BY ALL
 ORDER BY 1
--- {"user":"@emilio_inocencio","email":"emilio.inocencio@ext.doordash.com","url":"https://modeanalytics.com/doordash/reports/34bb829bbcd3/runs/cb20288dcf43/queries/09d897418b78","scheduled":false}
+-- {"user":"@emilio_inocencio","email":"emilio.inocencio@ext.doordash.com","url":"https://modeanalytics.com/doordash/reports/34bb829bbcd3/runs/6b0683475844/queries/09d897418b78","scheduled":false}
 ```
 
 ### Query 2
-**Last Executed:** 2025-08-07 18:59:11.258000
+**Last Executed:** 2025-08-14 18:58:17.248000
 
 ```sql
 WITH order_data AS (
@@ -321,7 +321,7 @@ LEFT JOIN GEO_INTELLIGENCE.PUBLIC.MAINDB_MARKET gm ON gm.id = md.market
 WHERE CONVERT_TIMEZONE('UTC', gm.timezone, md.quoted_delivery_time)::date >= current_date
 GROUP BY ALL
 ORDER BY 1
--- {"user":"@emilio_inocencio","email":"emilio.inocencio@ext.doordash.com","url":"https://modeanalytics.com/doordash/reports/34bb829bbcd3/runs/afae90572bbf/queries/a6195ad7c2d1","scheduled":false}
+-- {"user":"@emilio_inocencio","email":"emilio.inocencio@ext.doordash.com","url":"https://modeanalytics.com/doordash/reports/34bb829bbcd3/runs/3bb938666800/queries/a6195ad7c2d1","scheduled":false}
 ```
 
 

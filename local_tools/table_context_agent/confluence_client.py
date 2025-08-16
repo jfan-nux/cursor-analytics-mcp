@@ -49,6 +49,7 @@ class ConfluenceSearcher:
             results = []
             for result in search_results.get("results", [])[:limit]:
                 title = result.get("title", "")
+                excerpt = result.get("excerpt", "")
                 content = result.get("content", {}) or result
                 content_id = content.get("id", "")
                 space_info = content.get("space", {})
@@ -70,12 +71,14 @@ class ConfluenceSearcher:
                         url = f"{self.base_url}{links['tinyui']}"
                 
                 # Method 3: Fallback to search URL
+                # If we still don't have a concrete page URL, skip this hit – we only want direct pages
                 if not url:
-                    url = f"{self.base_url}/wiki/search?text={query}"
+                    continue  # Skip ambiguous search-only result
                 
                 results.append({
                     "title": title,
                     "url": url,
+                    "excerpt": excerpt,
                     "space_key": space_key,
                     "content_id": content_id
                 })

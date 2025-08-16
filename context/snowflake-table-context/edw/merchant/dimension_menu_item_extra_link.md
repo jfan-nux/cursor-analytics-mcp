@@ -1,57 +1,148 @@
 # edw.merchant.dimension_menu_item_extra_link
 
 ## Table Overview
-Links menu items to their available extras/modifiers. This is a many-to-many relationship table that connects items (like pizzas) to their customization options (like toppings, sizes, sauces).
+
+**Database:** edw
+**Schema:** merchant
+**Table:** dimension_menu_item_extra_link
+**Owner:** SYSADMIN
+**Row Count:** 496,472,363 rows
+**Created:** 2023-06-07 20:19:57.955000+00:00
+**Last Modified:** 2025-07-17 16:21:31.278000+00:00
+
+**Description:** None
+
+## Business Context
+
+The table "DIMENSION_MENU_ITEM_EXTRA_LINK" contains detailed information about menu items and their associated extras within a merchant context, identified by unique identifiers such as ITEM_ID and EXTRA_ID, along with STORE_ID to specify the location. This data is crucial for businesses in the retail or food service sectors, enabling them to manage and analyze menu offerings, track the availability of extras, and assess their impact on sales and customer preferences. The table is maintained by the SYSADMIN, ensuring that it remains up-to-date and reliable for operational and analytical purposes.
+
+## Metadata
+
+### Table Metadata
+
+**Type:** BASE TABLE
+**Size:** 5491.5 MB
+**Transient:** NO
+**Retention Time:** 1 days
+**Raw Row Count:** 496,472,363
+
+### Most Common Joins
+
+| Joined Table | Query Count |
+|--------------|-------------|
+| edw.merchant.dimension_menu_item | 45 |
+| edw.merchant.dimension_menu_extra | 38 |
+| edw.merchant.dimension_menu_option | 36 |
+| edw.merchant.dimension_store | 29 |
+| iguazu.server_events_production.merchant_user_event_tracking | 14 |
+| proddb.public.dimension_store | 14 |
+| proddb.public.fact_food_catalog_v2 | 11 |
+| edw.merchant.dimension_business | 7 |
+| edw.merchant.dimension_menu_category | 7 |
+| doordash_pointofsale.public.maindb_store | 7 |
+
+### Column Metadata
+
+| Usage Rank | Column Name | Queries | Ordinal | Data Type | Is Cluster Key | Comment |
+|------------|-------------|---------|---------|-----------|----------------|---------|
+| 1 | ITEM_ID | 62 | 2 | NUMBER | 0 | Item ID |
+| 2 | EXTRA_ID | 57 | 3 | NUMBER | 0 | Extra ID |
+| 3 | STORE_ID | 54 | 1 | NUMBER | 1 | Store ID |
+| 4 | IS_EXTRA_ACTIVE | 25 | 4 | BOOLEAN | 0 | Item Extra Active Flag |
+| 5 | __CREATED_TIMESTAMP | 0 | 5 | TIMESTAMP_NTZ | 0 | Row Inserted Timestamp |
+| 6 | __MODIFIED_TIMESTAMP | 0 | 6 | TIMESTAMP_NTZ | 0 | Row Updated Timestamp |
+
+## Granularity Analysis
 
 
-## Table Metadata
-*Unable to retrieve table metadata from Snowflake*
+## Sample Queries
 
-## Schema Information
-- **store_id**: Store identifier (required for joins)
-- **item_id**: Menu item identifier (required for joins)
-- **extra_id**: Extra/modifier identifier
-- **is_extra_active**: Boolean flag for active extras
-- **__created_timestamp**: When the link was created
-- **__modified_timestamp**: When the link was last modified
+### Query 1
+**Last Executed:** 2025-07-30 13:23:30.440000
 
-## Data Characteristics
-- **Update Frequency**: Real-time as merchants update menus
-- **Data Freshness**: Current
-- **Key Pattern**: Many items can have the same extra_id across different stores
-
-## Common Use Cases
-- Finding all customization options for a menu item
-- Analyzing item complexity (number of extras)
-- Understanding required vs optional selections
-
-## Useful Queries
-*Reference queries from user analysis - ONLY user-confirmed queries*
-
-### Correct Join Pattern (ALWAYS use both store_id and item_id):
 ```sql
-FROM items
-LEFT JOIN edw.merchant.dimension_menu_item_extra_link iel
-    ON items.store_id = iel.store_id    -- ✓ Required
-    AND items.item_id = iel.item_id     -- ✓ Required
-    AND iel.is_extra_active = TRUE
+SELECT
+  i.item_id,
+  i.item_title,
+  e.extra_id,
+  e.extra_title,
+  e.parent_id,
+  e.parent_type,
+  o.option_id,
+  o.extra_id AS option_extra_id,
+  o.option_title
+FROM proddb.yangliu.t50_pizza_item i
+JOIN edw.merchant.dimension_menu_item_extra_link l ON i.item_id = l.item_id
+JOIN edw.merchant.dimension_menu_extra e ON l.extra_id = e.extra_id
+LEFT JOIN edw.merchant.dimension_menu_option o ON o.extra_id = e.extra_id
 ```
 
-## Join Patterns
-- **CRITICAL**: Always join on BOTH store_id AND item_id
-- Joins with dimension_menu_extra to get extra details
-- Common pattern: items → item_extra_link → menu_extra
+### Query 2
+**Last Executed:** 2025-07-29 23:39:03.035000
 
-## Data Quality Notes
-- **Known Issue**: Joining only on item_id causes massive data inflation (60-500x)
-- Some merchants (e.g., Pizza Twist) have unusually high numbers of required extras (500+)
-- No duplicate rows for same store-item-extra combination
+```sql
+WITH level0 AS (
+  SELECT 
+    i.item_id,
+    i.item_title,
+    e.extra_id,
+    e.extra_title,
+    NULL AS option_id,
+    NULL AS option_title
+  FROM edw.merchant.dimension_menu_item i
+  JOIN edw.merchant.dimension_menu_item_extra_link l ON i.item_id = l.item_id
+  JOIN edw.merchant.dimension_menu_extra e ON l.extra_id = e.extra_id
+  WHERE i.item_id = 8421162726
+),
 
-## Related Tables
-- **edw.merchant.dimension_menu_extra**: Contains extra details (title, min/max permitted)
-- **edw.merchant.dimension_menu_item**: Contains item details
-- **edw.merchant.dimension_store**: Store information
+-- Level 1: extra → option
+level1 AS (
+  SELECT 
+    l0.item_id,
+    l0.item_title,
+    l0.extra_id,
+    l0.extra_title,
+    o.option_id,
+    o.option_title
+  FROM level0 l0
+  JOIN edw.merchant.dimension_menu_option o ON o.extra_id = l0.extra_id
+),
 
----
-*This file was created during pizza item complexity analysis*
-*Last updated: 2025-01-15* 
+-- Level 2: option → extra
+level2 AS (
+  SELECT 
+    l1.item_id,
+    l1.item_title,
+    e.extra_id,
+    e.extra_title,
+    l1.option_id,
+    l1.option_title
+  FROM level1 l1
+  JOIN edw.merchant.dimension_menu_extra e ON e.parent_id = l1.option_id AND e.parent_type = 'option'
+),
+
+-- Level 3: extra → option (from level2 extras)
+level3 AS (
+  SELECT 
+    l2.item_id,
+    l2.item_title,
+    l2.extra_id,
+    l2.extra_title,
+    o.option_id,
+    o.option_title
+  FROM level2 l2
+  JOIN edw.merchant.dimension_menu_option o ON o.extra_id = l2.extra_id
+)
+
+
+SELECT DISTINCT item_title, extra_title, option_title FROM level0
+UNION
+SELECT DISTINCT item_title, extra_title, option_title FROM level1
+UNION
+SELECT DISTINCT item_title, extra_title, option_title FROM level2
+UNION
+SELECT DISTINCT item_title, extra_title, option_title FROM level3
+ORDER BY extra_title, option_title
+-- {"user":"@yang_liu857","email":"yang.liu@doordash.com","url":"https://modeanalytics.com/doordash/reports/f2c4dcf0b074/runs/278b8ef00a8b/queries/d17569ccf3a2","scheduled":false}
+```
+

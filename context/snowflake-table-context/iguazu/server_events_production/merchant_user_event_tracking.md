@@ -1,173 +1,339 @@
 # iguazu.server_events_production.merchant_user_event_tracking
 
 ## Table Overview
-This table tracks user interactions and events from merchants on the DoorDash Merchant Portal - a platform where merchants monitor their business performance on DoorDash and manage their menus, settings, and operations.
+
+**Database:** iguazu
+**Schema:** server_events_production
+**Table:** merchant_user_event_tracking
+**Owner:** SERVICE_METAMORPH
+**Row Count:** 353,393,880 rows
+**Created:** 2023-02-27 23:42:23.851000+00:00
+**Last Modified:** 2025-07-17 17:26:52.109000+00:00
+
+**Description:** The merchant_user_event_tracking table captures detailed event data related to merchant users, focusing on user interactions and device information. Key groupings include geographic details (city, state, country, zip code), device specifics (model, type, OS version, advertising ID), user identity (iguazu_user_id, email, first and last name), event timing (ingest, original, and received timestamps), and campaign data (name, source, medium). This table is essential for analyzing user behavior and engagement metrics. (AIDataAnnotator generated)
+
+## Business Context
+
+The `merchant_user_event_tracking` table in the IGUAZU database captures comprehensive event data related to merchant users, focusing on their interactions and device specifics. It includes key information such as user identity, geographic details, event timestamps, and campaign data, making it vital for analyzing user behavior and engagement metrics. This data is likely utilized for performance tracking, marketing analysis, and user experience optimization within the business domain. The table is maintained by the `SERVICE_METAMORPH` team.
+
+## Metadata
+
+### Table Metadata
+
+**Type:** BASE TABLE
+**Size:** 25972.0 MB
+**Transient:** NO
+**Retention Time:** 0 days
+**Raw Row Count:** 353,393,880
+
+### Most Common Joins
+
+| Joined Table | Query Count |
+|--------------|-------------|
+| edw.merchant.dimension_store | 188 |
+| edw.merchant.dimension_menu_extra | 57 |
+| proddb.public.dimension_store_ext | 54 |
+| edw.merchant.dimension_menu_item | 54 |
+| metrics_repo.public.enable_block_pos_add_remove_duplicate_v3_exposures | 50 |
+| edw.merchant.audit_pos_provider_classification | 46 |
+| proddb.public.dimension_deliveries | 46 |
+| edw.merchant.store_contact | 46 |
+| proddb.public.fact_order_manager_performance_events | 37 |
+| segment_events_raw.merchant_production.merchant_menu_editor_save_photo | 36 |
+
+### Column Metadata
+
+| Usage Rank | Column Name | Queries | Ordinal | Data Type | Is Cluster Key | Comment |
+|------------|-------------|---------|---------|-----------|----------------|---------|
+| 1 | EVENT_NAME | 351 | 67 | TEXT | 0 | No comment |
+| 2 | STORE_ID | 250 | 65 | TEXT | 0 | No comment |
+| 3 | EVENT_METADATA | 170 | 69 | TEXT | 0 | No comment |
+| 4 | IGUAZU_SENT_AT | 159 | 7 | TIMESTAMP_NTZ | 0 | No comment |
+| 5 | IGUAZU_ORIGINAL_TIMESTAMP | 57 | 5 | TIMESTAMP_NTZ | 0 | No comment |
+| 6 | IGUAZU_RECEIVED_AT | 54 | 8 | TIMESTAMP_NTZ | 0 | No comment |
+| 7 | BUSINESS_ID | 51 | 62 | TEXT | 0 | No comment |
+| 8 | CONTEXT_APP_NAME | 50 | 12 | TEXT | 0 | No comment |
+| 9 | IGUAZU_TIMESTAMP | 44 | 6 | TIMESTAMP_NTZ | 0 | No comment |
+| 10 | PLATFORM | 43 | 75 | TEXT | 0 | No comment |
+| 11 | IGUAZU_USER_ID | 37 | 2 | TEXT | 0 | No comment |
+| 12 | CONTEXT_USER_AGENT | 13 | 61 | TEXT | 0 | No comment |
+| 13 | COUNTRY_CODE | 10 | 80 | TEXT | 0 | No comment |
+| 14 | IGUAZU_EVENT | 5 | 3 | TEXT | 0 | No comment |
+| 15 | COUNTRY | 2 | 79 | TEXT | 0 | No comment |
+| 16 | IGUAZU_ID | 1 | 1 | TEXT | 0 | No comment |
+| 17 | CONTEXT_PAGE_SEARCH | 1 | 40 | TEXT | 0 | No comment |
+| 18 | CONTEXT_PAGE_URL | 1 | 42 | TEXT | 0 | No comment |
+| 19 | IGUAZU_ANONYMOUS_ID | 0 | 4 | TEXT | 0 | No comment |
+| 20 | IGUAZU_OTHER_PROPERTIES | 0 | 9 | VARIANT | 0 | No comment |
+| 21 | IGUAZU_INGEST_TIMESTAMP | 0 | 10 | TIMESTAMP_NTZ | 0 | No comment |
+| 22 | CONTEXT_APP_BUILD | 0 | 11 | TEXT | 0 | No comment |
+| 23 | CONTEXT_APP_NAMESPACE | 0 | 13 | TEXT | 0 | No comment |
+| 24 | CONTEXT_APP_VERSION | 0 | 14 | TEXT | 0 | No comment |
+| 25 | CONTEXT_CAMPAIGN_CONTENT | 0 | 15 | TEXT | 0 | No comment |
+| 26 | CONTEXT_CAMPAIGN_MEDIUM | 0 | 16 | TEXT | 0 | No comment |
+| 27 | CONTEXT_CAMPAIGN_NAME | 0 | 17 | TEXT | 0 | No comment |
+| 28 | CONTEXT_CAMPAIGN_SOURCE | 0 | 18 | TEXT | 0 | No comment |
+| 29 | CONTEXT_CAMPAIGN_TERM | 0 | 19 | TEXT | 0 | No comment |
+| 30 | CONTEXT_DEVICE_AD_TRACKING_ENABLED | 0 | 20 | BOOLEAN | 0 | No comment |
+| 31 | CONTEXT_DEVICE_ADVERTISING_ID | 0 | 21 | TEXT | 0 | No comment |
+| 32 | CONTEXT_DEVICE_ID | 0 | 22 | TEXT | 0 | No comment |
+| 33 | CONTEXT_DEVICE_MANUFACTURER | 0 | 23 | TEXT | 0 | No comment |
+| 34 | CONTEXT_DEVICE_MODEL | 0 | 24 | TEXT | 0 | No comment |
+| 35 | CONTEXT_DEVICE_NAME | 0 | 25 | TEXT | 0 | No comment |
+| 36 | CONTEXT_DEVICE_TYPE | 0 | 26 | TEXT | 0 | No comment |
+| 37 | CONTEXT_DEVICE_VERSION | 0 | 27 | TEXT | 0 | No comment |
+| 38 | CONTEXT_IP | 0 | 28 | TEXT | 0 | No comment |
+| 39 | CONTEXT_LIBRARY_NAME | 0 | 29 | TEXT | 0 | No comment |
+| 40 | CONTEXT_LIBRARY_VERSION | 0 | 30 | TEXT | 0 | No comment |
+| 41 | CONTEXT_LOCALE | 0 | 31 | TEXT | 0 | No comment |
+| 42 | CONTEXT_NETWORK_BLUETOOTH | 0 | 32 | BOOLEAN | 0 | No comment |
+| 43 | CONTEXT_NETWORK_CARRIER | 0 | 33 | TEXT | 0 | No comment |
+| 44 | CONTEXT_NETWORK_CELLULAR | 0 | 34 | BOOLEAN | 0 | No comment |
+| 45 | CONTEXT_NETWORK_WIFI | 0 | 35 | BOOLEAN | 0 | No comment |
+| 46 | CONTEXT_OS_NAME | 0 | 36 | TEXT | 0 | No comment |
+| 47 | CONTEXT_OS_VERSION | 0 | 37 | TEXT | 0 | No comment |
+| 48 | CONTEXT_PAGE_PATH | 0 | 38 | TEXT | 0 | No comment |
+| 49 | CONTEXT_PAGE_REFERRER | 0 | 39 | TEXT | 0 | No comment |
+| 50 | CONTEXT_PAGE_TITLE | 0 | 41 | TEXT | 0 | No comment |
+| 51 | CONTEXT_SCREEN_DENSITY | 0 | 43 | FLOAT | 0 | No comment |
+| 52 | CONTEXT_SCREEN_HEIGHT | 0 | 44 | NUMBER | 0 | No comment |
+| 53 | CONTEXT_SCREEN_WIDTH | 0 | 45 | NUMBER | 0 | No comment |
+| 54 | CONTEXT_TIMEZONE | 0 | 46 | TEXT | 0 | No comment |
+| 55 | CONTEXT_TRAITS_ANONYMOUS_ID | 0 | 47 | TEXT | 0 | No comment |
+| 56 | CONTEXT_TRAITS_CITY | 0 | 48 | TEXT | 0 | No comment |
+| 57 | CONTEXT_TRAITS_EMAIL | 0 | 49 | TEXT | 0 | No comment |
+| 58 | CONTEXT_TRAITS_FIRST_NAME | 0 | 50 | TEXT | 0 | No comment |
+| 59 | CONTEXT_TRAITS_LAST_NAME | 0 | 51 | TEXT | 0 | No comment |
+| 60 | CONTEXT_TRAITS_LATITUDE | 0 | 52 | FLOAT | 0 | No comment |
+| 61 | CONTEXT_TRAITS_LONGITUDE | 0 | 53 | FLOAT | 0 | No comment |
+| 62 | CONTEXT_TRAITS_NAME | 0 | 54 | TEXT | 0 | No comment |
+| 63 | CONTEXT_TRAITS_ORDERS_COUNT | 0 | 55 | NUMBER | 0 | No comment |
+| 64 | CONTEXT_TRAITS_STATE | 0 | 56 | TEXT | 0 | No comment |
+| 65 | CONTEXT_TRAITS_STORE_ID | 0 | 57 | TEXT | 0 | No comment |
+| 66 | CONTEXT_TRAITS_SUBMARKET | 0 | 58 | TEXT | 0 | No comment |
+| 67 | CONTEXT_TRAITS_SUBMARKET_ID | 0 | 59 | TEXT | 0 | No comment |
+| 68 | CONTEXT_TRAITS_ZIP_CODE | 0 | 60 | TEXT | 0 | No comment |
+| 69 | BUSINESS_EMPLOYEE_ID | 0 | 63 | TEXT | 0 | No comment |
+| 70 | BUSINESS_GROUP_ID | 0 | 64 | TEXT | 0 | No comment |
+| 71 | EVENT_DATE | 0 | 66 | NUMBER | 0 | No comment |
+| 72 | EVENT_TEXT | 0 | 68 | TEXT | 0 | No comment |
+| 73 | OLD_VALUE | 0 | 70 | TEXT | 0 | No comment |
+| 74 | NEW_VALUE | 0 | 71 | TEXT | 0 | No comment |
+| 75 | EVENT_ID | 0 | 72 | TEXT | 0 | No comment |
+| 76 | PARENT_EVENT_ID | 0 | 73 | TEXT | 0 | No comment |
+| 77 | PAGE_TYPE | 0 | 74 | TEXT | 0 | No comment |
+| 78 | DURATION | 0 | 76 | FLOAT | 0 | No comment |
+| 79 | UUID_TS | 0 | 77 | TIMESTAMP_NTZ | 0 | No comment |
+| 80 | USER_EMAIL | 0 | 78 | TEXT | 0 | No comment |
+| 81 | CONNECTION_SPEED | 0 | 81 | NUMBER | 0 | No comment |
+| 82 | CONNECTION_TYPE | 0 | 82 | TEXT | 0 | No comment |
+
+## Granularity Analysis
 
 
-## Table Metadata
-*Unable to retrieve table metadata from Snowflake*
+## Sample Queries
 
-## Schema Information
-Key columns discovered during analysis:
-- **EVENT_NAME**: The name of the event/action performed
-- **USER_ID**: Merchant user identifier
-- **STORE_ID**: Store identifier 
-- **DD_DEVICE_ID**: Device identifier
-- **DD_SESSION_ID**: Session identifier
-- **EVENT_PROPERTIES**: JSON containing event-specific data (menu_id, item_id, category_id, etc.)
-- **USER_ROLE**: Role of the user (e.g., business_admin, manager)
-- **IGUAZU_SENT_AT**: Timestamp when event was sent
-- **PLATFORM**: Platform type (e.g., web)
-- **CONTEXT_PAGE_PATH**: URL path of the page where event occurred
-- **CONTEXT_PAGE_TITLE**: Title of the page
+### Query 1
+**Last Executed:** 2025-07-25 14:36:48.827000
 
-## Data Characteristics
-- **Estimated Row Count**: ~13.6M events per week
-- **Update Frequency**: Real-time streaming of merchant portal events
-- **Data Freshness**: Near real-time
-- **Most Active Feature**: Menu editor (majority of events)
-
-## Event Categories and Themes
-
-Based on analysis of ~13.6M events over 7 days, merchant portal events fall into these main categories:
-
-### 1. **Item Management (39.93% of events)**
-Managing menu items - the core merchant activity
-- Top events:
-  - `merchant_menu_editor_view_category_item_list` (723K events, 26.00%)
-  - `merchant_menu_editor_tap_item_success` (656K events, 23.58%)
-  - `merchant_menu_editor_tap_item_sidesheet_save` (375K events, 13.47%)
-  - `merchant_menu_editor_menu_item_page_save_changes_success` (373K events, 13.39%)
-
-### 2. **Photo Management (23.65% of events)**
-Managing item photos and promotional banners
-- Top events:
-  - `merchant_menu_editor_view_banner_photo_status` (1.1M events, 46.36%)
-  - `merchant_menu_editor_view_banner_photo_incentive_item` (1.0M events, 41.36%)
-  - `merchant_menu_editor_view_photo_add` (144K events, 5.88%)
-  - `merchant_menu_editor_change_photo_add_success` (79K events, 3.23%)
-
-### 3. **Modifier Management (14.87% of events)**
-Managing item customizations and options (e.g., sizes, toppings)
-- Top events:
-  - `merchant_menu_editor_update_option_price_pickup` (415K events, 40.83%)
-  - `merchant_menu_editor_tap_modifier_success` (187K events, 18.44%)
-  - `merchant_menu_editor_view_modifier_edit` (119K events, 11.69%)
-  - `merchant_menu_editor_change_option_name` (108K events, 10.60%)
-
-### 4. **Category Management (7.20% of events)**
-Organizing menu structure and categories
-- Top events:
-  - `merchant_menu_editor_toggle_category_expand` (447K events, 46.57%)
-  - `merchant_menu_editor_toggle_category_expand_success` (447K events, 46.57%)
-  - `merchant_menu_editor_tap_category_success` (30K events, 3.14%)
-
-### 5. **Search (5.55% of events)**
-Finding items and navigating menus
-- Top events:
-  - `merchant_menu_editor_view_search_results` (251K events, 36.07%)
-  - `merchant_menu_editor_request_search_results` (149K events, 21.38%)
-  - `merchant_menu_editor_tap_search_field` (107K events, 15.35%)
-
-### 6. **Navigation & Views (5.18% of events)**
-- Recently viewed items tracking
-- Page navigation events
-
-### 7. **Other Categories**
-- **Availability Management** (1.37%): Managing item/store hours
-- **Save/Update Operations** (0.53%): Inline editing saves
-- **Settings** (0.48%): Menu settings and switcher
-- **User Interactions** (0.38%): General UI interactions
-- **Promotions & Banners** (0.37%): Banner management
-- **API Requests** (0.28%): Backend requests
-- **Pricing** (0.17%): Price threshold management
-- **AI Features** (0.01%): AI description generation (emerging feature)
-
-## Common Use Cases
-- Understanding merchant portal usage patterns
-- Tracking feature adoption by merchants
-- Analyzing merchant engagement with different portal sections
-- Monitoring menu editing activity
-- Performance monitoring of merchant operations
-- Identifying pain points in merchant workflows
-- Measuring adoption of new features (e.g., AI descriptions)
-
-## Useful Queries
-
-### Get most common events - User Confirmed
 ```sql
-SELECT 
-    EVENT_NAME,
-    COUNT(*) AS event_count,
-    ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER(), 2) AS pct_of_total
-FROM IGUAZU.SERVER_EVENTS_PRODUCTION.MERCHANT_USER_EVENT_TRACKING
-WHERE IGUAZU_SENT_AT >= DATEADD('day', -7, CURRENT_DATE())
-GROUP BY EVENT_NAME
-ORDER BY event_count DESC
-LIMIT 100;
-```
+WITH all_exposures AS (
+        SELECT
+               bucket_key,
+               iff(tag is null or tag = 'undefined' or tag = '', result, tag) as tag,
+               iff(tag is null or tag = 'undefined' or tag = '', result, tag) as experiment_group,
+               experiment_name,
+               result,
+               MIN(EXPERIMENT_VERSION) as EXPERIMENT_VERSION,
+               MIN(SEGMENT) as SEGMENT,
+               MIN(date_trunc(day,exposure_time)) as exposure_time
+         FROM PRODDB.PUBLIC.FACT_DEDUP_EXPERIMENT_EXPOSURE
+        WHERE 1=1 
+          AND experiment_name = 'enable-block-pos-add-remove-duplicate'
+          AND segment in ('Users')
+          AND exposure_time::DATETIME BETWEEN '2025-07-10'::DATETIME AND '2025-07-24'::DATETIME
+          AND result is not null
+          AND bucket_key is not null
+          AND experiment_group is not null
+          AND lower(experiment_group) in ('control', 'treatment')
+        GROUP BY 1,2,3,4,5
+        )
+          
+, exposures_without_flickers AS (
+        SELECT
+               bucket_key,
+               MIN(tag) as tag,
+               MIN(EXPERIMENT_name) as EXPERIMENT_name,
+               MIN(result) as result,
+               MIN(EXPERIMENT_VERSION) as EXPERIMENT_VERSION,
+               MIN(SEGMENT) as SEGMENT,
+               MIN(experiment_group) as experiment_group,
+               MIN(exposure_time) as exposure_time
+         FROM all_exposures a 
+        GROUP BY 1
+       HAVING COUNT(a.bucket_key) = 1
+        )
 
-### Categorize events by theme - User Confirmed
-```sql
-WITH event_counts AS (
-    SELECT EVENT_NAME, COUNT(*) AS event_count
-    FROM IGUAZU.SERVER_EVENTS_PRODUCTION.MERCHANT_USER_EVENT_TRACKING
-    WHERE IGUAZU_SENT_AT >= DATEADD('day', -7, CURRENT_DATE())
-    GROUP BY EVENT_NAME
-),
-categorized_events AS (
-    SELECT 
-        EVENT_NAME,
-        event_count,
-        CASE 
-            WHEN EVENT_NAME LIKE '%photo%' THEN 'Photo Management'
-            WHEN EVENT_NAME LIKE '%item%' AND EVENT_NAME NOT LIKE '%photo%' 
-                 AND EVENT_NAME NOT LIKE '%modifier%' AND EVENT_NAME NOT LIKE '%option%' THEN 'Item Management'
-            WHEN EVENT_NAME LIKE '%modifier%' OR EVENT_NAME LIKE '%option%' THEN 'Modifier Management'
-            WHEN EVENT_NAME LIKE '%price%' THEN 'Pricing'
-            WHEN EVENT_NAME LIKE '%category%' THEN 'Category Management'
-            WHEN EVENT_NAME LIKE '%search%' THEN 'Search'
-            -- ... other categories
-            ELSE 'Other'
-        END AS event_category
-    FROM event_counts
+, ssme_store_map AS (
+        SELECT store_id, count(*) as event_cnt 
+          FROM IGUAZU.SERVER_EVENTS_PRODUCTION.MERCHANT_USER_EVENT_TRACKING 
+         WHERE iguazu_sent_at between dateadd(day, -29, '2025-05-30') and '2025-05-30'
+           AND event_name in ( 
+                        -- adding items / modifiers / categories / options 
+                        'merchant_menu_editor_tap_item_add_success',
+                        'merchant_menu_editor_update_item_success',
+                        'merchant_menu_editor_tap_item_add',
+                        'merchant_menu_editor_tap_modifier_add_success',
+                        'merchant_menu_editor_tap_modifier_add',
+                        'merchant_menu_editor_tap_option_add',
+                        'merchant_menu_editor_change_option_availability',
+                        'merchant_menu_editor_create_option',
+                        'merchant_menu_editor_update_option_availability',
+                        'merchant_menu_editor_update_option_availability_success',
+                        'merchant_menu_editor_update_category_success',
+                        'merchant_menu_editor_category_availability_failure',
+                        'merchant_menu_editor_create_category',
+                        'merchant_menu_editor_create_category_success',
+                        'merchant_menu_editor_update_category',
+                        'merchant_menu_editor_update_category_failure',
+                        'merchant_menu_editor_create_category_failure',
+                        
+                        -- remove items / modifiers / categories / options 
+                        'merchant_menu_editor_tap_item_delete',
+                        'merchant_menu_editor_tap_item_delete_success',
+                        'merchant_menu_editor_tap_modifier_delete_success',
+                        'merchant_menu_editor_tap_category_delete_success',
+                        'merchant_menu_editor_tap_category_delete',
+                        'merchant_menu_editor_request_modifier_delete_failure',
+                        'merchant_menu_editor_tap_modifier_delete',
+                        'merchant_menu_editor_request_modifier_delete',
+                        'merchant_menu_editor_request_modifier_delete_success'
+                        ) 
+        GROUP BY ALL
 )
-SELECT 
-    event_category,
-    COUNT(*) AS unique_events,
-    SUM(event_count) AS total_events,
-    ROUND(SUM(event_count) * 100.0 / SUM(SUM(event_count)) OVER(), 2) AS pct_of_total
-FROM categorized_events
-GROUP BY event_category
-ORDER BY total_events DESC;
+
+
+SELECT
+    e.*
+  FROM
+    exposures_without_flickers e
+  JOIN ssme_store_map i
+    ON e.bucket_key::varchar = i.store_id::varchar
+  JOIN edw.merchant.dimension_store ds ON e.bucket_key::varchar = ds.store_id::varchar
+ WHERE ds.order_protocol = 'POINT_OF_SALE'
+   AND i.event_cnt >= 2
+
+-- select distinct order_protocol from edw.merchant.dimension_store 
+
+-- SELECT *
+-- FROM PRODDB.PUBLIC.FACT_DEDUP_EXPERIMENT_EXPOSURE
+-- WHERE 1=1 
+-- AND EXPERIMENT_NAME like 'enable-block-pos-add-remove-duplicate'
+-- LIMIT 10
+
+-- SELECT *
+-- FROM PRODDB.PUBLIC.FACT_DEDUP_EXPERIMENT_EXPOSURE
+-- ORDER BY EXPERIMENT_NAME
+-- LIMIT 1000
 ```
 
-## Join Patterns
-- Join with store dimension tables using `STORE_ID`
-- Join with user tables using `USER_ID`
-- Parse `EVENT_PROPERTIES` JSON for detailed event data
+### Query 2
+**Last Executed:** 2025-07-25 13:48:29.959000
 
-## Data Quality Notes
-- Events come with both success and failure variants (e.g., `tap_item` and `tap_item_success`)
-- High volume table - always filter by date using `IGUAZU_SENT_AT`
-- EVENT_PROPERTIES contains rich JSON data that needs parsing for detailed analysis
-- Some events are paired (action + success/failure result)
-- User roles help segment behavior (business_admin vs manager)
+```sql
+WITH all_exposures AS (
+        SELECT
+               bucket_key,
+               iff(tag is null or tag = 'undefined' or tag = '', result, tag) as tag,
+               iff(tag is null or tag = 'undefined' or tag = '', result, tag) as experiment_group,
+               experiment_name,
+               result,
+               MIN(EXPERIMENT_VERSION) as EXPERIMENT_VERSION,
+               MIN(SEGMENT) as SEGMENT,
+               MIN(date_trunc(day,exposure_time)) as exposure_time
+         FROM PRODDB.PUBLIC.FACT_DEDUP_EXPERIMENT_EXPOSURE
+        WHERE 1=1 
+          AND experiment_name = 'enable-block-pos-add-remove-duplicate'
+          -- AND segment in ('Treatment','Control')
+          AND segment in ('Users')
+          AND exposure_time::DATETIME BETWEEN '2025-07-10'::DATETIME AND '2025-07-24'::DATETIME
+          AND result is not null
+          AND bucket_key is not null
+          AND experiment_group is not null
+          AND lower(experiment_group) in ('control', 'treatment')
+        GROUP BY 1,2,3,4,5
+        )
+          
+, exposures_without_flickers AS (
+        SELECT
+               bucket_key,
+               MIN(tag) as tag,
+               MIN(EXPERIMENT_name) as EXPERIMENT_name,
+               MIN(result) as result,
+               MIN(EXPERIMENT_VERSION) as EXPERIMENT_VERSION,
+               MIN(SEGMENT) as SEGMENT,
+               MIN(experiment_group) as experiment_group,
+               MIN(exposure_time) as exposure_time
+         FROM all_exposures a 
+        GROUP BY 1
+       HAVING COUNT(a.bucket_key) = 1
+        )
 
-## Key Insights
-1. **Menu editing dominates**: 80%+ of events are menu-related activities
-2. **Photo management is critical**: Nearly 1/4 of all events relate to photos
-3. **Modifiers are complex**: Significant time spent managing customizations
-4. **AI adoption is low**: AI features represent only 0.01% of events (emerging)
-5. **Success rates are high**: Most actions have corresponding success events
-6. **Mobile vs Web**: Analysis shows primarily web usage for merchant portal
+, ssme_store_map AS (
+        SELECT DISTINCT store_id  
+          FROM IGUAZU.SERVER_EVENTS_PRODUCTION.MERCHANT_USER_EVENT_TRACKING 
+         WHERE iguazu_sent_at between dateadd(day, -89, '2025-05-30') and '2025-05-30'
+           AND event_name in ( 
+                        -- adding items / modifiers / categories / options 
+                        'merchant_menu_editor_tap_item_add_success',
+                        'merchant_menu_editor_update_item_success',
+                        'merchant_menu_editor_tap_item_add',
+                        'merchant_menu_editor_tap_modifier_add_success',
+                        'merchant_menu_editor_tap_modifier_add',
+                        'merchant_menu_editor_tap_option_add',
+                        'merchant_menu_editor_change_option_availability',
+                        'merchant_menu_editor_create_option',
+                        'merchant_menu_editor_update_option_availability',
+                        'merchant_menu_editor_update_option_availability_success',
+                        'merchant_menu_editor_update_category_success',
+                        'merchant_menu_editor_category_availability_failure',
+                        'merchant_menu_editor_create_category',
+                        'merchant_menu_editor_create_category_success',
+                        'merchant_menu_editor_update_category',
+                        'merchant_menu_editor_update_category_failure',
+                        'merchant_menu_editor_create_category_failure',
+                        
+                        -- remove items / modifiers / categories / options 
+                        'merchant_menu_editor_tap_item_delete',
+                        'merchant_menu_editor_tap_item_delete_success',
+                        'merchant_menu_editor_tap_modifier_delete_success',
+                        'merchant_menu_editor_tap_category_delete_success',
+                        'merchant_menu_editor_tap_category_delete',
+                        'merchant_menu_editor_request_modifier_delete_failure',
+                        'merchant_menu_editor_tap_modifier_delete',
+                        'merchant_menu_editor_request_modifier_delete',
+                        'merchant_menu_editor_request_modifier_delete_success'
+                        ) 
+)
 
-## Related Tables
-- Store dimension tables for merchant context
-- User tables for merchant user information
-- Menu tables to understand what items/categories are being edited
-- Order tables to correlate menu changes with sales impact
 
----
-*This file was created during merchant portal event analysis*
-*Last updated: 2025-06-10* 
+SELECT
+    e.*
+  FROM
+    exposures_without_flickers e
+  JOIN ssme_store_map i
+    ON e.bucket_key::varchar = i.store_id::varchar
+
+
+-- SELECT *
+-- FROM PRODDB.PUBLIC.FACT_DEDUP_EXPERIMENT_EXPOSURE
+-- WHERE 1=1 
+-- AND EXPERIMENT_NAME like 'enable-block-pos-add-remove-duplicate'
+-- LIMIT 10
+
+-- SELECT *
+-- FROM PRODDB.PUBLIC.FACT_DEDUP_EXPERIMENT_EXPOSURE
+-- ORDER BY EXPERIMENT_NAME
+-- LIMIT 1000
+```
+

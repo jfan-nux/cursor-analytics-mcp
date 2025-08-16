@@ -14,7 +14,7 @@
 
 ## Business Context
 
-The `m_order_cart_page_load` table in the IGUAZU consumer schema captures detailed data on consumer interactions with the order cart page, including geographic, temporal, customer, financial, and device-specific information. This table is primarily utilized by the Service Metamorph team for analyzing consumer behavior, order details, and device usage patterns, which supports data-driven decision-making in customer relationship management and order processing. It is maintained by the Service Metamorph team, ensuring that the data remains accurate and relevant for ongoing business needs. For further details, refer to the Confluence documentation linked [here](https://doordash.atlassian.net/wiki/wiki/search?text=iguazu.consumer.m_order_cart_page_load).
+The `m_order_cart_page_load` table in the IGUAZU consumer schema captures extensive data on consumer interactions with the order cart page, including geographic details, timestamps, customer identifiers, financial information, and device specifications. This data is crucial for analyzing consumer behavior, order details, and device usage patterns, supporting data-driven decision-making in customer relationship management and order processing. The table is maintained by the SERVICE_METAMORPH team.
 
 ## Metadata
 
@@ -30,63 +30,63 @@ The `m_order_cart_page_load` table in the IGUAZU consumer schema captures detail
 
 | Joined Table | Query Count |
 |--------------|-------------|
-| segment_events_raw.consumer_production.m_store_page_load | 96 |
+| segment_events_raw.consumer_production.m_store_page_load | 94 |
 | segment_events_raw.consumer_production.m_checkout_page_system_checkout_success | 83 |
 | segment_events_raw.consumer_production.m_item_page_action_add_item | 80 |
 | segment_events_raw.consumer_production.m_checkout_page_load | 77 |
-| proddb.public.dimension_deliveries | 67 |
-| segment_events_raw.consumer_production.m_action_quick_add_item | 63 |
+| proddb.public.dimension_deliveries | 70 |
 | segment_events_raw.consumer_production.m_stepper_action | 63 |
+| segment_events_raw.consumer_production.m_action_quick_add_item | 63 |
+| segment_events_raw.consumer_production.store_page_load | 62 |
 | segment_events_raw.consumer_production.m_savecart_add_click | 62 |
-| segment_events_raw.consumer_production.action_place_order | 62 |
-| segment_events_raw.consumer_production.system_checkout_success | 62 |
+| segment_events_raw.consumer_production.stepper_action | 62 |
 
 ### Column Metadata
 
 | Usage Rank | Column Name | Queries | Ordinal | Data Type | Is Cluster Key | Comment |
 |------------|-------------|---------|---------|-----------|----------------|---------|
-| 1 | IGUAZU_USER_ID | 162 | 2 | TEXT | 0 | No comment |
+| 1 | IGUAZU_USER_ID | 161 | 2 | TEXT | 0 | No comment |
 | 2 | PAGE | 141 | 97 | TEXT | 0 | No comment |
 | 3 | STORE_ID | 130 | 101 | NUMBER | 0 | No comment |
-| 4 | PLATFORM | 119 | 100 | TEXT | 0 | No comment |
-| 5 | CONTEXT_DEVICE_TYPE | 96 | 26 | TEXT | 0 | No comment |
-| 6 | DD_DEVICE_ID | 83 | 76 | TEXT | 0 | No comment |
-| 7 | CONTEXT | 71 | 71 | TEXT | 0 | No comment |
-| 8 | CONSUMER_ID | 69 | 70 | TEXT | 0 | No comment |
+| 4 | PLATFORM | 121 | 100 | TEXT | 0 | No comment |
+| 5 | CONTEXT_DEVICE_TYPE | 97 | 26 | TEXT | 0 | No comment |
+| 6 | DD_DEVICE_ID | 81 | 76 | TEXT | 0 | No comment |
+| 7 | CONSUMER_ID | 77 | 70 | TEXT | 0 | No comment |
+| 8 | CONTEXT | 71 | 71 | TEXT | 0 | No comment |
 | 9 | SOURCE | 66 | 116 | TEXT | 0 | No comment |
 | 10 | DD_SESSION_ID | 65 | 82 | TEXT | 0 | No comment |
-| 11 | IGUAZU_TIMESTAMP | 55 | 6 | TIMESTAMP_NTZ | 0 | No comment |
-| 12 | CART_ID | 46 | 69 | TEXT | 0 | No comment |
-| 13 | ORDER_CART_ID | 46 | 95 | TEXT | 0 | No comment |
-| 14 | CONTEXT_OS_NAME | 45 | 36 | TEXT | 0 | No comment |
-| 15 | DD_PLATFORM | 39 | 81 | TEXT | 0 | No comment |
-| 16 | IGUAZU_EVENT | 35 | 3 | TEXT | 0 | No comment |
-| 17 | IGUAZU_OTHER_PROPERTIES | 35 | 9 | VARIANT | 0 | No comment |
-| 18 | CONTEXT_APP_VERSION | 35 | 14 | TEXT | 0 | No comment |
-| 19 | APP_VERSION | 35 | 62 | TEXT | 0 | No comment |
-| 20 | DD_SUBMARKET_ID | 34 | 83 | TEXT | 0 | No comment |
-| 21 | STORE_NAME | 34 | 110 | TEXT | 0 | No comment |
-| 22 | TAXES_AND_FEES | 28 | 114 | NUMBER | 0 | No comment |
+| 11 | IGUAZU_TIMESTAMP | 57 | 6 | TIMESTAMP_NTZ | 0 | No comment |
+| 12 | CART_ID | 47 | 69 | TEXT | 0 | No comment |
+| 13 | ORDER_CART_ID | 47 | 95 | TEXT | 0 | No comment |
+| 14 | CONTEXT_OS_NAME | 46 | 36 | TEXT | 0 | No comment |
+| 15 | DD_PLATFORM | 41 | 81 | TEXT | 0 | No comment |
+| 16 | IGUAZU_EVENT | 36 | 3 | TEXT | 0 | No comment |
+| 17 | IGUAZU_OTHER_PROPERTIES | 36 | 9 | VARIANT | 0 | No comment |
+| 18 | CONTEXT_APP_VERSION | 36 | 14 | TEXT | 0 | No comment |
+| 19 | APP_VERSION | 36 | 62 | TEXT | 0 | No comment |
+| 20 | DD_SUBMARKET_ID | 35 | 83 | TEXT | 0 | No comment |
+| 21 | STORE_NAME | 35 | 110 | TEXT | 0 | No comment |
+| 22 | TAXES_AND_FEES | 29 | 114 | NUMBER | 0 | No comment |
 | 23 | SUBTOTAL | 22 | 102 | FLOAT | 0 | No comment |
 | 24 | TOTAL | 22 | 105 | FLOAT | 0 | No comment |
-| 25 | IGUAZU_ORIGINAL_TIMESTAMP | 19 | 5 | TIMESTAMP_NTZ | 0 | No comment |
-| 26 | IS_PICKUP | 8 | 118 | BOOLEAN | 0 | No comment |
+| 25 | IGUAZU_ORIGINAL_TIMESTAMP | 20 | 5 | TIMESTAMP_NTZ | 0 | No comment |
+| 26 | IS_PICKUP | 9 | 118 | BOOLEAN | 0 | No comment |
 | 27 | IS_DASHPASS | 7 | 87 | TEXT | 0 | No comment |
-| 28 | BUNDLE_TYPE | 6 | 65 | TEXT | 0 | No comment |
-| 29 | IGUAZU_ID | 5 | 1 | TEXT | 0 | No comment |
-| 30 | CONTEXT_DEVICE_ID | 5 | 22 | TEXT | 0 | No comment |
-| 31 | DD_USER_ID | 5 | 84 | NUMBER | 0 | No comment |
-| 32 | NUM_ORDERS | 5 | 92 | NUMBER | 0 | No comment |
-| 33 | IGUAZU_SENT_AT | 4 | 7 | TIMESTAMP_NTZ | 0 | No comment |
-| 34 | IGUAZU_RECEIVED_AT | 4 | 8 | TIMESTAMP_NTZ | 1 | No comment |
-| 35 | BUSINESS_ID | 4 | 66 | NUMBER | 0 | No comment |
-| 36 | BUSINESS_NAME | 4 | 67 | TEXT | 0 | No comment |
-| 37 | IGUAZU_ANONYMOUS_ID | 3 | 4 | TEXT | 0 | No comment |
-| 38 | IGUAZU_INGEST_TIMESTAMP | 3 | 10 | TIMESTAMP_NTZ | 0 | No comment |
-| 39 | CONTEXT_APP_BUILD | 3 | 11 | TEXT | 0 | No comment |
-| 40 | CONTEXT_APP_NAME | 3 | 12 | TEXT | 0 | No comment |
-| 41 | CONTEXT_APP_NAMESPACE | 3 | 13 | TEXT | 0 | No comment |
-| 42 | CONTEXT_CAMPAIGN_CONTENT | 3 | 15 | TEXT | 0 | No comment |
+| 28 | IGUAZU_ID | 6 | 1 | TEXT | 0 | No comment |
+| 29 | BUNDLE_TYPE | 6 | 65 | TEXT | 0 | No comment |
+| 30 | DD_USER_ID | 5 | 84 | NUMBER | 0 | No comment |
+| 31 | NUM_ORDERS | 5 | 92 | NUMBER | 0 | No comment |
+| 32 | IGUAZU_SENT_AT | 4 | 7 | TIMESTAMP_NTZ | 0 | No comment |
+| 33 | IGUAZU_RECEIVED_AT | 4 | 8 | TIMESTAMP_NTZ | 1 | No comment |
+| 34 | BUSINESS_ID | 4 | 66 | NUMBER | 0 | No comment |
+| 35 | BUSINESS_NAME | 4 | 67 | TEXT | 0 | No comment |
+| 36 | IGUAZU_ANONYMOUS_ID | 3 | 4 | TEXT | 0 | No comment |
+| 37 | IGUAZU_INGEST_TIMESTAMP | 3 | 10 | TIMESTAMP_NTZ | 0 | No comment |
+| 38 | CONTEXT_APP_BUILD | 3 | 11 | TEXT | 0 | No comment |
+| 39 | CONTEXT_APP_NAME | 3 | 12 | TEXT | 0 | No comment |
+| 40 | CONTEXT_APP_NAMESPACE | 3 | 13 | TEXT | 0 | No comment |
+| 41 | CONTEXT_CAMPAIGN_CONTENT | 3 | 15 | TEXT | 0 | No comment |
+| 42 | CONTEXT_DEVICE_ID | 3 | 22 | TEXT | 0 | No comment |
 | 43 | CONTEXT_LOCALE | 3 | 31 | TEXT | 0 | No comment |
 | 44 | DELIVERY_FEE | 3 | 109 | NUMBER | 0 | No comment |
 | 45 | CONTEXT_CLIENT_USER_ID | 3 | 129 | TEXT | 0 | No comment |
@@ -188,183 +188,183 @@ The `m_order_cart_page_load` table in the IGUAZU consumer schema captures detail
 ## Sample Queries
 
 ### Query 1
-**Last Executed:** 2025-08-12 05:18:48.060000
+**Last Executed:** 2025-08-14 05:23:16.585000
 
 ```sql
-create or replace temporary table funnel_120250811 as
+create or replace temporary table funnel_120250813 as
   with funnel_events as (
   select pst(received_at) as event_date, dd_device_id, context_device_type as platform, pst_time(timestamp) as timestamp, 'store_page_load' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 7 as event_rank, store_status, case when page ilike 'post_checkout%' OR lower(attr_src) like 'post_checkout%' OR is_postcheckout_bundle = true then 1 else 0 end as double_dash_flag, source, null as order_uuid
   from segment_events_raw.consumer_production.m_store_page_load
-  where pst(received_at) = '2025-08-11'
+  where pst(received_at) = '2025-08-13'
   union all
   select pst(received_at) as event_date, dd_device_id, platform, pst_time(timestamp) as timestamp, 'store_page_load' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 7 as event_rank, store_status, case when bundle_context = 'post_checkout' then 1 else 0 end as double_dash_flag, null as source, null as order_uuid
   from segment_events_raw.consumer_production.store_page_load
-  where pst(received_at) = '2025-08-11'
+  where pst(received_at) = '2025-08-13'
   union all
 
   select pst(received_at) as event_date, dd_device_id, platform, pst_time(timestamp) as timestamp, 'item_page_load' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 6 as event_rank, null as store_status, null as double_dash_flag, null as source, null as order_uuid
   from segment_events_raw.consumer_production.item_page_load
-  where pst(received_at) = '2025-08-11'
+  where pst(received_at) = '2025-08-13'
   union all
   select pst(received_at) as event_date, dd_device_id, context_device_type, pst_time(timestamp) as timestamp, 'item_page_load' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 6 as event_rank, null as store_status, null as double_dash_flag, null as source, null as order_uuid
   from segment_events_raw.consumer_production.m_item_page_load
-  where pst(received_at) = '2025-08-11'
+  where pst(received_at) = '2025-08-13'
   union all
 
   select pst(received_at) as event_date, dd_device_id, platform, pst_time(timestamp) as timestamp, 'action_add_item' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 5 as event_rank, null as store_status, null as double_dash_flag, null as source, null as order_uuid
   from segment_events_raw.consumer_production.action_add_item ai
-  where pst(received_at) = '2025-08-11'
+  where pst(received_at) = '2025-08-13'
   union all
   select pst(received_at) as event_date, dd_device_id, context_device_type, pst_time(timestamp) as timestamp, 'action_add_item' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 5 as event_rank, null as store_status, null as double_dash_flag, null as source, null as order_uuid
   from segment_events_raw.consumer_production.m_item_page_action_add_item
-  where pst(received_at) = '2025-08-11'
+  where pst(received_at) = '2025-08-13'
   union all
   select pst(received_at) as event_date, dd_device_id, context_device_type, pst_time(timestamp) as timestamp, 'action_quick_add_item' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 5 as event_rank, null as store_status, null as double_dash_flag, null as source, null as order_uuid
   from segment_events_raw.consumer_production.m_action_quick_add_item
-  where pst(received_at) = '2025-08-11'
+  where pst(received_at) = '2025-08-13'
   union all
 --added 1/2/2024 for NV add item events
 select pst(received_at) as event_date, dd_device_id, context_device_type, pst_time(timestamp) as timestamp, 'action_add_item' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 5 as event_rank, null as store_status, null as double_dash_flag, null as source, null as order_uuid
 from segment_events_raw.consumer_production.m_stepper_action
-where pst(received_at) = '2025-08-11' and store_id is not null and (page NOT ilike '%post_checkout%' or page is null)
+where pst(received_at) = '2025-08-13' and store_id is not null and (page NOT ilike '%post_checkout%' or page is null)
 union all
 select pst(received_at) as event_date, dd_device_id, platform, pst_time(timestamp) as timestamp, 'action_add_item' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 5 as event_rank, null as store_status, null as double_dash_flag, null as source, null as order_uuid
 from segment_events_raw.consumer_production.stepper_action
-where pst(received_at) = '2025-08-11' and store_id is not null and (page NOT ilike '%post_checkout%' or page is null) and (bundle_context <> 'post_checkout' or bundle_context is null)
+where pst(received_at) = '2025-08-13' and store_id is not null and (page NOT ilike '%post_checkout%' or page is null) and (bundle_context <> 'post_checkout' or bundle_context is null)
 union all
 select pst(received_at) as event_date, dd_device_id, context_device_type, pst_time(timestamp) as timestamp, 'action_add_item' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 5 as event_rank, null as store_status, null as double_dash_flag, null as source, null as order_uuid
 from segment_events_raw.consumer_production.m_savecart_add_click
-where pst(received_at) = '2025-08-11' and store_id is not null
+where pst(received_at) = '2025-08-13' and store_id is not null
 union all
 --end added 1/2/2024
 
   select pst(iguazu_received_at) as event_date, dd_device_id, context_device_type, pst_time(iguazu_timestamp) as timestamp, 'order_cart_page_load' as event, dd_session_id,  iguazu_user_id as user_id, try_to_number(store_id) as store_id, 4 as event_rank, null as store_status, null as double_dash_flag, null as source, null as order_uuid
   from iguazu.consumer.m_order_cart_page_load
-  where pst(iguazu_received_at) = '2025-08-11'
+  where pst(iguazu_received_at) = '2025-08-13'
   union all
 
   select pst(received_at) as event_date, dd_device_id, platform, pst_time(timestamp) as timestamp, 'checkout_page_load' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 3 as event_rank, null as store_status, null as double_dash_flag, null as source, null as order_uuid
   from segment_events_raw.consumer_production.checkout_page_load
-  where pst(received_at) = '2025-08-11'
+  where pst(received_at) = '2025-08-13'
   union all
   select pst(received_at) as event_date, dd_device_id, context_device_type, pst_time(timestamp) as timestamp, 'checkout_page_load' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 3 as event_rank, null as store_status, null as double_dash_flag, null as source, null as order_uuid
   from segment_events_raw.consumer_production.m_checkout_page_load
-  where pst(received_at) = '2025-08-11'
+  where pst(received_at) = '2025-08-13'
   union all
 
   select pst(received_at) as event_date, dd_device_id, platform, pst_time(timestamp) as timestamp,'action_place_order' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 2 as event_rank, null as store_status, null as double_dash_flag, null as source, null as order_uuid
   from segment_events_raw.consumer_production.action_place_order
-  where pst(received_at) = '2025-08-11'
+  where pst(received_at) = '2025-08-13'
   union all
 
   select pst(received_at) as event_date, dd_device_id, context_device_type, pst_time(timestamp) as timestamp, 'action_place_order' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 2 as event_rank, null as store_status, null as double_dash_flag, null as source, null as order_uuid
   from segment_events_raw.consumer_production.m_checkout_page_action_place_order
-  where pst(received_at) = '2025-08-11'
+  where pst(received_at) = '2025-08-13'
   union all
 
   select pst(received_at) as event_date, dd_device_id, context_device_type, pst_time(timestamp) as timestamp, 'action_place_order' as event, dd_session_id,  user_id, null as store_id, 2 as event_rank, null as store_status, null as double_dash_flag, null as source, order_uuid
   from segment_events_raw.consumer_production.m_checkout_page_system_submit
-  where pst(received_at) = '2025-08-11'
+  where pst(received_at) = '2025-08-13'
   union all
 
 
   select pst(received_at) as event_date, dd_device_id, platform, pst_time(timestamp) as timestamp,'system_checkout_success' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 1 as event_rank, null as store_status, null as double_dash_flag, null as source, order_uuid
   from segment_events_raw.consumer_production.system_checkout_success
-  where pst(received_at) = '2025-08-11'
+  where pst(received_at) = '2025-08-13'
   union all
 
   -- select pst(received_at) as event_date, dd_device_id, context_Device_type, pst_time(timestamp) as timestamp,'system_checkout_success' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 1 as event_rank, null as store_status, null as double_dash_flag
   -- from segment_events_raw.consumer_production.m_checkout_page_system_checkout_success
-  -- where pst(received_at) = '2025-08-11'
+  -- where pst(received_at) = '2025-08-13'
 
 -- UPDATE AFTER THEY ADD STORE ID
   select pst(iguazu_received_at) as event_date, dd_device_id, context_Device_type, pst_time(iguazu_timestamp) as timestamp,'system_checkout_success' as event, dd_session_id,  iguazu_user_id, try_to_number(store_id) as store_id, 1 as event_rank, null as store_status, null as double_dash_flag, null as source, order_uuid
   from iguazu.consumer.m_checkout_page_system_checkout_success
-  where pst(iguazu_received_at) = '2025-08-11'
+  where pst(iguazu_received_at) = '2025-08-13'
 
   )
 
   , funnel_events_caviar as (
   select pst(received_at) as event_date, dd_device_id, context_device_type as platform, pst_time(timestamp) as timestamp, 'store_page_load' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 7 as event_rank, store_status, case when page ilike 'post_checkout%' OR lower(attr_src) like 'post_checkout%' OR is_postcheckout_bundle = true then 1 else 0 end as double_dash_flag, source, null as order_uuid
   from segment_events_raw.caviar_consumer_production.m_store_page_load
-  where pst(received_at) = '2025-08-11'
+  where pst(received_at) = '2025-08-13'
   union all
   select pst(received_at) as event_date, dd_device_id, platform, pst_time(timestamp) as timestamp, 'store_page_load' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 7 as event_rank, store_status, case when bundle_context = 'post_checkout' then 1 else 0 end as double_dash_flag, null as source, null as order_uuid
   from segment_events_raw.caviar_consumer_production.store_page_load
-  where pst(received_at) = '2025-08-11'
+  where pst(received_at) = '2025-08-13'
   union all
 
   select pst(received_at) as event_date, dd_device_id, platform, pst_time(timestamp) as timestamp, 'item_page_load' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 6 as event_rank, null as store_status, null as double_dash_flag, null as source, null as order_uuid
   from segment_events_raw.caviar_consumer_production.item_page_load
-  where pst(received_at) = '2025-08-11'
+  where pst(received_at) = '2025-08-13'
   union all
   select pst(received_at) as event_date, dd_device_id, context_device_type, pst_time(timestamp) as timestamp, 'item_page_load' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 6 as event_rank, null as store_status, null as double_dash_flag, null as source, null as order_uuid
   from segment_events_raw.caviar_consumer_production.m_item_page_load
-  where pst(received_at) = '2025-08-11'
+  where pst(received_at) = '2025-08-13'
   union all
 
   select pst(received_at) as event_date, dd_device_id, platform, pst_time(timestamp) as timestamp, 'action_add_item' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 5 as event_rank, null as store_status, null as double_dash_flag, null as source, null as order_uuid
   from segment_events_raw.caviar_consumer_production.action_add_item ai
-  where pst(received_at) = '2025-08-11'
+  where pst(received_at) = '2025-08-13'
   union all
   select pst(received_at) as event_date, dd_device_id, context_device_type, pst_time(timestamp) as timestamp, 'action_add_item' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 5 as event_rank, null as store_status, null as double_dash_flag, null as source, null as order_uuid
   from segment_events_raw.caviar_consumer_production.m_item_page_action_add_item
-  where pst(received_at) = '2025-08-11'
+  where pst(received_at) = '2025-08-13'
   union all
   select pst(received_at) as event_date, dd_device_id, context_device_type, pst_time(timestamp) as timestamp, 'action_add_item' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 5 as event_rank, null as store_status, null as double_dash_flag, null as source, null as order_uuid
 from segment_events_raw.caviar_consumer_production.m_stepper_action
-where pst(received_at) = '2025-08-11' and store_id is not null and (page NOT ilike '%post_checkout%' or page is null)
+where pst(received_at) = '2025-08-13' and store_id is not null and (page NOT ilike '%post_checkout%' or page is null)
 union all
 select pst(received_at) as event_date, dd_device_id, platform, pst_time(timestamp) as timestamp, 'action_add_item' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 5 as event_rank, null as store_status, null as double_dash_flag, null as source, null as order_uuid
 from segment_events_raw.caviar_consumer_production.stepper_action
-where pst(received_at) = '2025-08-11' and store_id is not null and (page NOT ilike '%post_checkout%' or page is null) and (bundle_context <> 'post_checkout' or bundle_context is null)
+where pst(received_at) = '2025-08-13' and store_id is not null and (page NOT ilike '%post_checkout%' or page is null) and (bundle_context <> 'post_checkout' or bundle_context is null)
 union all
 select pst(received_at) as event_date, dd_device_id, context_device_type, pst_time(timestamp) as timestamp, 'action_add_item' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 5 as event_rank, null as store_status, null as double_dash_flag, null as source, null as order_uuid
 from segment_events_raw.caviar_consumer_production.m_savecart_add_click
-where pst(received_at) = '2025-08-11' and store_id is not null
+where pst(received_at) = '2025-08-13' and store_id is not null
   union all
   select pst(received_at) as event_date, dd_device_id, context_device_type, pst_time(timestamp) as timestamp, 'action_quick_add_item' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 5 as event_rank, null as store_status, null as double_dash_flag, null as source, null as order_uuid
   from segment_events_raw.caviar_consumer_production.m_action_quick_add_item
-  where pst(received_at) = '2025-08-11'
+  where pst(received_at) = '2025-08-13'
   union all
 
   select pst(received_at) as event_date, dd_device_id, context_device_type, pst_time(timestamp) as timestamp, 'order_cart_page_load' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 4 as event_rank, null as store_status, null as double_dash_flag, null as source, null as order_uuid
   from segment_events_raw.caviar_consumer_production.m_order_cart_page_load
-  where pst(received_at) = '2025-08-11'
+  where pst(received_at) = '2025-08-13'
   union all
 
   select pst(received_at) as event_date, dd_device_id, platform, pst_time(timestamp) as timestamp, 'checkout_page_load' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 3 as event_rank, null as store_status, null as double_dash_flag, null as source, null as order_uuid
   from segment_events_raw.caviar_consumer_production.checkout_page_load
-  where pst(received_at) = '2025-08-11'
+  where pst(received_at) = '2025-08-13'
   union all
   select pst(received_at) as event_date, dd_device_id, context_device_type, pst_time(timestamp) as timestamp, 'checkout_page_load' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 3 as event_rank, null as store_status, null as double_dash_flag, null as source, null as order_uuid
   from segment_events_raw.caviar_consumer_production.m_checkout_page_load
-  where pst(received_at) = '2025-08-11'
+  where pst(received_at) = '2025-08-13'
   union all
 
   select pst(received_at) as event_date, dd_device_id, platform, pst_time(timestamp) as timestamp,'action_place_order' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 2 as event_rank, null as store_status, null as double_dash_flag, null as source, null as order_uuid
   from segment_events_raw.caviar_consumer_production.action_place_order
-  where pst(received_at) = '2025-08-11'
+  where pst(received_at) = '2025-08-13'
   union all
 
   select pst(received_at) as event_date, dd_device_id, context_device_type, pst_time(timestamp) as timestamp, 'action_place_order' as event, dd_session_id,  user_id, null as store_id, 2 as event_rank, null as store_status, null as double_dash_flag, null as source, null as order_uuid
   from segment_events_raw.caviar_consumer_production.m_checkout_page_action_place_order
-  where pst(received_at) = '2025-08-11'
+  where pst(received_at) = '2025-08-13'
   union all
 
   select pst(received_at) as event_date, dd_device_id, context_device_type, pst_time(timestamp) as timestamp, 'action_place_order' as event, dd_session_id,  user_id, null as store_id, 2 as event_rank, null as store_status, null as double_dash_flag, null as source, order_uuid
   from segment_events_raw.caviar_consumer_production.m_checkout_page_system_submit
-  where pst(received_at) = '2025-08-11'
+  where pst(received_at) = '2025-08-13'
   union all
 
 
   select pst(received_at) as event_date, dd_device_id, platform, pst_time(timestamp) as timestamp,'system_checkout_success' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 1 as event_rank, null as store_status, null as double_dash_flag, null as source, order_uuid
   from segment_events_raw.caviar_consumer_production.system_checkout_success
-  where pst(received_at) = '2025-08-11'
+  where pst(received_at) = '2025-08-13'
   union all
   select pst(received_at) as event_date, dd_device_id, context_Device_type, pst_time(timestamp) as timestamp,'system_checkout_success' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 1 as event_rank, null as store_status, null as double_dash_flag, null as source, order_uuid
   from segment_events_raw.caviar_consumer_production.m_checkout_page_system_checkout_success
-  where pst(received_at) = '2025-08-11'
+  where pst(received_at) = '2025-08-13'
 
   )
 
@@ -374,104 +374,104 @@ where pst(received_at) = '2025-08-11' and store_id is not null
 ```
 
 ### Query 2
-**Last Executed:** 2025-08-12 05:08:27.296000
+**Last Executed:** 2025-08-14 05:13:18.145000
 
 ```sql
-create or replace temporary table funnel_events_120250811 as
+create or replace temporary table funnel_events_120250813 as
 with funnel_events as (
 select pst(received_at) as event_date, dd_device_id, context_device_type as platform, pst_time(timestamp) as timestamp, 'store_page_load' as event, dd_session_id,  user_id, store_id, 7 as event_rank, store_status, case when page ilike 'post_checkout%' OR lower(attr_src) like 'post_checkout%' OR is_postcheckout_bundle = true then 1 else 0 end as double_dash_flag, null as order_uuid, source
 from segment_events_raw.consumer_production.m_store_page_load
- where pst(received_at) = '2025-08-11'
+ where pst(received_at) = '2025-08-13'
 union all
 
 --web
 -- select pst(received_at) as event_date, dd_device_id, platform, pst_time(timestamp) as timestamp, 'store_page_load' as event, dd_session_id,  user_id, store_id, 7 as event_rank, store_status, case when bundle_context = 'post_checkout' then 1 else 0 end as double_dash_flag, null as order_uuid, null as source
 -- from segment_events_raw.consumer_production.store_page_load
---  where pst(received_at) = '2025-08-11'
+--  where pst(received_at) = '2025-08-13'
 -- union all
 
 --web
 -- select pst(received_at) as event_date, dd_device_id, platform, pst_time(timestamp) as timestamp, 'item_page_load' as event, dd_session_id,  user_id, store_id, 6 as event_rank, null as store_status, null as double_dash_flag, null as order_uuid, null as source
 -- from segment_events_raw.consumer_production.item_page_load
---  where pst(received_at) = '2025-08-11'
+--  where pst(received_at) = '2025-08-13'
 -- union all
 
 
 select pst(received_at) as event_date, dd_device_id, context_device_type, pst_time(timestamp) as timestamp, 'item_page_load' as event, dd_session_id,  user_id, store_id, 6 as event_rank, null as store_status, null as double_dash_flag, null as order_uuid, null as source
 from segment_events_raw.consumer_production.m_item_page_load
- where pst(received_at) = '2025-08-11'
+ where pst(received_at) = '2025-08-13'
 union all
 
 --web
 -- select pst(received_at) as event_date, dd_device_id, platform, pst_time(timestamp) as timestamp, 'action_add_item' as event, dd_session_id,  user_id, store_id, 5 as event_rank, null as store_status, null as double_dash_flag, null as order_uuid, null as source
 -- from segment_events_raw.consumer_production.action_add_item ai
---  where pst(received_at) = '2025-08-11'
+--  where pst(received_at) = '2025-08-13'
 -- union all
 
 
 select pst(received_at) as event_date, dd_device_id, context_device_type, pst_time(timestamp) as timestamp, 'action_add_item' as event, dd_session_id,  user_id, store_id, 5 as event_rank, null as store_status, null as double_dash_flag, null as order_uuid, null as source
 from segment_events_raw.consumer_production.m_item_page_action_add_item
- where pst(received_at) = '2025-08-11'
+ where pst(received_at) = '2025-08-13'
 union all
 
 
 select pst(received_at) as event_date, dd_device_id, context_device_type, pst_time(timestamp) as timestamp, 'action_quick_add_item' as event, dd_session_id,  user_id, store_id, 5 as event_rank, null as store_status, null as double_dash_flag, null as order_uuid, null as source
 from segment_events_raw.consumer_production.m_action_quick_add_item
- where pst(received_at) = '2025-08-11'
+ where pst(received_at) = '2025-08-13'
 union all
 --added 1/2/2024 for NV add item events
 select pst(received_at) as event_date, dd_device_id, context_device_type, pst_time(timestamp) as timestamp, 'action_add_item' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 5 as event_rank, null as store_status, null as double_dash_flag, null as source, null as order_uuid
 from segment_events_raw.consumer_production.m_stepper_action
-where pst(received_at) = '2025-08-11' and store_id is not null and (page NOT ilike '%post_checkout%' or page is null)
+where pst(received_at) = '2025-08-13' and store_id is not null and (page NOT ilike '%post_checkout%' or page is null)
 union all
 select pst(received_at) as event_date, dd_device_id, platform, pst_time(timestamp) as timestamp, 'action_add_item' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 5 as event_rank, null as store_status, null as double_dash_flag, null as source, null as order_uuid
 from segment_events_raw.consumer_production.stepper_action
-where pst(received_at) = '2025-08-11' and store_id is not null and (page NOT ilike '%post_checkout%' or page is null) and (bundle_context <> 'post_checkout' or bundle_context is null)
+where pst(received_at) = '2025-08-13' and store_id is not null and (page NOT ilike '%post_checkout%' or page is null) and (bundle_context <> 'post_checkout' or bundle_context is null)
 union all
 select pst(received_at) as event_date, dd_device_id, context_device_type, pst_time(timestamp) as timestamp, 'action_add_item' as event, dd_session_id,  user_id, try_to_number(store_id) as store_id, 5 as event_rank, null as store_status, null as double_dash_flag, null as source, null as order_uuid
 from segment_events_raw.consumer_production.m_savecart_add_click
-where pst(received_at) = '2025-08-11' and store_id is not null
+where pst(received_at) = '2025-08-13' and store_id is not null
 union all
 --end added 1/2/2024
 
  select pst(iguazu_received_at) as event_date, dd_device_id, context_device_type, pst_time(iguazu_timestamp) as timestamp, 'order_cart_page_load' as event, dd_session_id,  iguazu_user_id as user_id, store_id, 4 as event_rank, null as store_status, null as double_dash_flag, null as order_uuid, null as source
 from iguazu.consumer.m_order_cart_page_load
-where pst(iguazu_received_at) = '2025-08-11'
+where pst(iguazu_received_at) = '2025-08-13'
 union all
 
 --web
 -- select pst(received_at) as event_date, dd_device_id, platform, pst_time(timestamp) as timestamp, 'checkout_page_load' as event, dd_session_id,  user_id, store_id, 3 as event_rank, null as store_status, null as double_dash_flag, null as order_uuid, null as source
 -- from segment_events_raw.consumer_production.checkout_page_load
---  where pst(received_at) = '2025-08-11'
+--  where pst(received_at) = '2025-08-13'
 -- union all
 
 
 select pst(received_at) as event_date, dd_device_id, context_device_type, pst_time(timestamp) as timestamp, 'checkout_page_load' as event, dd_session_id,  user_id, store_id, 3 as event_rank, null as store_status, null as double_dash_flag, null as order_uuid, null as source
 from segment_events_raw.consumer_production.m_checkout_page_load
- where pst(received_at) = '2025-08-11'
+ where pst(received_at) = '2025-08-13'
 union all
 
 
 --web
 -- select pst(received_at) as event_date, dd_device_id, platform, pst_time(timestamp) as timestamp,'action_place_order' as event, dd_session_id,  user_id, store_id, 2 as event_rank, null as store_status, null as double_dash_flag, null as order_uuid, null as source
 -- from segment_events_raw.consumer_production.action_place_order
---  where pst(received_at) = '2025-08-11'
+--  where pst(received_at) = '2025-08-13'
 -- union all
 
 select pst(received_at) as event_date, dd_device_id, context_device_type, pst_time(timestamp) as timestamp, 'action_place_order' as event, dd_session_id,  user_id, store_id, 2 as event_rank, null as store_status, null as double_dash_flag, null as order_uuid, null as source
 from segment_events_raw.consumer_production.m_checkout_page_action_place_order
- where pst(received_at) = '2025-08-11'
+ where pst(received_at) = '2025-08-13'
 union all
 
 select pst(received_at) as event_date, dd_device_id, context_device_type, pst_time(timestamp) as timestamp, 'action_place_order' as event, dd_session_id,  user_id, null as store_id, 2 as event_rank, null as store_status, null as double_dash_flag, null as order_uuid, null as source
 from segment_events_raw.consumer_production.m_checkout_page_system_submit
- where pst(received_at) = '2025-08-11'
+ where pst(received_at) = '2025-08-13'
 union all
 
 --web
 -- select pst(received_at) as event_date, dd_device_id, platform, pst_time(timestamp) as timestamp,'system_checkout_success' as event, dd_session_id,  user_id, store_id, 1 as event_rank, null as store_status, null as double_dash_flag, null as order_uuid, null as source
 -- from segment_events_raw.consumer_production.system_checkout_success
---  where pst(received_at) = '2025-08-11'
+--  where pst(received_at) = '2025-08-13'
 -- union all
 
 
@@ -479,18 +479,14 @@ union all
 
 select pst(received_at) as event_date, dd_device_id, context_Device_type, pst_time(timestamp) as timestamp,'system_checkout_success' as event, dd_session_id,  user_id, store_id, 1 as event_rank, null as store_status, null as double_dash_flag, order_uuid, null as source
 from segment_events_raw.consumer_production.m_checkout_page_system_checkout_success
- where pst(received_at) = '2025-08-11'
+ where pst(received_at) = '2025-08-13'
 
  -- select pst(iguazu_received_at) as event_date, dd_device_id, context_Device_type, pst_time(iguazu_timestamp) as timestamp,'system_checkout_success' as event, dd_session_id,  iguazu_user_id, store_id, 1 as event_rank, null as store_status, null as double_dash_flag, order_uuid, null as source
  -- from iguazu.consumer.m_checkout_page_system_checkout_success
- --  where pst(iguazu_received_at) = '2025-08-11'
+ --  where pst(iguazu_received_at) = '2025-08-13'
 
 )
 select * from funnel_events
 //union all
 ```
 
-
-## Related Documentation
-
-- [[FUV] fact_unique_visitors_full_pt/utc - Development &amp; Engineering](https://doordash.atlassian.net/wiki/wiki/search?text=iguazu.consumer.m_order_cart_page_load)

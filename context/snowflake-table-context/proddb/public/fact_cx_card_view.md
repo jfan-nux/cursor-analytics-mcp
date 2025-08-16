@@ -14,7 +14,7 @@
 
 ## Business Context
 
-The `fact_cx_card_view` table serves as the authoritative source for tracking Rx card impressions across various platforms, including iOS, Android, and Web, capturing detailed metrics such as event dates, store identifiers, and consumer interactions. This data is primarily utilized by the Ads Manager and Promo Eligibility teams to analyze advertising performance and optimize promotional strategies. The table is maintained by the SYSADMIN team, ensuring data integrity and regular updates, with refreshes occurring daily to provide timely insights. For more information, refer to the [Confluence documentation](https://doordash.atlassian.net/wiki/wiki/search?text=proddb.public.fact_cx_card_view).
+The `fact_cx_card_view` table serves as the primary source of truth for tracking prescription card impressions across various platforms, including iOS, Android, and web. It captures detailed event data for each impression, such as the date, store identifier, consumer ID, and whether the impression was part of a sponsored campaign. This data is crucial for marketing and analytics teams to evaluate the effectiveness of advertising strategies and consumer engagement with store cards. The table is maintained by the SYSADMIN team and is refreshed daily to ensure up-to-date insights.
 
 ## Metadata
 
@@ -30,63 +30,63 @@ The `fact_cx_card_view` table serves as the authoritative source for tracking Rx
 
 | Joined Table | Query Count |
 |--------------|-------------|
-| edw.finance.dimension_deliveries | 170 |
-| edw.merchant.dimension_store | 163 |
-| proddb.public.stores | 160 |
-| proddb.public.fact_cx_card_click | 153 |
-| proddb.public.fact_ads_sl_attributions | 95 |
-| proddb.public.dimension_deliveries | 90 |
-| edw.cng.dimension_new_vertical_store_tags | 86 |
-| proddb.lijiang.us_rx_focus_stores | 71 |
-| proddb.public.fact_cx_impression_click_agg | 65 |
-| proddb.public.exposures | 54 |
+| edw.merchant.dimension_store | 149 |
+| proddb.public.stores | 148 |
+| proddb.public.fact_cx_card_click | 147 |
+| edw.finance.dimension_deliveries | 130 |
+| proddb.public.dimension_deliveries | 95 |
+| edw.cng.dimension_new_vertical_store_tags | 87 |
+| proddb.public.fact_ads_sl_attributions | 74 |
+| proddb.public.fact_dedup_experiment_exposure | 71 |
+| proddb.public.exposures | 64 |
+| proddb.lijiang.us_rx_focus_stores | 55 |
 
 ### Column Metadata
 
 | Usage Rank | Column Name | Queries | Ordinal | Data Type | Is Cluster Key | Comment |
 |------------|-------------|---------|---------|-----------|----------------|---------|
-| 1 | ID | 751 | 22 | TEXT | 0 | impression event identifer |
-| 2 | EVENT_DATE | 628 | 2 | TIMESTAMP_NTZ | 1 | impression event date in UTC |
-| 3 | STORE_ID | 567 | 11 | NUMBER | 0 | store idenifier for the store card |
-| 4 | FEATURE_GROUP | 403 | 20 | TEXT | 1 | surface on the store card appeared - consolidated version of the feature column, organic/sponosored  |
-| 5 | CONSUMER_ID | 295 | 8 | NUMBER | 0 | consumer id who had the store card impression |
-| 6 | IS_SPONSORED | 250 | 23 | NUMBER | 0 | 0 or 1 to identify sponsored store cards |
-| 7 | CAMPAIGN_ID | 211 | 29 | TEXT | 0 | campaign id populated if store card is sponsored |
-| 8 | FEATURE | 182 | 19 | TEXT | 0 | surface on the store card appeared - search, home_feed, carousel_list, offers_hub, etc. each surface |
-| 9 | PAGE | 174 | 25 | TEXT | 0 | surface/page on the doordash app where the store card was impression |
-| 10 | EVENT_TIMESTAMP | 161 | 4 | TIMESTAMP_NTZ | 0 | impression event timestamp in UTC |
-| 11 | CARD_POSITION | 160 | 15 | NUMBER | 0 | position of the store card |
-| 12 | VERTICAL_POSITION | 139 | 32 | NUMBER | 0 | vertical position of the store card |
-| 13 | PRODUCT_NAME | 122 | 21 | TEXT | 0 | coalesce of search term, cuisine term, carousel/container name |
-| 14 | FEED_REQUEST_ID | 116 | 40 | TEXT | 0 | ad request id from auction observability |
-| 15 | DD_SESSION_ID | 114 | 7 | TEXT | 0 | unique session identifer |
-| 16 | PLATFORM | 109 | 9 | TEXT | 0 | consumer platform - desktop, android, ios, mobile |
-| 17 | AD_AUCTION_ID | 93 | 31 | TEXT | 0 | ad auction id populated if store card is sponsored |
-| 18 | DD_DEVICE_ID | 88 | 6 | TEXT | 0 | dd device indentifer |
-| 19 | OFFER_BADGE | 75 | 18 | TEXT | 0 | text parsed from store badge regarding the offer; contains the promo offer |
-| 20 | SUBMARKET_ID | 70 | 5 | NUMBER | 0 | submarket id for the store card |
-| 21 | CONTAINER_ID | 57 | 45 | TEXT | 0 | ID of the container |
-| 22 | CONTAINER_NAME | 55 | 46 | TEXT | 0 | name of the container |
-| 23 | AD_GROUP_ID | 49 | 30 | TEXT | 0 | ad group id populated if store card is sponsored |
-| 24 | SEARCH_TERM | 45 | 12 | TEXT | 0 | search term used by the consumer |
-| 25 | CONTAINER | 44 | 47 | TEXT | 0 | type of container |
-| 26 | PROMO_CAMPAIGN_ID | 40 | 42 | TEXT | 0 | promo campaign id if store card has a promo badge |
-| 27 | SEARCH_TERM_CLEAN | 39 | 13 | TEXT | 0 | search term used by the consumer but in all lower cases and hypens removed |
-| 28 | CUISINE_TERM | 30 | 14 | TEXT | 0 | cuisine selected by consumer on web or mobile; the value is parsed from list filters |
-| 29 | SPONSORED_BADGE | 30 | 17 | TEXT | 0 | text parsed from store badge |
-| 30 | ETA | 30 | 34 | TEXT | 0 | excepted time of arrival for the stores delivery |
-| 31 | STAR_RATING | 30 | 36 | FLOAT | 0 | stores star rating as shown on the store card |
-| 32 | AD_ID | 26 | 41 | TEXT | 0 | ad id populated if store card is sponsored |
-| 33 | ADDRESS_ID | 17 | 24 | NUMBER | 0 | Address identifier of the store |
-| 34 | VERTICAL_NAME | 17 | 27 | TEXT | 0 | vertical name for the store card - Restaurants, Retail, Beauty, Electronics etc |
-| 35 | ORIGINAL_TIMESTAMP | 14 | 35 | TIMESTAMP_NTZ | 0 | timestamp on the impression in UTC |
-| 36 | EVENT_DATE_AS_PST | 12 | 3 | TIMESTAMP_NTZ | 0 | impression event date in PST |
-| 37 | RECEIVED_AT | 10 | 1 | TIMESTAMP_NTZ | 0 | iguazu event recieved at - timestamp in UTC |
-| 38 | GHOST_AD_CAMPAIGN_ID | 9 | 49 | TEXT | 0 | ghost ad campaign id used to improve impression event tracking |
-| 39 | TAB | 4 | 48 | TEXT | 0 | name of the tab |
-| 40 | APP_VERSION | 2 | 10 | TEXT | 0 | consumer device dd app version  |
-| 41 | ADDITIONAL_EVENT_ATTRIBUTES | 2 | 50 | VARIANT | 0 | Other event properties, such as suggested_type, business_vertical_id and distance. |
-| 42 | DISTRICT_ID | 0 | 16 | NUMBER | 0 | district identifer |
+| 1 | ID | 769 | 22 | TEXT | 0 | impression event identifer |
+| 2 | EVENT_DATE | 636 | 2 | TIMESTAMP_NTZ | 1 | impression event date in UTC |
+| 3 | STORE_ID | 523 | 11 | NUMBER | 0 | store idenifier for the store card |
+| 4 | FEATURE_GROUP | 363 | 20 | TEXT | 1 | surface on the store card appeared - consolidated version of the feature column, organic/sponosored  |
+| 5 | CONSUMER_ID | 281 | 8 | NUMBER | 0 | consumer id who had the store card impression |
+| 6 | CAMPAIGN_ID | 242 | 29 | TEXT | 0 | campaign id populated if store card is sponsored |
+| 7 | IS_SPONSORED | 208 | 23 | NUMBER | 0 | 0 or 1 to identify sponsored store cards |
+| 8 | FEATURE | 194 | 19 | TEXT | 0 | surface on the store card appeared - search, home_feed, carousel_list, offers_hub, etc. each surface |
+| 9 | PAGE | 180 | 25 | TEXT | 0 | surface/page on the doordash app where the store card was impression |
+| 10 | CARD_POSITION | 175 | 15 | NUMBER | 0 | position of the store card |
+| 11 | EVENT_TIMESTAMP | 171 | 4 | TIMESTAMP_NTZ | 0 | impression event timestamp in UTC |
+| 12 | VERTICAL_POSITION | 167 | 32 | NUMBER | 0 | vertical position of the store card |
+| 13 | PLATFORM | 133 | 9 | TEXT | 0 | consumer platform - desktop, android, ios, mobile |
+| 14 | PRODUCT_NAME | 133 | 21 | TEXT | 0 | coalesce of search term, cuisine term, carousel/container name |
+| 15 | OFFER_BADGE | 105 | 18 | TEXT | 0 | text parsed from store badge regarding the offer; contains the promo offer |
+| 16 | FEED_REQUEST_ID | 103 | 40 | TEXT | 0 | ad request id from auction observability |
+| 17 | SUBMARKET_ID | 96 | 5 | NUMBER | 0 | submarket id for the store card |
+| 18 | PROMO_CAMPAIGN_ID | 83 | 42 | TEXT | 0 | promo campaign id if store card has a promo badge |
+| 19 | DD_SESSION_ID | 80 | 7 | TEXT | 0 | unique session identifer |
+| 20 | AD_AUCTION_ID | 59 | 31 | TEXT | 0 | ad auction id populated if store card is sponsored |
+| 21 | CONTAINER_ID | 59 | 45 | TEXT | 0 | ID of the container |
+| 22 | CONTAINER_NAME | 57 | 46 | TEXT | 0 | name of the container |
+| 23 | DD_DEVICE_ID | 51 | 6 | TEXT | 0 | dd device indentifer |
+| 24 | CONTAINER | 46 | 47 | TEXT | 0 | type of container |
+| 25 | ETA | 45 | 34 | TEXT | 0 | excepted time of arrival for the stores delivery |
+| 26 | STAR_RATING | 45 | 36 | FLOAT | 0 | stores star rating as shown on the store card |
+| 27 | AD_GROUP_ID | 41 | 30 | TEXT | 0 | ad group id populated if store card is sponsored |
+| 28 | SEARCH_TERM | 36 | 12 | TEXT | 0 | search term used by the consumer |
+| 29 | SPONSORED_BADGE | 36 | 17 | TEXT | 0 | text parsed from store badge |
+| 30 | SEARCH_TERM_CLEAN | 27 | 13 | TEXT | 0 | search term used by the consumer but in all lower cases and hypens removed |
+| 31 | AD_ID | 21 | 41 | TEXT | 0 | ad id populated if store card is sponsored |
+| 32 | CUISINE_TERM | 17 | 14 | TEXT | 0 | cuisine selected by consumer on web or mobile; the value is parsed from list filters |
+| 33 | VERTICAL_NAME | 17 | 27 | TEXT | 0 | vertical name for the store card - Restaurants, Retail, Beauty, Electronics etc |
+| 34 | RECEIVED_AT | 16 | 1 | TIMESTAMP_NTZ | 0 | iguazu event recieved at - timestamp in UTC |
+| 35 | ADDRESS_ID | 15 | 24 | NUMBER | 0 | Address identifier of the store |
+| 36 | ORIGINAL_TIMESTAMP | 14 | 35 | TIMESTAMP_NTZ | 0 | timestamp on the impression in UTC |
+| 37 | GHOST_AD_CAMPAIGN_ID | 11 | 49 | TEXT | 0 | ghost ad campaign id used to improve impression event tracking |
+| 38 | EVENT_DATE_AS_PST | 9 | 3 | TIMESTAMP_NTZ | 0 | impression event date in PST |
+| 39 | DISTRICT_ID | 5 | 16 | NUMBER | 0 | district identifer |
+| 40 | TAB | 4 | 48 | TEXT | 0 | name of the tab |
+| 41 | APP_VERSION | 2 | 10 | TEXT | 0 | consumer device dd app version  |
+| 42 | ADDITIONAL_EVENT_ATTRIBUTES | 2 | 50 | VARIANT | 0 | Other event properties, such as suggested_type, business_vertical_id and distance. |
 | 43 | VERTICAL_ID | 0 | 26 | TEXT | 0 | vertical id for the store card |
 | 44 | DEAL_ID | 0 | 28 | TEXT | 0 | deal identifer mostly NULL or populated to nearby_discount as applicable |
 | 45 | DELIVERY_FEE | 0 | 33 | NUMBER | 0 | delivery fee associated with the store |
@@ -235,9 +235,3 @@ order by 1,2,3
 ;
 ```
 
-
-## Related Documentation
-
-- [proddb.public.fact_cx_card_view](https://doordash.atlassian.net/wiki/wiki/search?text=proddb.public.fact_cx_card_view)
-- [Ads Manager Rx SOT](https://doordash.atlassian.net/wiki/wiki/search?text=proddb.public.fact_cx_card_view)
-- [Promo Eligibility Metrics Dataset](https://doordash.atlassian.net/wiki/wiki/search?text=proddb.public.fact_cx_card_view)

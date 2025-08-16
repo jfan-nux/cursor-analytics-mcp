@@ -22,6 +22,16 @@ from dotenv import load_dotenv
 import gspread
 from google.oauth2 import service_account
 
+# Load environment variables from .env files
+_project_root = Path(__file__).parent.parent.parent
+_dotenv_candidates = [
+    _project_root / ".env",
+    _project_root / "config" / ".env",
+]
+for _candidate in _dotenv_candidates:
+    if _candidate.exists():
+        load_dotenv(dotenv_path=_candidate, override=False)
+
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
@@ -437,36 +447,37 @@ def get_google_sheets_client(use_oauth=False):
             # OAuth authentication - sheets will be owned by the authenticated user
             logger.info("Using OAuth authentication for Google Sheets")
 
-            # Get paths relative to project root
-            project_root = Path(__file__).parent.parent.parent
-            oauth_creds_path = project_root / "credentials" / "google_oauth_credentials.json"
-            oauth_token_path = project_root / "credentials" / "google_oauth_token.json"
-
-            # Also check the config directory (alternative location)
-            config_creds_path = project_root / "config" / "google_oauth_credentials.json"
-            config_token_path = project_root / "config" / "google_oauth_token.json"
-
-            # Also check the default gspread location as fallback
-            default_creds_path = os.path.expanduser("~/.config/gspread/credentials.json")
-            default_token_path = os.path.expanduser("~/.config/gspread/authorized_user.json")
-
-            # Use project credentials if they exist, check multiple locations
-            if oauth_creds_path.exists():
-                logger.info(f"Using OAuth credentials from project: {oauth_creds_path}")
-                creds_file = str(oauth_creds_path)
-                token_file = str(oauth_token_path)
-            elif config_creds_path.exists():
-                logger.info(f"Using OAuth credentials from config: {config_creds_path}")
-                creds_file = str(config_creds_path)
-                token_file = str(config_token_path)
-            elif os.path.exists(default_creds_path):
-                logger.info(f"Using OAuth credentials from default location: {default_creds_path}")
-                creds_file = default_creds_path
-                token_file = default_token_path
+            # Read OAuth credentials path from environment variable
+            creds_file_env = os.getenv('GOOGLE_SHEET_CREDENTIALS_FILE')
+            
+            if creds_file_env:
+                # Use environment variable path
+                project_root = Path(__file__).parent.parent.parent
+                creds_file = str(project_root / creds_file_env)
+                
+                # Token file in same directory as credentials
+                creds_path = Path(creds_file)
+                token_file = str(creds_path.parent / "google_oauth_token.json")
+                
+                if not os.path.exists(creds_file):
+                    logger.error(f"OAuth credentials file not found at environment path: {creds_file}")
+                    logger.info(f"Environment variable GOOGLE_SHEET_CREDENTIALS_FILE points to: {creds_file_env}")
+                    raise FileNotFoundError(f"OAuth credentials file not found at {creds_file}")
+                    
+                logger.info(f"Using OAuth credentials from environment variable: {creds_file}")
             else:
-                logger.error(f"OAuth credentials file not found at {oauth_creds_path}, {config_creds_path}, or {default_creds_path}")
-                logger.info("Please place your OAuth credentials at: credentials/google_oauth_credentials.json or config/google_oauth_credentials.json")
-                raise FileNotFoundError(f"OAuth credentials file not found")
+                # Fallback to default gspread location
+                default_creds_path = os.path.expanduser("~/.config/gspread/credentials.json")
+                default_token_path = os.path.expanduser("~/.config/gspread/authorized_user.json")
+                
+                if os.path.exists(default_creds_path):
+                    logger.info(f"Using OAuth credentials from default location: {default_creds_path}")
+                    creds_file = default_creds_path
+                    token_file = default_token_path
+                else:
+                    logger.error("OAuth credentials not found. Please set GOOGLE_SHEET_CREDENTIALS_FILE environment variable or place credentials at ~/.config/gspread/credentials.json")
+                    logger.info("Set GOOGLE_SHEET_CREDENTIALS_FILE=config/credentials/google_oauth_credentials.json in your .env file")
+                    raise FileNotFoundError("OAuth credentials file not found")
 
             # Use gspread's OAuth flow with specified paths
             client = gspread.oauth(

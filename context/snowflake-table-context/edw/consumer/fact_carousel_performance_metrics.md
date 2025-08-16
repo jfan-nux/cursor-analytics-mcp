@@ -14,7 +14,7 @@
 
 ## Business Context
 
-The `fact_carousel_performance_metrics` table aggregates key performance indicators related to carousel impression events, focusing on consumer interactions and merchant engagement. This data is utilized primarily by the marketing and analytics teams to enhance operational strategies and marketing effectiveness through insights on consumer behavior, geographic trends, and performance metrics such as impressions, clicks, and conversions. The table is maintained by the SYSADMIN team, ensuring its accuracy and availability for business use. For further details, refer to the Confluence documentation linked [here](https://doordash.atlassian.net/wiki/wiki/search?text=edw.consumer.fact_carousel_performance_metrics).
+The `fact_carousel_performance_metrics` table aggregates key performance indicators related to carousel impression events, focusing on consumer interactions and merchant engagement. This table is primarily utilized by the Consumer team to analyze metrics such as impressions, clicks, and conversions, which inform marketing and operational strategies. It includes detailed geographic and temporal data, as well as consumer and merchant attributes, enabling insights into carousel performance across various platforms and experiences. The table is maintained by the SYSADMIN team, ensuring data integrity and availability for business analysis. For further details, refer to the Confluence documentation linked [here](https://doordash.atlassian.net/wiki/wiki/search?text=edw.consumer.fact_carousel_performance_metrics).
 
 ## Metadata
 
@@ -34,33 +34,33 @@ No common join patterns found.
 
 | Usage Rank | Column Name | Queries | Ordinal | Data Type | Is Cluster Key | Comment |
 |------------|-------------|---------|---------|-----------|----------------|---------|
-| 1 | CONTAINER_NAME | 49 | 8 | TEXT | 0 | No comment |
-| 2 | EVENT_DATE | 43 | 1 | DATE | 1 | No comment |
-| 3 | DISCOVERY_SURFACE | 39 | 4 | TEXT | 0 | No comment |
-| 4 | MERCHANT_CATEGORY | 31 | 21 | TEXT | 0 | No comment |
-| 5 | MERCHANT_COUNTRY_ID | 23 | 19 | NUMBER | 0 | No comment |
-| 6 | IMPRESSIONS | 18 | 33 | NUMBER | 0 | No comment |
-| 7 | VERTICAL_NAME | 17 | 25 | TEXT | 0 | No comment |
-| 8 | CLICKS | 17 | 34 | NUMBER | 0 | No comment |
-| 9 | PAGE | 14 | 6 | TEXT | 0 | No comment |
-| 10 | DISCOVERY_FEATURE | 10 | 5 | TEXT | 0 | No comment |
-| 11 | EXPERIENCE | 8 | 11 | TEXT | 0 | No comment |
-| 12 | MERCHANT_COUNTRY | 8 | 20 | TEXT | 0 | No comment |
-| 13 | CONTAINER | 1 | 7 | TEXT | 0 | No comment |
-| 14 | CAROUSEL_CATEGORY | 1 | 32 | TEXT | 0 | No comment |
-| 15 | EVENT_RAW | 0 | 2 | TEXT | 0 | No comment |
-| 16 | DAY_PART | 0 | 3 | TEXT | 0 | No comment |
-| 17 | CARD_POSITION | 0 | 9 | NUMBER | 0 | No comment |
-| 18 | VERTICAL_POSITION | 0 | 10 | NUMBER | 0 | No comment |
-| 19 | PLATFORM | 0 | 12 | TEXT | 0 | No comment |
-| 20 | MERCHANT_MARKET_ID | 0 | 13 | NUMBER | 0 | No comment |
-| 21 | MERCHANT_MARKET | 0 | 14 | TEXT | 0 | No comment |
-| 22 | MERCHANT_SUBMARKET_ID | 0 | 15 | NUMBER | 0 | No comment |
-| 23 | MERCHANT_SUBMARKET | 0 | 16 | TEXT | 0 | No comment |
-| 24 | MERCHANT_REGION_ID | 0 | 17 | NUMBER | 0 | No comment |
-| 25 | MERCHANT_REGION | 0 | 18 | TEXT | 0 | No comment |
-| 26 | MERCHANT_COHORT | 0 | 22 | TEXT | 0 | No comment |
-| 27 | URBAN_TYPE | 0 | 23 | TEXT | 0 | No comment |
+| 1 | CONTAINER_NAME | 59 | 8 | TEXT | 0 | No comment |
+| 2 | EVENT_DATE | 52 | 1 | DATE | 1 | No comment |
+| 3 | DISCOVERY_SURFACE | 48 | 4 | TEXT | 0 | No comment |
+| 4 | MERCHANT_CATEGORY | 40 | 21 | TEXT | 0 | No comment |
+| 5 | MERCHANT_COUNTRY_ID | 28 | 19 | NUMBER | 0 | No comment |
+| 6 | IMPRESSIONS | 23 | 33 | NUMBER | 0 | No comment |
+| 7 | CLICKS | 22 | 34 | NUMBER | 0 | No comment |
+| 8 | PAGE | 19 | 6 | TEXT | 0 | No comment |
+| 9 | VERTICAL_NAME | 19 | 25 | TEXT | 0 | No comment |
+| 10 | DISCOVERY_FEATURE | 15 | 5 | TEXT | 0 | No comment |
+| 11 | EXPERIENCE | 12 | 11 | TEXT | 0 | No comment |
+| 12 | MERCHANT_COUNTRY | 12 | 20 | TEXT | 0 | No comment |
+| 13 | DAY_PART | 1 | 3 | TEXT | 0 | No comment |
+| 14 | CONTAINER | 1 | 7 | TEXT | 0 | No comment |
+| 15 | PLATFORM | 1 | 12 | TEXT | 0 | No comment |
+| 16 | URBAN_TYPE | 1 | 23 | TEXT | 0 | No comment |
+| 17 | CAROUSEL_CATEGORY | 1 | 32 | TEXT | 0 | No comment |
+| 18 | EVENT_RAW | 0 | 2 | TEXT | 0 | No comment |
+| 19 | CARD_POSITION | 0 | 9 | NUMBER | 0 | No comment |
+| 20 | VERTICAL_POSITION | 0 | 10 | NUMBER | 0 | No comment |
+| 21 | MERCHANT_MARKET_ID | 0 | 13 | NUMBER | 0 | No comment |
+| 22 | MERCHANT_MARKET | 0 | 14 | TEXT | 0 | No comment |
+| 23 | MERCHANT_SUBMARKET_ID | 0 | 15 | NUMBER | 0 | No comment |
+| 24 | MERCHANT_SUBMARKET | 0 | 16 | TEXT | 0 | No comment |
+| 25 | MERCHANT_REGION_ID | 0 | 17 | NUMBER | 0 | No comment |
+| 26 | MERCHANT_REGION | 0 | 18 | TEXT | 0 | No comment |
+| 27 | MERCHANT_COHORT | 0 | 22 | TEXT | 0 | No comment |
 | 28 | VERTICAL_ID | 0 | 24 | TEXT | 0 | No comment |
 | 29 | FACET_VERTICAL_POSITION | 0 | 26 | NUMBER | 0 | No comment |
 | 30 | CONSUMER_SOD_VISIT_GA_STATUS_COMBINED | 0 | 27 | TEXT | 0 | No comment |
@@ -86,12 +86,12 @@ For detailed granularity analysis on this large table, consider using time-filte
 ## Sample Queries
 
 ### Query 1
-**Last Executed:** 2025-07-30 23:11:15.082000
+**Last Executed:** 2025-08-12 15:14:07.887000
 
 ```sql
 with base as (
     select 
-        date_trunc('day', event_date) as dte,
+        date_trunc('week', event_date) as dte,
         container_name,
         discovery_surface,
         vertical_name,
@@ -102,10 +102,10 @@ with base as (
         sum(conversion) * 1.0 / nullif(sum(impressions), 0) as cvr
     from EDW.CONSUMER.FACT_CAROUSEL_PERFORMANCE_METRICS
     where merchant_country_id = 5
-      and merchant_category is not null
+      --and merchant_category is not null
       and discovery_surface in ('Home Page')
-      and container_name in ('Grocery','Convenience','Alcohol','Chemist & retail','Grocery, Convenience, Alcohol, Chemist, and More')
-      and event_date between  '2025-07-10' and  CURRENT_DATE
+      --and container_name in ('Grocery Essentials','Late Night Cravings','Sweet treats','Drinks','Quick eats','Snacks')
+      and event_date between  '2025-06-01' and  CURRENT_DATE
     group by all
 ) 
 
@@ -113,18 +113,18 @@ select
     *,
     rank() over (partition by dte,discovery_surface,vertical_name order by impression desc) as rank_order
 from base
-qualify rank() over (partition by dte,discovery_surface,vertical_name order by impression desc) < 16
+qualify rank() over (partition by dte,discovery_surface,vertical_name order by impression desc) < 101
 order by dte desc,  impression desc
--- {"user":"@nishantbishnoi","email":"nishant.bishnoi@doordash.com","url":"https://modeanalytics.com/doordash/reports/af2479f96aac/runs/79d03fa2bd69/queries/b333e0ceb406","scheduled":false}
+-- {"user":"@nishantbishnoi","email":"nishant.bishnoi@doordash.com","url":"https://modeanalytics.com/doordash/reports/af2479f96aac/runs/ae147feef656/queries/9e45316dcd51","scheduled":false}
 ```
 
 ### Query 2
-**Last Executed:** 2025-07-30 23:11:08.697000
+**Last Executed:** 2025-08-12 15:12:03.438000
 
 ```sql
 with base as (
     select 
-        date_trunc('day', event_date) as dte,
+        date_trunc('week', event_date) as dte,
         container_name,
         discovery_surface,
         vertical_name,
@@ -135,10 +135,10 @@ with base as (
         sum(conversion) * 1.0 / nullif(sum(impressions), 0) as cvr
     from EDW.CONSUMER.FACT_CAROUSEL_PERFORMANCE_METRICS
     where merchant_country_id = 5
-      and merchant_category is not null
-      and discovery_surface in ('Home Page','Vertical Page')
-      and container_name in ('Grocery','Convenience','Alcohol','Chemist & retail','Grocery, Convenience, Alcohol, Chemist, and More')
-      and event_date between  '2025-04-10' and  CURRENT_DATE
+      --and merchant_category is not null
+      and discovery_surface in ('Home Page')
+      --and container_name in ('Grocery Essentials','Late Night Cravings','Sweet treats','Drinks','Quick eats','Snacks')
+      and event_date between  '2025-06-01' and  CURRENT_DATE
     group by all
 ) 
 
@@ -148,7 +148,7 @@ select
 from base
 qualify rank() over (partition by dte,discovery_surface,vertical_name order by impression desc) < 16
 order by dte desc,  impression desc
--- {"user":"@nishantbishnoi","email":"nishant.bishnoi@doordash.com","url":"https://modeanalytics.com/doordash/reports/af2479f96aac/runs/5d40cbf056bc/queries/b333e0ceb406","scheduled":false}
+-- {"user":"@nishantbishnoi","email":"nishant.bishnoi@doordash.com","url":"https://modeanalytics.com/doordash/reports/af2479f96aac/runs/4a4ac45735d7/queries/9e45316dcd51","scheduled":false}
 ```
 
 

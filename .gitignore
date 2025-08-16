@@ -226,3 +226,4 @@ marimo/_lsp/
 __marimo__/
 *.env.backup
 user-analysis/*
+session_context/*

@@ -1,138 +1,112 @@
 # proddb.public.fact_food_catalog_v2
 
 ## Table Overview
-This table contains food item categorization and tagging information. It's the primary source for identifying food types (e.g., pizza, burger, salad) across all DoorDash menu items. Uses a sophisticated tagging system with multiple classification schemes.
 
+**Database:** proddb
+**Schema:** public
+**Table:** fact_food_catalog_v2
+**Owner:** SYSADMIN
+**Row Count:** 1,862,240,218 rows
+**Created:** 2023-01-11 20:51:58.073000+00:00
+**Last Modified:** 2025-07-16 17:50:02.858000+00:00
 
-## Table Metadata
-*Unable to retrieve table metadata from Snowflake*
+**Description:** The fact_food_catalog_v2 table provides a comprehensive catalog of food items, capturing essential details for each item. Key columns include model_version and concept_scheme_version for version tracking, tags and tag_category for classification, and item_id and menu_id for unique identification. The table also includes type to specify item nature and store_id for location reference. This structure supports efficient indexing and searchability, facilitating data discovery and analysis in food-related datasets. (AIDataAnnotator generated)
 
-## Schema Information
-Key columns discovered during analysis:
-- **store_id**: Store identifier
-- **item_id**: Menu item identifier
-- **tags**: ARRAY column containing classification tags
-  - Each tag has: `label`, `score`, `concept_scheme`, `model_version`
-- **tag_category**: Category of tags (e.g., 'restaurant_items')
-- **concept_scheme_version**: Version of the tagging scheme (e.g., '1.3')
-- **model_version**: ML model version used (e.g., 'dish_type-3.0')
+## Business Context
 
-## Data Characteristics
-Based on analysis from June 2025:
-- **Pizza Items**: 4.6M+ pizza items across 60K+ stores
-- **Tagging Coverage**: Comprehensive coverage for major food types
-- **Update Frequency**: Updated as new items are added or reclassified
-- **Tag Structure**: Nested JSON arrays requiring LATERAL FLATTEN
+The `fact_food_catalog_v2` table serves as a comprehensive repository of food items, detailing essential attributes such as unique identifiers (item_id, menu_id), classification tags (tags, tag_category), and versioning information (model_version, concept_scheme_version). This table is crucial for businesses in the food industry, enabling efficient data discovery and analysis for applications like menu optimization, inventory management, and customer preference tracking. It is maintained by the SYSADMIN, ensuring that the data remains accurate and up-to-date for analytical purposes.
 
-## Common Use Cases
-1. **Food Type Analysis**: Identify all items of a specific type (pizza, burger, etc.)
-2. **Merchant Categorization**: Calculate % of sales by food type
-3. **Menu Diversity Analysis**: Understand variety of offerings
-4. **Dietary Restriction Filtering**: Find vegetarian, vegan, gluten-free items
+## Metadata
 
-## Useful Queries
+### Table Metadata
 
-### Identify Pizza Items
+**Type:** BASE TABLE
+**Size:** 36349.1 MB
+**Transient:** NO
+**Retention Time:** 1 days
+**Raw Row Count:** 1,862,240,218
+
+### Most Common Joins
+
+| Joined Table | Query Count |
+|--------------|-------------|
+| edw.merchant.dimension_store | 247 |
+| proddb.public.dimension_order_item | 210 |
+| edw.merchant.dimension_menu_item | 141 |
+| proddb.public.dimension_deliveries | 122 |
+| edw.finance.dimension_local_deliveries | 67 |
+| edw.merchant.fact_merchant_order_items | 62 |
+| geo_intelligence.public.maindb_address | 62 |
+| proddb.public.fact_core_delivery_metrics | 61 |
+| proddb.public.dimension_dasher_location_enhanced | 57 |
+| proddb.public.dimension_date | 57 |
+
+### Column Metadata
+
+| Usage Rank | Column Name | Queries | Ordinal | Data Type | Is Cluster Key | Comment |
+|------------|-------------|---------|---------|-----------|----------------|---------|
+| 1 | TYPE | 730 | 4 | TEXT | 0 | what entity is this tag for, item or store |
+| 2 | MODEL_VERSION | 659 | 7 | TEXT | 0 | version of training model used to predict this tag, example 1.0 |
+| 3 | TAG_CATEGORY | 568 | 5 | TEXT | 0 | category of the this tag, examples dish_type, cusisine_type |
+| 4 | STORE_ID | 524 | 1 | NUMBER | 0 | store id |
+| 5 | CONCEPT_SCHEME_VERSION | 512 | 6 | TEXT | 0 | concept scheme version, example 1.1, N35 |
+| 6 | ITEM_ID | 497 | 3 | NUMBER | 0 | item id |
+| 7 | TAGS | 342 | 8 | ARRAY | 0 | tags value |
+| 8 | MENU_ID | 171 | 2 | NUMBER | 0 | menu id |
+
+## Granularity Analysis
+
+**Performance-Optimized Analysis**
+
+This is a very large table with 1,862,240,218 rows (>10 billion), so we used a lightweight analysis approach to avoid long query times. Based on intelligent analysis of the table structure and column usage patterns, this table appears to track data at the **STORE_ID** level.
+
+**Key Insights:**
+- **Entity Level**: Each row likely represents a store id
+- **Time Filtering**: No time column identified for filtering
+- **Recommended Lookback**: 1 days for analysis (automatically determined based on table size)
+
+For detailed granularity analysis on this large table, consider using time-filtered samples or aggregated views.
+
+## Sample Queries
+
+### Query 1
+**Last Executed:** 2025-08-14 04:42:59.851000
+
 ```sql
--- Find all pizza items with proper tag filtering
-SELECT DISTINCT
-  store_id,
-  item_id
-FROM proddb.public.fact_food_catalog_v2,
-  LATERAL FLATTEN(input => tags) f
-WHERE tag_category = 'restaurant_items'
-  AND concept_scheme_version = '1.3'
-  AND model_version = 'dish_type-3.0'
-  AND value:label::string = 'Pizza';
+create or replace temporary table dish_items20250813 as 
+with base as (
+SELECT
+*
+FROM proddb.public.fact_food_catalog_v2 tags
+WHERE tags.type = 'item'
+  AND tags.tag_category = 'restaurant_items'
+  AND tags.concept_scheme_version = '1.3'
+  AND tags.model_version = 'dish_type-3.0'
+  and item_id in (select distinct item_id from item_id_list20250813)
+      and not item_id in (select item_id from beverage_items20250813
+                       union all
+                       select item_id from combo_meals20250813)
+  )
+  ,process as (
+  select *, max(index) over(partition by item_id) as max_index
+  from base as b,
+LATERAL FLATTEN(input=>tags) as t
+    )
+    select distinct item_id, value:label::varchar as tag from process
+    where index = case when max_index-1 < 0 then 0 else max_index-1 end
 ```
 
-### Calculate Pizza Sales Percentage by Merchant
+### Query 2
+**Last Executed:** 2025-08-14 04:42:51.536000
+
 ```sql
--- Identify pizza merchants (>50% pizza sales)
-WITH store_pizza_sales AS (
-  SELECT 
-    ds.business_id,
-    ds.business_name,
-    SUM(CASE WHEN pizza_items.item_id IS NOT NULL THEN oi.gmv_total ELSE 0 END) AS pizza_gmv,
-    SUM(oi.gmv_total) AS total_gmv,
-    ROUND(SUM(CASE WHEN pizza_items.item_id IS NOT NULL THEN oi.gmv_total ELSE 0 END) * 100.0 / NULLIF(SUM(oi.gmv_total), 0), 2) AS pizza_sales_pct
-  FROM edw.merchant.fact_merchant_order_items oi
-  INNER JOIN edw.merchant.dimension_store ds 
-    ON oi.store_id = ds.store_id
-  LEFT JOIN (
-    SELECT DISTINCT store_id, item_id
-    FROM proddb.public.fact_food_catalog_v2,
-      LATERAL FLATTEN(input => tags) f
-    WHERE tag_category = 'restaurant_items'
-      AND concept_scheme_version = '1.3'
-      AND model_version = 'dish_type-3.0'
-      AND value:label::string = 'Pizza'
-  ) pizza_items
-    ON oi.store_id = pizza_items.store_id
-    AND oi.item_id = pizza_items.item_id
-  WHERE oi.created_at >= '2024-01-01'
-    AND oi.is_filtered = 0
-    AND ds.is_active = 1
-  GROUP BY ds.business_id, ds.business_name
-)
-SELECT *
-FROM store_pizza_sales
-WHERE pizza_sales_pct >= 50
-ORDER BY total_gmv DESC;
+CREATE or replace temporary table combo_meals20250813 AS
+SELECT
+    distinct items.item_id as item_id,
+    'Combo Meal' as tag
+FROM edw.merchant.dimension_menu_item items
+left join proddb.public.fact_food_catalog_v2 tags  on tags.item_id = items.item_id and tags.type = 'item' and tags.model_version = '0.1-combo_w_drink'
+where (tags.item_id is not null   OR items.item_title ILIKE '%combo%' OR items.item_title ILIKE '%meal%' or items.menu_title ilike '%combo%' or items.menu_title ilike '%meal%' or items.category_title ilike '%combo%' or items.category_title ilike '%meal%')
+and items.item_id in (select distinct item_id from item_id_list20250813)
 ```
 
-### Food Type Distribution Analysis
-```sql
--- Analyze food type distribution for a merchant
-SELECT 
-  f.value:label::string AS food_type,
-  COUNT(DISTINCT item_id) AS item_count,
-  ROUND(COUNT(DISTINCT item_id) * 100.0 / SUM(COUNT(DISTINCT item_id)) OVER(), 2) AS pct_of_menu
-FROM proddb.public.fact_food_catalog_v2,
-  LATERAL FLATTEN(input => tags) f
-WHERE store_id IN (SELECT store_id FROM edw.merchant.dimension_store WHERE business_id = 12345)
-  AND tag_category = 'restaurant_items'
-  AND concept_scheme_version = '1.3'
-  AND model_version = 'dish_type-3.0'
-GROUP BY food_type
-ORDER BY item_count DESC;
-```
-
-## Join Patterns
-Commonly joined with:
-- **edw.merchant.dimension_menu_item**: Get item details (name, price, description)
-- **edw.merchant.fact_merchant_order_items**: Calculate sales by food type
-- **edw.merchant.dimension_store**: Link to business/merchant information
-- **edw.consumer.unified_consumer_events**: Analyze behavior by food type
-
-## Data Quality Notes
-- **Tag Filtering**: Always filter by concept_scheme_version and model_version for consistency
-- **LATERAL FLATTEN**: Required to access tags array - can be performance intensive
-- **Item Coverage**: Not all items may be tagged - consider NULL handling
-- **Version Changes**: Tag schemes may evolve - document version used in analysis
-- **Store/Item Join**: Always verify store_id and item_id match when joining
-
-## Key Insights from Pizza Analysis
-1. **Pizza Market Size**:
-   - 20,769 pizza merchants (>50% pizza sales)
-   - 4.6M active pizza items
-   - 60,478 pizza-focused stores
-
-2. **Tagging Patterns**:
-   - Pizza items reliably tagged with 'Pizza' label
-   - Use dish_type-3.0 model for best accuracy
-   - Concept scheme 1.3 is current standard
-
-3. **Performance Tips**:
-   - Pre-aggregate pizza items in CTE for better performance
-   - Filter by tag attributes before FLATTEN when possible
-   - Consider materialized views for frequent pizza queries
-
-## Related Tables
-- **edw.merchant.dimension_menu_item**: Menu item details and pricing
-- **edw.merchant.fact_menu_item_performance**: Item-level performance metrics
-- **proddb.public.fact_dietary_restrictions**: Dietary tags (vegetarian, vegan, etc.)
-
----
-*This file was created/updated during pizza item page time analysis*
-*Last updated: 2025-06-09* 

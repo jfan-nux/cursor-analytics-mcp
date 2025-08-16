@@ -14,7 +14,7 @@
 
 ## Business Context
 
-The `order_cart_submit_received` table in the `SEGMENT_EVENTS_RAW` catalog captures comprehensive details about consumer order submissions on the DoorDash platform, including timestamps, customer identifiers, financial data, and device information. This table is primarily utilized by the Segment team for analyzing order submission events, which supports various business functions such as customer behavior analysis and operational improvements. The table is maintained by the Segment team, ensuring its accuracy and relevance for ongoing analytical needs. For further details, refer to the Confluence documentation linked [here](https://doordash.atlassian.net/wiki/wiki/search?text=segment_events_raw.consumer_production.order_cart_submit_received).
+The `order_cart_submit_received` table contains detailed records of consumer order submissions on the DoorDash platform, capturing essential data such as timestamps, customer identifiers, financial details like subtotal and delivery fees, and device information. This data is crucial for analyzing order submission events, enabling insights into consumer behavior, transaction trends, and platform performance. The table is maintained by the SEGMENT team, ensuring its integrity and availability for business analytics and reporting purposes.
 
 ## Metadata
 
@@ -30,36 +30,36 @@ The `order_cart_submit_received` table in the `SEGMENT_EVENTS_RAW` catalog captu
 
 | Joined Table | Query Count |
 |--------------|-------------|
-| proddb.public.dimension_deliveries | 157 |
-| proddb.public.fact_dedup_experiment_exposure | 96 |
-| proddb.public.mau | 76 |
-| proddb.public.orders | 64 |
-| edw.growth.fact_singular_mobile_events | 53 |
-| iguazu.server_events_production.m_deep_link | 51 |
-| segment_events_raw.consumer_production.social_login_new_user | 46 |
-| segment_events_raw.consumer_production.be_login_success | 46 |
-| segment_events_raw.consumer_production.social_login_success | 44 |
-| edw.growth.fact_consumer_app_open_events | 37 |
+| proddb.public.dimension_deliveries | 192 |
+| proddb.public.fact_dedup_experiment_exposure | 134 |
+| proddb.public.mau | 98 |
+| edw.growth.fact_singular_mobile_events | 86 |
+| proddb.public.orders | 68 |
+| segment_events_raw.consumer_production.be_login_success | 66 |
+| segment_events_raw.consumer_production.social_login_new_user | 66 |
+| segment_events_raw.consumer_production.social_login_success | 64 |
+| iguazu.server_events_production.m_deep_link | 63 |
+| segment_events_raw.consumer_production.doordash_signup_success | 46 |
 
 ### Column Metadata
 
 | Usage Rank | Column Name | Queries | Ordinal | Data Type | Is Cluster Key | Comment |
 |------------|-------------|---------|---------|-----------|----------------|---------|
-| 1 | ID | 198 | 21 | TEXT | 0 | No comment |
-| 2 | ORDER_CART_ID | 155 | 11 | NUMBER | 0 | No comment |
-| 3 | DD_DEVICE_ID | 152 | 53 | TEXT | 0 | No comment |
-| 4 | CONSUMER_ID | 143 | 58 | TEXT | 0 | No comment |
-| 5 | TIMESTAMP | 110 | 43 | TIMESTAMP_NTZ | 0 | No comment |
-| 6 | CREATED_AT | 99 | 4 | TIMESTAMP_NTZ | 0 | No comment |
-| 7 | USER_ID | 83 | 50 | TEXT | 0 | No comment |
-| 8 | PLATFORM_DETAILS | 70 | 15 | TEXT | 0 | No comment |
-| 9 | SUBTOTAL | 52 | 33 | NUMBER | 0 | No comment |
-| 10 | ORIGINAL_TIMESTAMP | 23 | 29 | TIMESTAMP_NTZ | 0 | No comment |
+| 1 | ID | 238 | 21 | TEXT | 0 | No comment |
+| 2 | ORDER_CART_ID | 195 | 11 | NUMBER | 0 | No comment |
+| 3 | DD_DEVICE_ID | 185 | 53 | TEXT | 0 | No comment |
+| 4 | CONSUMER_ID | 183 | 58 | TEXT | 0 | No comment |
+| 5 | CREATED_AT | 138 | 4 | TIMESTAMP_NTZ | 0 | No comment |
+| 6 | TIMESTAMP | 112 | 43 | TIMESTAMP_NTZ | 0 | No comment |
+| 7 | PLATFORM_DETAILS | 105 | 15 | TEXT | 0 | No comment |
+| 8 | USER_ID | 88 | 50 | TEXT | 0 | No comment |
+| 9 | SUBTOTAL | 77 | 33 | NUMBER | 0 | No comment |
+| 10 | ORIGINAL_TIMESTAMP | 22 | 29 | TIMESTAMP_NTZ | 0 | No comment |
 | 11 | EVENT | 19 | 36 | TEXT | 0 | No comment |
-| 12 | DD_SESSION_ID | 4 | 5 | TEXT | 0 | No comment |
-| 13 | DD_USER_ID | 1 | 25 | NUMBER | 0 | No comment |
-| 14 | LANDING_PAGE_FIRST | 0 | 1 | TEXT | 0 | No comment |
-| 15 | UUID_TS | 0 | 2 | TIMESTAMP_NTZ | 0 | No comment |
+| 12 | UUID_TS | 5 | 2 | TIMESTAMP_NTZ | 0 | No comment |
+| 13 | DISCOUNT_AMOUNT | 5 | 26 | NUMBER | 0 | No comment |
+| 14 | LANDING_PAGE_FIRST | 1 | 1 | TEXT | 0 | No comment |
+| 15 | DD_SESSION_ID | 1 | 5 | TEXT | 0 | No comment |
 | 16 | CONTEXT_LIBRARY_VERSION | 0 | 3 | TEXT | 0 | No comment |
 | 17 | REQUEST_ID | 0 | 6 | TEXT | 0 | No comment |
 | 18 | SS_COOKIE_SESSION_ID | 0 | 7 | TEXT | 0 | No comment |
@@ -77,7 +77,7 @@ The `order_cart_submit_received` table in the `SEGMENT_EVENTS_RAW` catalog captu
 | 30 | SS_EVENT_ID | 0 | 22 | TEXT | 0 | No comment |
 | 31 | SS_HEADER_DEVICE_ID | 0 | 23 | TEXT | 0 | No comment |
 | 32 | DD_LOGIN_ID | 0 | 24 | TEXT | 0 | No comment |
-| 33 | DISCOUNT_AMOUNT | 0 | 26 | NUMBER | 0 | No comment |
+| 33 | DD_USER_ID | 0 | 25 | NUMBER | 0 | No comment |
 | 34 | SEO_REFERER_NAME_LATEST | 0 | 27 | TEXT | 0 | No comment |
 | 35 | SS_COOKIE_DEVICE_ID | 0 | 28 | TEXT | 0 | No comment |
 | 36 | SS_EVENT_TS | 0 | 30 | NUMBER | 0 | No comment |
@@ -171,7 +171,3 @@ create or replace temp table orders_data AS
 ;
 ```
 
-
-## Related Documentation
-
-- [[FUV] fact_unique_visitors_full_pt/utc - Development &amp; Engineering](https://doordash.atlassian.net/wiki/wiki/search?text=segment_events_raw.consumer_production.order_cart_submit_received)

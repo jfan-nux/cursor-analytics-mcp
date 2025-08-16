@@ -92,18 +92,8 @@ def _predict_granularity_columns(llm, table_name: str, schema_name: str, columns
     
     # Determine lookback days based on table size using logic
     def get_lookback_days(row_count: int = None) -> int:
-        """Determine lookback days based on table row count."""
-        if row_count is None:
-            return 7  # Default fallback
-        
-        if row_count > 100_000_000:  # >100M rows: massive tables
-            return 1
-        elif row_count > 10_000_000:  # 10M-100M rows: large tables
-            return 3
-        elif row_count > 1_000_000:   # 1M-10M rows: medium tables
-            return 7
-        else:                         # <1M rows: smaller tables
-            return 30
+        """Return constant lookback window of 1 day to avoid long-running scans on large tables."""
+        return 1  # Hard-coded for performance – always limit to most recent day
     
     # Calculate lookback days using logic
     lookback_days = get_lookback_days(table_row_count)
@@ -538,6 +528,13 @@ def enhanced_granularity_analysis(sf, fqn: str, table_name: str, schema_name: st
         Dict containing granularity analysis results. For tables >10B rows,
         returns 'large_table_skipped' type with LLM predictions only.
     """
+    # Specific tables too expensive for deep-dive regardless of size
+    SKIP_DEEP_DIVE_FQNS = {
+        "edw.consumer.unified_consumer_events",
+        "iguazu.consumer.m_card_view",
+        "proddb.public.fact_food_catalog_v2"
+    }
+
     if verbose:
         print(f"🔍 Starting enhanced granularity analysis for {fqn}")
         print(f"   📊 Table has {len(columns_meta)} columns")
@@ -552,6 +549,11 @@ def enhanced_granularity_analysis(sf, fqn: str, table_name: str, schema_name: st
         skip_deep_dive = True
         if verbose:
             print(f"   ⚠️  Table too large ({table_row_count:,} rows > 10B), skipping deep dive analysis")
+    # Manual overrides
+    if fqn.lower() in SKIP_DEEP_DIVE_FQNS:
+        skip_deep_dive = True
+        if verbose:
+            print("   ⚠️  Deep dive disabled by configuration for this table")
     
     # Step 1: LLM predicts the single most relevant entity column and time column for filtering
     if verbose:

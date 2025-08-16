@@ -14,7 +14,7 @@
 
 ## Business Context
 
-The `home_page_view` table in the `SEGMENT_EVENTS_RAW` schema captures detailed user interactions on the home page, focusing on campaign tracking and user engagement metrics. This data is primarily utilized by the marketing team to analyze campaign effectiveness and user behavior, enabling targeted strategies to enhance user experience and engagement. The table is maintained by the Segment team, ensuring that it remains up-to-date and relevant for ongoing marketing initiatives. For further details, refer to the related Confluence documentation, including resources on marketing touchpoints and SEO tracking.
+The `home_page_view` table within the `SEGMENT_EVENTS_RAW` catalog captures detailed user interactions on the home page, emphasizing campaign tracking and user engagement metrics. It includes key fields such as campaign identifiers (e.g., `utm_campaign`, `utm_medium`), user identifiers (e.g., `consumer_id`, `anonymous_id`), and geographic data (e.g., `dd_zip_code`, `country_code`). Additionally, the table tracks device and browser information, as well as performance metrics like `page_load_time` and `bundle_load_time`, making it essential for marketing analysis and user experience optimization. This table is maintained by the `SEGMENT` team.
 
 ## Metadata
 
@@ -30,13 +30,13 @@ The `home_page_view` table in the `SEGMENT_EVENTS_RAW` schema captures detailed 
 
 | Joined Table | Query Count |
 |--------------|-------------|
-| proddb.public.fact_dedup_experiment_exposure | 126 |
-| iguazu.server_events_production.m_launch_instant_login_success | 88 |
-| segment_events_raw.consumer_production.be_login_success | 76 |
-| segment_events_raw.consumer_production.m_login_continue_with_saved_account_success | 68 |
-| segment_events_raw.consumer_production.social_login_success | 68 |
-| segment_events_raw.consumer_production.social_login_new_user | 63 |
-| segment_events_raw.consumer_production.be_signup_success | 63 |
+| proddb.public.fact_dedup_experiment_exposure | 99 |
+| iguazu.server_events_production.m_launch_instant_login_success | 83 |
+| segment_events_raw.consumer_production.be_login_success | 71 |
+| segment_events_raw.consumer_production.m_login_continue_with_saved_account_success | 63 |
+| segment_events_raw.consumer_production.social_login_success | 63 |
+| segment_events_raw.consumer_production.be_signup_success | 58 |
+| segment_events_raw.consumer_production.social_login_new_user | 58 |
 | segment_events_raw.consumer_production.m_intro_page_loaded | 57 |
 | segment_events_raw.consumer_production.m_login_saved_login_info_landing_page_view | 57 |
 | segment_events_raw.consumer_production.m_onboarding_page_load | 57 |
@@ -45,35 +45,35 @@ The `home_page_view` table in the `SEGMENT_EVENTS_RAW` schema captures detailed 
 
 | Usage Rank | Column Name | Queries | Ordinal | Data Type | Is Cluster Key | Comment |
 |------------|-------------|---------|---------|-----------|----------------|---------|
-| 1 | PLATFORM | 194 | 49 | TEXT | 0 | No comment |
-| 2 | ID | 192 | 25 | TEXT | 0 | No comment |
-| 3 | PAGE | 191 | 7 | TEXT | 0 | No comment |
-| 4 | DD_DEVICE_ID | 191 | 60 | TEXT | 0 | No comment |
-| 5 | TIMESTAMP | 122 | 15 | TIMESTAMP_NTZ | 0 | No comment |
-| 6 | CONTEXT_PAGE_PATH | 97 | 28 | TEXT | 0 | No comment |
-| 7 | USER_AGENT | 95 | 2 | TEXT | 0 | No comment |
-| 8 | CONTEXT_USER_AGENT | 94 | 59 | TEXT | 0 | No comment |
-| 9 | EVENT | 26 | 6 | TEXT | 0 | No comment |
+| 1 | PLATFORM | 167 | 49 | TEXT | 0 | No comment |
+| 2 | ID | 166 | 25 | TEXT | 0 | No comment |
+| 3 | PAGE | 164 | 7 | TEXT | 0 | No comment |
+| 4 | DD_DEVICE_ID | 164 | 60 | TEXT | 0 | No comment |
+| 5 | TIMESTAMP | 97 | 15 | TIMESTAMP_NTZ | 0 | No comment |
+| 6 | CONTEXT_PAGE_PATH | 70 | 28 | TEXT | 0 | No comment |
+| 7 | USER_AGENT | 68 | 2 | TEXT | 0 | No comment |
+| 8 | CONTEXT_USER_AGENT | 67 | 59 | TEXT | 0 | No comment |
+| 9 | EVENT | 21 | 6 | TEXT | 0 | No comment |
 | 10 | CONTEXT_PAGE_SEARCH | 19 | 17 | TEXT | 0 | No comment |
 | 11 | CONSUMER_ID | 15 | 424 | NUMBER | 0 | No comment |
 | 12 | APP | 5 | 18 | TEXT | 0 | No comment |
 | 13 | EXPERIENCE | 2 | 190 | TEXT | 0 | No comment |
-| 14 | CONTEXT_CAMPAIGN_MEBEST_20RESTAURBEST_20RESTAURANTS_20ATLANTADIUM | 0 | 1 | TEXT | 0 | No comment |
-| 15 | CONTEXT_CAMPAIGN_CAGRUBHUBMPAIGN | 0 | 3 | TEXT | 0 | No comment |
-| 16 | CONTEXT_CAMPAIGN_SOURCE | 0 | 4 | TEXT | 0 | No comment |
-| 17 | CONTEXT_TRAITS_FIRST_NAME | 0 | 5 | TEXT | 0 | No comment |
-| 18 | TOUCH | 0 | 8 | BOOLEAN | 0 | No comment |
-| 19 | BROWSER_WIDTH | 0 | 9 | TEXT | 0 | No comment |
-| 20 | CONTEXT_CAMPAIGN_CUSTOM1 | 0 | 10 | TEXT | 0 | No comment |
-| 21 | CONTEXT_CAMPAIGN_PLATFORM | 0 | 11 | TEXT | 0 | No comment |
-| 22 | CONTEXT_PAGE_TITLE | 0 | 12 | TEXT | 0 | No comment |
-| 23 | CONTEXT_PAGE_URL | 0 | 13 | TEXT | 0 | No comment |
-| 24 | REFERRER | 0 | 14 | TEXT | 0 | No comment |
-| 25 | CONTEXT_CAMPAIGN_SWU | 0 | 16 | TEXT | 0 | No comment |
-| 26 | SENT_AT | 0 | 19 | TIMESTAMP_NTZ | 0 | No comment |
-| 27 | CONTEXT_LIBRARY_VERSION | 0 | 20 | TEXT | 0 | No comment |
-| 28 | CONTEXT_TRAITS_LAST_NAME | 0 | 21 | TEXT | 0 | No comment |
-| 29 | DD_DISTRICT_ID | 0 | 22 | TEXT | 0 | No comment |
+| 14 | CONTEXT_CAMPAIGN_MEBEST_20RESTAURBEST_20RESTAURANTS_20ATLANTADIUM | 1 | 1 | TEXT | 0 | No comment |
+| 15 | DD_DISTRICT_ID | 1 | 22 | TEXT | 0 | No comment |
+| 16 | CONTEXT_CAMPAIGN_CAGRUBHUBMPAIGN | 0 | 3 | TEXT | 0 | No comment |
+| 17 | CONTEXT_CAMPAIGN_SOURCE | 0 | 4 | TEXT | 0 | No comment |
+| 18 | CONTEXT_TRAITS_FIRST_NAME | 0 | 5 | TEXT | 0 | No comment |
+| 19 | TOUCH | 0 | 8 | BOOLEAN | 0 | No comment |
+| 20 | BROWSER_WIDTH | 0 | 9 | TEXT | 0 | No comment |
+| 21 | CONTEXT_CAMPAIGN_CUSTOM1 | 0 | 10 | TEXT | 0 | No comment |
+| 22 | CONTEXT_CAMPAIGN_PLATFORM | 0 | 11 | TEXT | 0 | No comment |
+| 23 | CONTEXT_PAGE_TITLE | 0 | 12 | TEXT | 0 | No comment |
+| 24 | CONTEXT_PAGE_URL | 0 | 13 | TEXT | 0 | No comment |
+| 25 | REFERRER | 0 | 14 | TEXT | 0 | No comment |
+| 26 | CONTEXT_CAMPAIGN_SWU | 0 | 16 | TEXT | 0 | No comment |
+| 27 | SENT_AT | 0 | 19 | TIMESTAMP_NTZ | 0 | No comment |
+| 28 | CONTEXT_LIBRARY_VERSION | 0 | 20 | TEXT | 0 | No comment |
+| 29 | CONTEXT_TRAITS_LAST_NAME | 0 | 21 | TEXT | 0 | No comment |
 | 30 | HREF | 0 | 23 | TEXT | 0 | No comment |
 | 31 | CONTEXT_TRAITS_EMAIL | 0 | 24 | TEXT | 0 | No comment |
 | 32 | CONTEXT_CAMPAIGN_CONTENTCLKID | 0 | 26 | TEXT | 0 | No comment |
@@ -843,7 +843,493 @@ Table is granular at DD_DISTRICT_ID level - each row represents a unique dd dist
 ## Sample Queries
 
 ### Query 1
-**Last Executed:** 2025-08-04 09:40:19.853000
+**Last Executed:** 2025-08-11 09:22:42.790000
+
+```sql
+with pageviews_overall as (
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                              else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+    , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+    , platform as platform
+from segment_events_RAW.consumer_production.home_page_view 
+where convert_timezone('UTC','America/Los_Angeles',timestamp)::date BETWEEN $start_date AND '2024-12-01'
+
+union 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                              else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+    , convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp)::date AS day
+    , platform as platform
+from iguazu.consumer.home_page_view
+where convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp)::date BETWEEN '2024-12-02' AND $end_date
+AND platform IN ('desktop','mobile')
+
+union 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                              else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+    , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+    -- , 'iOS' as source
+    , 'ios' as platform
+from segment_events_RAW.consumer_production.m_onboarding_page_load
+where convert_timezone('UTC','America/Los_Angeles',timestamp)::date BETWEEN $start_date AND $end_date
+
+union
+    
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                              else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+    , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+    -- , 'Android' as source
+    , 'android' as platform
+from segment_events_RAW.consumer_production.m_intro_page_loaded
+where convert_timezone('UTC','America/Los_Angeles',timestamp)::date BETWEEN $start_date AND $end_date
+
+union
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                              else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+    , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+    -- , 'Android' as source
+    , case when dd_platform = 'Android' then 'android' 
+        when dd_platform = 'ios' then 'ios'
+    end as platform
+from segment_events_RAW.consumer_production.m_login_saved_login_info_landing_page_view -- save login info landing page view
+where convert_timezone('UTC','America/Los_Angeles',timestamp)::date BETWEEN $start_date AND $end_date
+ 
+union 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered 
+  , convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp)::date AS day
+  , case when dd_platform = 'Android' then 'android' else 'ios' end as platform
+FROM iguazu.server_events_production.m_launch_instant_login_success -- instant logins 
+WHERE convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp)::date BETWEEN $start_date AND $end_date   
+)
+
+
+-- logins
+, logins_overall AS
+(
+    SELECT 
+        distinct replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+      , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+      , 'save_login_info' as Source
+      , case when dd_platform = 'Android' then 'android' else 'ios' end as platform
+    FROM
+        segment_events_RAW.consumer_production.m_login_continue_with_saved_account_success
+    WHERE 
+        convert_timezone('UTC','America/Los_Angeles',timestamp)::date BETWEEN $start_date AND $end_date
+
+UNION
+
+SELECT 
+    DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered 
+  , convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp)::date AS day
+  , 'instant_login' AS source
+  , case when dd_platform = 'Android' then 'android' else 'ios' end as platform
+FROM 
+    iguazu.server_events_production.m_launch_instant_login_success
+WHERE 
+    convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp)::date BETWEEN $start_date AND $end_date
+
+UNION
+
+SELECT 
+    DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+    , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+    , SOCIAL_PROVIDER AS Source
+    , webview_platform as platform
+FROM 
+    segment_events_RAW.consumer_production.social_login_success
+WHERE 
+    1=1
+    AND convert_timezone('UTC','America/Los_Angeles',timestamp)::date BETWEEN $start_date AND $end_date
+    AND SOCIAL_PROVIDER IN ('google-plus','facebook','apple')
+
+UNION 
+
+SELECT 
+    DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+    , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+    , 'email' AS source
+    , webview_platform as platform      
+FROM 
+    segment_events_raw.consumer_production.be_login_success  
+WHERE 
+    1=1
+    AND convert_timezone('UTC','America/Los_Angeles',timestamp)::date BETWEEN $start_date AND $end_date
+    AND type = 'login'
+    AND sub_Type = 'credential'
+ 
+UNION 
+
+SELECT 
+    DISTINCT  replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+    , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+    , 'bypass_login_known' AS source
+    , webview_platform as platform
+FROM 
+    segment_events_raw.consumer_production.be_login_success  
+WHERE 
+    1=1
+    AND convert_timezone('UTC','America/Los_Angeles',timestamp)::date BETWEEN $start_date AND $end_date
+    AND type = 'login'
+    AND sub_Type = 'magic_link'
+    AND MAGIC_LINK_SOURCE = 'bypass_login_wrong_credentials'
+    
+UNION
+
+SELECT 
+    DISTINCT  replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+    , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+    , 'bypass_login_promo' AS source
+    , webview_platform as platform
+FROM 
+    segment_events_raw.consumer_production.be_login_success  
+WHERE 
+    1=1
+    AND convert_timezone('UTC','America/Los_Angeles',timestamp)::date BETWEEN $start_date AND $end_date
+    AND type = 'login'
+    AND sub_Type = 'magic_link'
+    AND MAGIC_LINK_SOURCE = 'api'
+
+UNION 
+
+SELECT 
+    DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+    , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+    , 'bypass_login_unknown' AS source
+    ,  webview_platform as platform
+FROM 
+    segment_events_raw.consumer_production.be_login_success  
+WHERE 
+    1=1
+    and convert_timezone('UTC','America/Los_Angeles',timestamp)::date BETWEEN $start_date AND $end_date
+    AND type = 'login'
+    AND sub_Type = 'bypass_login_wrong_credentials'
+    AND bypass_login_category = 'bypass_login_unknown'
+
+UNION
+
+SELECT 
+    DISTINCT  replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+    , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+    , 'otc_known' AS source
+    , webview_platform as platform 
+FROM 
+    segment_events_raw.consumer_production.be_login_success  
+WHERE 
+    1=1
+    AND convert_timezone('UTC','America/Los_Angeles',timestamp)::date BETWEEN $start_date AND $end_date
+    AND type = 'login'
+    AND sub_Type = 'phone_otp'
+    AND PHONE_OTP_CATEGORY = 'known_device'
+ 
+UNION 
+
+SELECT 
+    DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+       , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+       , 'otc_unknown' AS source
+        , webview_platform as platform
+FROM 
+    segment_events_raw.consumer_production.be_login_success  
+WHERE 
+    1=1
+    and convert_timezone('UTC','America/Los_Angeles',timestamp)::date BETWEEN $start_date AND $end_date
+    AND type = 'login'
+    AND sub_Type = 'phone_otp'
+    AND PHONE_OTP_CATEGORY = 'unknown_device' 
+
+UNION
+
+SELECT 
+    DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , 'seamless_otc_known' AS source
+  , webview_platform as platform
+FROM 
+    segment_events_raw.consumer_production.be_login_success  
+WHERE 
+    convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+    AND type = 'login'
+    AND sub_Type = 'guided_email_seamless_login'
+    AND PHONE_OTP_CATEGORY = 'known_device'
+ 
+UNION 
+
+SELECT 
+    DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , 'seamless_otc_unknown' AS source
+  , webview_platform as platform
+FROM 
+    segment_events_raw.consumer_production.be_login_success  
+WHERE 
+    convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+    AND type = 'login'
+    AND sub_Type = 'guided_email_seamless_login'
+    AND PHONE_OTP_CATEGORY = 'unknown_device' 
+
+
+UNION
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+       , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+       , 'otc_magiclink_known' AS source
+       , webview_platform as platform
+FROM 
+    segment_events_raw.consumer_production.be_login_success  
+WHERE 
+    convert_timezone('UTC','America/Los_Angeles',timestamp)::date BETWEEN $start_date AND $end_date
+-- AND type = 'login'
+    AND sub_type = 'magic_link'
+    AND magic_link_source  = 'otc'
+
+UNION 
+
+SELECT 
+    DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , 'guided_login_from_password' AS source
+  , webview_platform as platform
+FROM 
+    segment_events_RAW.consumer_production.be_login_success  
+WHERE 
+    convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+    AND sub_type = 'guided_login_v2'
+
+UNION 
+
+SELECT 
+    DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , 'guided_login_from_phone_email' AS source
+  , webview_platform as platform
+FROM 
+    segment_events_RAW.consumer_production.be_login_success  
+WHERE 
+    convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+    -- AND sub_type = 'guided_login_phone_signup'
+    AND sub_type = 'guided_login_phone_signup_existing_account'
+
+UNION 
+
+SELECT 
+    DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , 'guided_login_from_seamless' AS source
+  , webview_platform as platform
+FROM 
+    segment_events_RAW.consumer_production.be_login_success  
+WHERE 
+    convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+    AND sub_type = 'guided_login_phone_signup_seamless'
+
+UNION 
+
+SELECT 
+    DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , 'phone_signin_on_signup_known' AS source
+  , webview_platform as platform
+FROM 
+ segment_events_RAW.consumer_production.be_login_success  
+WHERE 
+    convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+    AND sub_type = 'phone_sign_in_on_signup'
+    AND PHONE_OTP_CATEGORY = 'known_device'
+
+UNION 
+
+SELECT 
+    DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , 'phone_signin_on_signup_unknown' AS source
+  , webview_platform as platform
+FROM 
+    segment_events_RAW.consumer_production.be_login_success  
+WHERE 
+    convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+    AND sub_type = 'phone_sign_in_on_signup'
+    AND PHONE_OTP_CATEGORY = 'unknown_device'
+
+UNION 
+
+SELECT 
+    DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , 'guided_phone_login_known' AS source
+  , webview_platform as platform
+FROM 
+    segment_events_RAW.consumer_production.be_login_success  
+WHERE 
+    convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+    AND sub_type = 'guided_phone_login'
+    AND PHONE_OTP_CATEGORY = 'known_device'
+
+UNION 
+
+SELECT 
+    DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , 'guided_phone_login_unknown' AS source
+  , webview_platform as platform
+FROM 
+    segment_events_RAW.consumer_production.be_login_success  
+WHERE 
+    convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+    AND sub_type = 'guided_phone_login'
+    AND PHONE_OTP_CATEGORY = 'unknown_device'
+
+UNION 
+
+SELECT 
+    DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , 'guided_phone_seamless_login_known' AS source
+  , webview_platform as platform
+FROM 
+    segment_events_RAW.consumer_production.be_login_success  
+WHERE 
+    convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+    AND sub_type = 'guided_phone_seamless_login'
+    AND PHONE_OTP_CATEGORY = 'known_device'
+
+UNION 
+
+SELECT 
+    DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , 'guided_phone_seamless_login_unknown' AS source
+  , webview_platform as platform
+FROM 
+    segment_events_RAW.consumer_production.be_login_success  
+WHERE 
+    convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+    AND sub_type = 'guided_phone_seamless_login'
+    AND PHONE_OTP_CATEGORY = 'unknown_device'
+)
+
+
+
+-- signups
+, signups_overall AS (
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , SOCIAL_PROVIDER AS Source
+  , webview_platform as platform
+from segment_events_RAW.consumer_production.social_login_new_user 
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp)::date BETWEEN $start_date AND $end_date
+AND SOCIAL_PROVIDER IN ('google-plus','facebook','apple')
+
+UNION
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                        else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered 
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , 'email' AS source
+  ,  webview_platform as platform
+from segment_events_RAW.consumer_production.be_signup_success 
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp)::date BETWEEN $start_date AND $end_date
+AND sub_type = 'email_signup'
+
+UNION
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                        else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered 
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , 'phone' AS source
+  ,  webview_platform as platform
+from segment_events_RAW.consumer_production.be_signup_success 
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp)::date BETWEEN $start_date AND $end_date
+AND sub_type = 'phone_signup'
+
+UNION
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered 
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , 'phone_seamless' AS source
+  , webview_platform as platform
+from segment_events_RAW.consumer_production.be_signup_success 
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND sub_type = 'phone_signup_seamless'
+)
+
+
+
+-- combine logins and signups
+, overalls as (
+
+select * from logins_overall 
+union 
+select * from signups_overall 
+
+)
+
+
+
+-- daily 
+, merged_day as (
+select p.day
+    -- , p.platform
+    
+    -- page views
+    , count(distinct p.dd_device_ID_filtered) as landing_page_views 
+    -- logins
+    , count(distinct l.dd_device_ID_filtered) as all_login
+    , count(distinct iff(l.source in ('apple','google-plus','google','facebook'),l.dd_device_ID_filtered, null)) as social_login
+    , count(distinct iff(l.source in ('guided_phone_login_known','guided_phone_login_unknown','guided_phone_seamless_login_known','guided_phone_seamless_login_unknown'), l.dd_device_ID_filtered, null)) as guided_phone_login
+    , count(distinct iff(l.source in ('otc_known','otc_unknown','otc_magiclink_known'), l.dd_device_ID_filtered, null)) as otc_login
+    , count(distinct iff(l.source in ('instant_login'), l.dd_device_ID_filtered, null)) as instant_login
+    , count(distinct iff(l.source in ('save_login_info'), l.dd_device_ID_filtered, null)) as save_login
+    , count(distinct iff(l.source not in ('save_login_info','instant_login','apple','google-plus','google','facebook','otc_known','otc_unknown','otc_magiclink_known','guided_phone_login_known','guided_phone_login_unknown','guided_phone_seamless_login_known','guided_phone_seamless_login_unknown'), l.dd_device_ID_filtered, null)) as other_login
+from pageviews_overall p
+left join logins_overall l
+on p.dd_device_ID_filtered = l.dd_device_ID_filtered
+    and p.day = l.day
+    -- and p.platform = l.platform
+left join signups_overall s 
+on p.dd_device_ID_filtered = s.dd_device_ID_filtered
+    and p.day = s.day 
+    -- and p.platform = s.platform
+group by 1
+)
+
+-- all platform
+,base AS (
+select date_trunc('week', day) as week 
+
+, sum(landing_page_views) as landing_page_views_w
+, sum(social_login) AS social_login_w
+, sum(guided_phone_login) AS guided_phone_login_w
+, sum(otc_login) AS otc_login_w
+, sum(instant_login) AS instant_login_w
+, sum(save_login) AS save_login_w
+, sum(other_login) AS other_login_w
+
+,social_login_w/landing_page_views_w as social_login_rate
+,guided_phone_login_w/landing_page_views_w AS guided_phone_login_rate
+,otc_login_w/landing_page_views_w AS otc_login_rate
+,instant_login_w/landing_page_views_w AS instant_login_rate
+,save_login_w/landing_page_views_w AS save_login_rate
+
+,other_login_w/landing_page_views_w AS other_login_rate
+
+from merged_day
+where week >= '2022-08-08'
+group by 1
+order by 1 desc
+)
+
+SELECT * FROM base WHERE week != date_trunc('week',current_date())
+-- {"user":"@heming_chen","email":"heming.chen@doordash.com","url":"https://modeanalytics.com/doordash/reports/2b0e53dbaf34/runs/f60a818b0eaa/queries/e047270069d8","scheduled":false}
+```
+
+### Query 2
+**Last Executed:** 2025-08-11 09:22:42.780000
 
 ```sql
 with pageviews_overall as (
@@ -1343,379 +1829,6 @@ on datediff('day',w1.week,w2.week) = -7
 order by 1 desc
 )
 SELECT * FROM base WHERE week != date_trunc('week',current_date())
--- {"user":"@heming_chen","email":"heming.chen@doordash.com","url":"https://modeanalytics.com/doordash/reports/2b0e53dbaf34/runs/e3d85d55786d/queries/7c8661c40278","scheduled":false}
+-- {"user":"@heming_chen","email":"heming.chen@doordash.com","url":"https://modeanalytics.com/doordash/reports/2b0e53dbaf34/runs/f60a818b0eaa/queries/7c8661c40278","scheduled":false}
 ```
 
-### Query 2
-**Last Executed:** 2025-08-04 09:40:19.789000
-
-```sql
-with pageviews_overall as (
-SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
-                              else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
-    , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
-    , platform as platform
-from segment_events_RAW.consumer_production.home_page_view 
-where convert_timezone('UTC','America/Los_Angeles',timestamp)::date BETWEEN $start_date AND '2024-12-01'
-
-union 
-
-SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
-                              else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
-    , convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp)::date AS day
-    , platform as platform
-from iguazu.consumer.home_page_view
-where convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp)::date BETWEEN '2024-12-02' AND $end_date
-AND platform IN ('desktop','mobile')
-
-union 
-
-SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
-                              else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
-    , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
-    -- , 'iOS' as source
-    , 'ios' as platform
-from segment_events_RAW.consumer_production.m_onboarding_page_load
-where convert_timezone('UTC','America/Los_Angeles',timestamp)::date BETWEEN $start_date AND $end_date
-
-union
-    
-SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
-                              else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
-    , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
-    -- , 'Android' as source
-    , 'android' as platform
-from segment_events_RAW.consumer_production.m_intro_page_loaded
-where convert_timezone('UTC','America/Los_Angeles',timestamp)::date BETWEEN $start_date AND $end_date
-
-union
-
-SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
-                              else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
-    , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
-    -- , 'Android' as source
-    , case when dd_platform = 'Android' then 'android' 
-        when dd_platform = 'ios' then 'ios'
-    end as platform
-from segment_events_RAW.consumer_production.m_login_saved_login_info_landing_page_view -- save login info landing page view
-where convert_timezone('UTC','America/Los_Angeles',timestamp)::date BETWEEN $start_date AND $end_date
-  
-union 
-
-SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
-                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered 
-  , convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp)::date AS day
-  , case when dd_platform = 'Android' then 'android' else 'ios' end as platform
-FROM iguazu.server_events_production.m_launch_instant_login_success -- instant logins 
-WHERE convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp)::date BETWEEN $start_date AND $end_date
-)
-
-
--- logins
-, logins_overall as (
-select distinct replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
-                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
-  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
-  , 'save_login_info' as Source
-  , case when dd_platform = 'Android' then 'android' else 'ios' end as platform
-from segment_events_RAW.consumer_production.m_login_continue_with_saved_account_success
-where convert_timezone('UTC','America/Los_Angeles',timestamp)::date BETWEEN $start_date AND $end_date
-
-UNION
-
-SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
-                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered 
-  , convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp)::date AS day
-  , 'instant_login' AS source
-  , case when dd_platform = 'Android' then 'android' else 'ios' end as platform
-FROM iguazu.server_events_production.m_launch_instant_login_success
-WHERE convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp)::date BETWEEN $start_date AND $end_date
-
-UNION
-
-SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
-                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
-    , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
-    , SOCIAL_PROVIDER AS Source
-    , webview_platform as platform
-from segment_events_RAW.consumer_production.social_login_success
-WHERE 1=1
-    AND convert_timezone('UTC','America/Los_Angeles',timestamp)::date BETWEEN $start_date AND $end_date
-    AND SOCIAL_PROVIDER IN ('google-plus','facebook','apple')
-
-UNION 
-
-SELECT DISTINCT  replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
-                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
-    , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
-    , 'email' AS source
-    , webview_platform as platform      
-from segment_events_raw.consumer_production.be_login_success  
-WHERE 1=1
-    AND convert_timezone('UTC','America/Los_Angeles',timestamp)::date BETWEEN $start_date AND $end_date
-    AND type = 'login'
-    AND sub_Type = 'credential'
- 
-UNION 
-
-SELECT DISTINCT  replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
-                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
-    , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
-    , 'bypass_login_known' AS source
-    , webview_platform as platform
-from segment_events_raw.consumer_production.be_login_success  
-WHERE 1=1
-    AND convert_timezone('UTC','America/Los_Angeles',timestamp)::date BETWEEN $start_date AND $end_date
-    AND type = 'login'
-    AND sub_Type = 'magic_link'
-    AND MAGIC_LINK_SOURCE = 'bypass_login_wrong_credentials'
-    
-UNION
-
-SELECT DISTINCT  replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
-                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
-    , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
-    , 'bypass_login_promo' AS source
-    , webview_platform as platform
-from segment_events_raw.consumer_production.be_login_success  
-WHERE 1=1
-    AND convert_timezone('UTC','America/Los_Angeles',timestamp)::date BETWEEN $start_date AND $end_date
-    AND type = 'login'
-    AND sub_Type = 'magic_link'
-    AND MAGIC_LINK_SOURCE = 'api'
-
-UNION 
-
-SELECT DISTINCT  replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
-                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
-    , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
-    , 'bypass_login_unknown' AS source
-    ,  webview_platform as platform
-from segment_events_raw.consumer_production.be_login_success  
-WHERE 1=1
-    and convert_timezone('UTC','America/Los_Angeles',timestamp)::date BETWEEN $start_date AND $end_date
-    AND type = 'login'
-    AND sub_Type = 'bypass_login_wrong_credentials'
-    AND bypass_login_category = 'bypass_login_unknown'
-
-UNION 
-
-SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
-                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
-    , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
-    , 'guided_login' AS source
-    , webview_platform as platform
-from segment_events_RAW.consumer_production.be_login_success  
-WHERE 1=1
-    AND convert_timezone('UTC','America/Los_Angeles',timestamp)::date BETWEEN $start_date AND $end_date
-    AND sub_type = 'guided_login_v2'
-
-UNION 
-
-SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
-                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
-  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
-  , 'guided_login_from_signup' AS source
-  ,  webview_platform as platform
-from segment_events_RAW.consumer_production.be_login_success  
-WHERE convert_timezone('UTC','America/Los_Angeles',timestamp)::date BETWEEN $start_date AND $end_date
--- AND sub_type = 'guided_login_phone_signup'
-AND sub_type = 'guided_login_phone_signup_existing_account'
-
-UNION
-
-SELECT DISTINCT  replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
-                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
-    , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
-    , 'otc_known' AS source
-    , webview_platform as platform 
-from segment_events_raw.consumer_production.be_login_success  
-WHERE 1=1
-    AND convert_timezone('UTC','America/Los_Angeles',timestamp)::date BETWEEN $start_date AND $end_date
-    AND type = 'login'
-    AND sub_Type = 'phone_otp'
-    AND PHONE_OTP_CATEGORY = 'known_device'
- 
-UNION 
-
-SELECT DISTINCT  replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
-                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
-       , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
-       , 'otc_unknown' AS source
-        , webview_platform as platform
-from segment_events_raw.consumer_production.be_login_success  
-WHERE 1=1
-    and convert_timezone('UTC','America/Los_Angeles',timestamp)::date BETWEEN $start_date AND $end_date
-    AND type = 'login'
-    AND sub_Type = 'phone_otp'
-    AND PHONE_OTP_CATEGORY = 'unknown_device' 
-
-UNION
-
-SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
-                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
-  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
-  , 'seamless_otc_known' AS source
-  , webview_platform as platform
-from segment_events_raw.consumer_production.be_login_success  
-WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
-AND type = 'login'
-AND sub_Type = 'guided_email_seamless_login'
-AND PHONE_OTP_CATEGORY = 'known_device'
- 
-UNION 
-
-SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
-                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
-  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
-  , 'seamless_otc_unknown' AS source
-  , webview_platform as platform
-from segment_events_raw.consumer_production.be_login_success  
-WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
-AND type = 'login'
-AND sub_Type = 'guided_email_seamless_login'
-AND PHONE_OTP_CATEGORY = 'unknown_device' 
-
-
-UNION
-
-SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
-                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
-       , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
-       , 'otc_magiclink_known' AS source
-       , webview_platform as platform
-from segment_events_raw.consumer_production.be_login_success  
-WHERE convert_timezone('UTC','America/Los_Angeles',timestamp)::date BETWEEN $start_date AND $end_date
--- AND type = 'login'
- AND sub_type = 'magic_link'
- AND magic_link_source  = 'otc'
-UNION 
-
-SELECT 
-  DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
-  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
-  , 'guided_phone_login_known' AS source
-  , webview_platform as platform
-FROM 
-  segment_events_RAW.consumer_production.be_login_success  
-WHERE 
-  convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
-  AND sub_type = 'guided_phone_login'
-  AND PHONE_OTP_CATEGORY = 'known_device'
-  
-  UNION 
-
-SELECT 
-  DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
-  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
-  , 'guided_phone_login_unknown' AS source
-  , webview_platform as platform
-FROM 
-  segment_events_RAW.consumer_production.be_login_success  
-WHERE 
-  convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
-  AND sub_type = 'guided_phone_login'
-  AND PHONE_OTP_CATEGORY = 'unknown_device'
-  
-    UNION 
-
-SELECT 
-  DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
-  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
-  , 'guided_phone_seamless_login_known' AS source
-  , webview_platform as platform
-FROM 
-  segment_events_RAW.consumer_production.be_login_success  
-WHERE 
-  convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
-  AND sub_type = 'guided_phone_seamless_login'
-  AND PHONE_OTP_CATEGORY = 'known_device'
-  
-      UNION 
-
-SELECT 
-  DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
-  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
-  , 'guided_phone_seamless_login_unknown' AS source
-  , webview_platform as platform
-FROM 
-  segment_events_RAW.consumer_production.be_login_success  
-WHERE 
-  convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
-  AND sub_type = 'guided_phone_seamless_login'
-  AND PHONE_OTP_CATEGORY = 'unknown_device'
-)
-
-
-
-
--- daily 
-, merged_day as (
-select p.day
-    
-    -- page views
-    , count(distinct p.dd_device_ID_filtered) as landing_page_views 
-    -- logins
-    , count(distinct l.dd_device_ID_filtered) as all_login
-    -- save logins 
-    , COUNT(DISTINCT CASE WHEN source = 'save_login_info' THEN l.dd_device_ID_filtered END) AS saved_login
-    -- instant logins 
-    , COUNT(DISTINCT CASE WHEN source = 'instant_login' THEN l.dd_device_ID_filtered END) AS instant_login
-from pageviews_overall p
-left join logins_overall l
-on p.dd_device_ID_filtered = l.dd_device_ID_filtered
-    and p.day = l.day
-    -- and p.platform = l.platform
-group by 1
-)
-
--- all platform
-, w as (
-select date_trunc('week', day) as week 
-, sum(landing_page_views) as landing_page_views_w
-, sum(all_login) as all_login_w
-, sum(saved_login) AS saved_login_w
-, sum(instant_login) AS instant_login_w
-
-, all_login_w/landing_page_views_w as all_login_rate
-, saved_login_w/landing_page_views_w as saved_login_rate
-, instant_login_w/landing_page_views_w as instant_login_rate
-from merged_day
-group by 1
-order by 1 desc
-)
-
-,base AS 
-(
-SELECT 
-    dateadd('week',52,w_2023.week) AS week
-    ,w_2024.all_login_rate AS login_2024
-    ,w_2023.all_login_rate AS login_2023
-    ,w_2022.all_login_rate AS login_2022
-    
-    ,w_2024.saved_login_rate AS saved_login_rate_2024
-    ,w_2023.saved_login_rate AS saved_login_rate_2023
-    ,w_2022.saved_login_rate AS saved_login_rate_2022
-    
-    ,w_2024.instant_login_rate AS instant_login_rate_2024
-    ,w_2023.instant_login_rate AS instant_login_rate_2023
-    ,w_2022.instant_login_rate AS instant_login_rate_2022
-    
-FROM 
-    (SELECT * FROM w WHERE week >='2023-01-01' AND week <'2024-01-01') w_2023
-    LEFT JOIN w w_2022 ON datediff('week',w_2023.week,w_2022.week) = -52
-    LEFT JOIN (SELECT * FROM w WHERE week != date_trunc('week',current_date())) w_2024 ON datediff('week',w_2023.week,w_2024.week) = 52 
-)
-
-
-
-SELECT * FROM base
--- {"user":"@heming_chen","email":"heming.chen@doordash.com","url":"https://modeanalytics.com/doordash/reports/2b0e53dbaf34/runs/e3d85d55786d/queries/a386905dfcfa","scheduled":false}
-```
-
-
-## Related Documentation
-
-- [Fact_Marketing_Touch](https://doordash.atlassian.net/wiki/wiki/search?text=home_page_view)
-- [Segment.io Tracking - Consumer, Post DD 3.0](https://doordash.atlassian.net/wiki/wiki/search?text=home_page_view)
-- [SQL Tutorial - Level 1 (Beginner)](https://doordash.atlassian.net/wiki/wiki/search?text=home_page_view)

@@ -11,6 +11,7 @@ Integrates with the existing curie_export Google Sheets configuration and setup.
 import json
 import pandas as pd
 import logging
+import os
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union, Any
@@ -56,6 +57,62 @@ class SQLToSheetsExporter:
         if self.snowhook is None:
             self.snowhook = SnowflakeHook()
         return self.snowhook
+    
+    def _get_oauth2_credentials(self):
+        """Get OAuth2 credentials for Google Sheets API."""
+        import json
+        import os
+        import pickle
+        from pathlib import Path
+        from google.auth.transport.requests import Request
+        from google_auth_oauthlib.flow import InstalledAppFlow
+        
+        # Handle relative paths
+        credentials_file = self.credentials_file
+        if not os.path.isabs(credentials_file):
+            project_root = Path(__file__).parent.parent.parent
+            credentials_file = str(project_root / credentials_file)
+        
+        # Token file for storing user's access and refresh tokens
+        project_root = Path(__file__).parent.parent.parent
+        token_file = project_root / "config" / "google_sheets_token.pickle"
+        
+        creds = None
+        # Load existing token if it exists
+        if token_file.exists():
+            try:
+                with open(token_file, 'rb') as token:
+                    creds = pickle.load(token)
+            except Exception as e:
+                self.logger.warning(f"Failed to load existing token: {e}")
+        
+        # If there are no (valid) credentials available, let the user log in
+        if not creds or not creds.valid:
+            if creds and creds.expired and creds.refresh_token:
+                try:
+                    self.logger.info("Refreshing expired credentials...")
+                    creds.refresh(Request())
+                except Exception as e:
+                    self.logger.warning(f"Failed to refresh credentials: {e}")
+                    creds = None
+            
+            if not creds:
+                self.logger.info("Starting OAuth2 flow for Google Sheets...")
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    credentials_file, SCOPES
+                )
+                creds = flow.run_local_server(port=0)
+            
+            # Save the credentials for the next run
+            try:
+                token_file.parent.mkdir(parents=True, exist_ok=True)
+                with open(token_file, 'wb') as token:
+                    pickle.dump(creds, token)
+                self.logger.info(f"Saved credentials to {token_file}")
+            except Exception as e:
+                self.logger.warning(f"Failed to save credentials: {e}")
+        
+        return creds
     
     def execute_sql(self, query: str, method: str = 'pandas') -> Tuple[pd.DataFrame, float]:
         """
@@ -201,6 +258,7 @@ class SQLToSheetsExporter:
             Dictionary with export results and metadata
         """
         # Validate inputs
+        self.logger.info(f"🔧 CLASS: Received spreadsheet_id={spreadsheet_id}, create_spreadsheet={create_spreadsheet}")
         if not query and not sql_file:
             raise ValueError("Either query or sql_file must be provided")
         if query and sql_file:
@@ -251,35 +309,40 @@ class SQLToSheetsExporter:
             
             # Get default share email if not provided
             if share_email is None:
-                share_email = get_default_share_email()
+                # Default to SNOWFLAKE_USER@doordash.com if env var present
+                sf_user = os.getenv("SNOWFLAKE_USER") or os.getenv("USER") or os.getenv("LOGNAME")
+                if sf_user:
+                    share_email = f"{sf_user}@doordash.com"
+                else:
+                    # Fallback to existing helper if env not set
+                    share_email = get_default_share_email()
             
-            # Actually export to Google Sheets using gspread
+                        # Actually export to Google Sheets using gspread
             sheets_result = None
+            sheets_error = None
             try:
                 self.logger.info(f"Exporting to Google Sheets...")
                 
                 # Import and setup gspread
                 try:
                     import gspread
-                    from google.oauth2.service_account import Credentials
                     
-                    # Get credentials
-                    creds = Credentials.from_service_account_file(
-                        self.credentials_file, 
-                        scopes=SCOPES
-                    )
+                    # Get credentials using OAuth2 flow
+                    creds = self._get_oauth2_credentials()
                     gc = gspread.authorize(creds)
                     
-                except ImportError:
-                    self.logger.error("gspread not installed. Please install: pip install gspread")
-                    raise Exception("gspread library not available")
+                except ImportError as e:
+                    self.logger.error(f"Required libraries not installed: {e}")
+                    raise Exception("Required Google auth libraries not available. Please install: pip install gspread google-auth google-auth-oauthlib")
+
+                self.logger.info(f"🔧 GSPREAD: About to process - create_spreadsheet={create_spreadsheet}, spreadsheet_id={spreadsheet_id}")
                 
                 if create_spreadsheet and spreadsheet_title:
                     # Create new spreadsheet
-                    self.logger.info(f"Creating new spreadsheet: {spreadsheet_title}")
+                    self.logger.info(f"🔧 GSPREAD: Creating new spreadsheet: {spreadsheet_title}")
                     spreadsheet = gc.create(spreadsheet_title)
                     spreadsheet_id = spreadsheet.id
-                    self.logger.info(f"Created spreadsheet with ID: {spreadsheet_id}")
+                    self.logger.info(f"🔧 GSPREAD: Created spreadsheet with NEW ID: {spreadsheet_id}")
                     
                     # Share if email provided
                     if share_email:
@@ -290,8 +353,9 @@ class SQLToSheetsExporter:
                             self.logger.warning(f"Could not share spreadsheet: {str(e)}")
                 else:
                     # Open existing spreadsheet
+                    self.logger.info(f"🔧 GSPREAD: Opening existing spreadsheet with ID: {spreadsheet_id}")
                     spreadsheet = gc.open_by_key(spreadsheet_id)
-                
+
                 if spreadsheet_id:
                     # Create new sheet/tab if needed
                     try:
@@ -325,9 +389,23 @@ class SQLToSheetsExporter:
                 
             except Exception as e:
                 self.logger.error(f"Error writing to Google Sheets: {str(e)}")
+                sheets_error = str(e)
                 sheets_result = {'error': str(e)}
             
+            # Check if Google Sheets operation succeeded
+            if sheets_error or (sheets_result and 'error' in sheets_result):
+                return {
+                    'status': 'error',
+                    'error': 'google_sheets_failed',
+                    'message': f'SQL executed successfully but Google Sheets export failed: {sheets_error or sheets_result.get("error", "Unknown error")}',
+                    'execution_time': execution_time,
+                    'row_count': len(df),
+                    'col_count': len(df.columns),
+                    'backup_file': backup_file
+                }
+            
             # Prepare return data
+            self.logger.info(f"🔧 CLASS: Preparing result with spreadsheet_id={spreadsheet_id}")
             export_result = {
                 'status': 'success',
                 'execution_time': execution_time,
@@ -379,9 +457,11 @@ class SQLToSheetsExporter:
 def export_sql_to_sheets(
     query: str,
     sheet_name: str,
-    spreadsheet_id: str = "1D45l4noHvjxw2nDfdqjRN3NEoS-8pvpfnshy00X5hcA",  # Default to your sheet
+    spreadsheet_id: Optional[str] = None,
     max_rows: int = 20000,
-    save_backup: bool = True
+    save_backup: bool = True,
+    spreadsheet_title: Optional[str] = None,
+    share_email: Optional[str] = None
 ) -> Dict[str, Any]:
     """
     Simple SQL to Google Sheets export function.
@@ -389,44 +469,61 @@ def export_sql_to_sheets(
     Args:
         query: SQL query string to execute
         sheet_name: Name of the sheet/tab to create
-        spreadsheet_id: Google Sheets spreadsheet ID (defaults to your sheet)
+        spreadsheet_id: Google Sheets spreadsheet ID (optional). If None, a new
+            spreadsheet will be created automatically.
         max_rows: Maximum number of rows allowed (default 20,000)
         save_backup: Whether to save a local CSV backup
+        spreadsheet_title: Title for the spreadsheet when one is created.
+        share_email: Optional email to share the spreadsheet with.
         
     Returns:
         Export result dictionary with status, URL, and row count
     """
+    print(f"🔧 WRAPPER: Called with spreadsheet_id={spreadsheet_id}")
     exporter = SQLToSheetsExporter()
     
     # First execute the query to check row count
     try:
-        # Get snowflake connection and execute query to check row count
         from utils.snowflake_connection import SnowflakeHook
         snowhook = SnowflakeHook()
-        df = snowhook.query_snowflake(query, method='pandas')
+        df = snowhook.query_snowflake(query, method="pandas")
         row_count = len(df)
         
         # Check if row count exceeds limit
         if row_count > max_rows:
             return {
-                'status': 'error',
-                'error': 'too_many_rows',
-                'message': f'Query returned {row_count:,} rows, which exceeds the limit of {max_rows:,} rows. Please add LIMIT clause to your query.',
-                'row_count': row_count,
-                'max_rows': max_rows
+                "status": "error",
+                "error": "too_many_rows",
+                "message": (
+                    f"Query returned {row_count:,} rows, which exceeds the limit of {max_rows:,} rows. "
+                    "Please add LIMIT clause to your query."
+                ),
+                "row_count": row_count,
+                "max_rows": max_rows,
             }
         
-        # If row count is reasonable, proceed with export
-        return exporter.export_sql_to_sheets(
+        # Determine if we need to create a new spreadsheet
+        create_spreadsheet = spreadsheet_id is None
+        print(f"🔧 WRAPPER: Before class call - spreadsheet_id={spreadsheet_id}, create_spreadsheet={create_spreadsheet}")
+        if create_spreadsheet and spreadsheet_title is None:
+            spreadsheet_title = f"SQL Export - {sheet_name}"
+        
+        # Proceed with export
+        result = exporter.export_sql_to_sheets(
             query=query,
             spreadsheet_id=spreadsheet_id,
             sheet_name=sheet_name,
-            save_backup=save_backup
+            save_backup=save_backup,
+            create_spreadsheet=create_spreadsheet,
+            spreadsheet_title=spreadsheet_title,
+            share_email=share_email,
         )
         
+        print(f"🔧 WRAPPER: After class call - result spreadsheet_id={result.get('spreadsheet_id')}")
+        return result
     except Exception as e:
         return {
-            'status': 'error',
-            'error': 'query_execution_failed',
-            'message': f'SQL query execution failed: {str(e)}'
+            "status": "error",
+            "error": "query_execution_failed",
+            "message": f"SQL query execution failed: {str(e)}",
         }

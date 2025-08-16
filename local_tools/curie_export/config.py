@@ -10,50 +10,53 @@ import os
 import json
 from pathlib import Path
 from datetime import datetime
+# Ensure environment variables from .env are loaded early
+try:
+    from dotenv import load_dotenv
+    # Attempt to load .env at project root and config/.env
+    _project_root = Path(__file__).parent.parent.parent
+    _dotenv_candidates = [
+        _project_root / ".env",
+        _project_root / "config" / ".env",
+    ]
+    for _candidate in _dotenv_candidates:
+        if _candidate.exists():
+            load_dotenv(dotenv_path=_candidate, override=False)
+except ImportError:
+    # dotenv not installed – assume env vars are already set via shell
+    pass
 
 # Function to get default share email from credentials file
 def get_default_share_email():
+    """Return default email for sharing Google Sheets.
+
+    Logic:
+    1. If `GOOGLE_SHEETS_DEFAULT_EMAIL` env var is set → use it.
+    2. Else if `SNOWFLAKE_USER` env var is set → `{SNOWFLAKE_USER}@doordash.com`.
+    3. Else return `None`.
     """
-    Get the default share email from environment variable or credentials file.
-    
-    Priority order:
-    1. GOOGLE_SHEETS_DEFAULT_EMAIL environment variable
-    2. default_share_email.json credentials file
-    3. None (no default)
-    """
-    # Option 1: Environment variable
-    env_email = os.getenv('GOOGLE_SHEETS_DEFAULT_EMAIL')
-    if env_email:
-        return env_email
-    
-    # Option 2: Credentials file
-    project_root = Path(__file__).parent.parent.parent
-    email_file = project_root / "credentials" / "default_share_email.json"
-    
-    if email_file.exists():
-        try:
-            with open(email_file, 'r') as f:
-                data = json.load(f)
-                return data.get('email')
-        except:
-            return None
+    # Highest-priority explicit override
+    email_override = os.getenv("GOOGLE_SHEETS_DEFAULT_EMAIL")
+    if email_override:
+        return email_override
+
+    # Derive from Snowflake user name
+    sf_user = os.getenv("SNOWFLAKE_USER")
+    if sf_user:
+        return f"{sf_user}@doordash.com"
+
+    # No default available
     return None
 
+
 def set_default_share_email(email: str):
+    """Set the default share email for this Python process.
+
+    This no longer writes any credential files; it simply places the value in
+    the current environment so subsequent calls within the same process pick it
+    up.
     """
-    Save the default share email to credentials file.
-    """
-    # Get path to credentials file
-    project_root = Path(__file__).parent.parent.parent
-    credentials_dir = project_root / "credentials"
-    email_file = credentials_dir / "default_share_email.json"
-    
-    # Create credentials directory if it doesn't exist
-    credentials_dir.mkdir(exist_ok=True)
-    
-    # Save email to file
-    with open(email_file, 'w') as f:
-        json.dump({'email': email}, f, indent=2)
+    os.environ["GOOGLE_SHEETS_DEFAULT_EMAIL"] = email
 
 # Default columns to export
 DEFAULT_EXPORT_COLUMNS = [
@@ -177,61 +180,28 @@ SCOPES = [
 ]
 
 def get_service_account_file():
+    """Return the Service-Account JSON path for Google APIs.
+
+    Priority: environment variable `GOOGLE_SHEET_CREDENTIALS_FILE` only.
+    If the variable is unset or the file doesn't exist, raise FileNotFoundError.
+    Handles both absolute and relative paths (relative to project root).
     """
-    Get Google Service Account credentials file path for Google Sheets.
+    credentials_file = os.getenv("GOOGLE_SHEET_CREDENTIALS_FILE")
+    if not credentials_file:
+        raise FileNotFoundError(
+            "Google credentials not found. Please set the 'GOOGLE_SHEET_CREDENTIALS_FILE' environment variable to the path of your service-account JSON file."
+        )
     
-    Priority order:
-    1. GOOGLE_SHEETS_CREDENTIALS_JSON environment variable (JSON string)
-    2. GOOGLE_SHEETS_CREDENTIALS_FILE environment variable (file path)
-    3. Default credentials file location
+    # Handle relative paths by making them relative to project root
+    if not os.path.isabs(credentials_file):
+        project_root = Path(__file__).parent.parent.parent
+        credentials_file = str(project_root / credentials_file)
     
-    Returns:
-        Path to service account JSON file
-    """
-    import tempfile
-    
-    # Option 1: JSON string in environment variable
-    credentials_json = os.getenv('GOOGLE_SHEETS_CREDENTIALS_JSON')
-    if credentials_json:
-        try:
-            # Validate JSON format
-            json.loads(credentials_json)
-            # Create temporary file with credentials
-            temp_file = tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False)
-            temp_file.write(credentials_json)
-            temp_file.close()
-            return temp_file.name
-        except json.JSONDecodeError:
-            print("Warning: GOOGLE_SHEETS_CREDENTIALS_JSON is not valid JSON")
-    
-    # Option 2: File path in environment variable
-    credentials_file = os.getenv('GOOGLE_SHEETS_CREDENTIALS_FILE')
-    if credentials_file and os.path.exists(credentials_file):
+    if os.path.exists(credentials_file):
         return credentials_file
-    
-    # Option 3: Default location (for local development)
-    default_file = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
-        "credentials",
-        "google_sheets_credentials.json"
-    )
-    if os.path.exists(default_file):
-        return default_file
-    
-    # Option 4: Keys directory location
-    keys_file = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
-        "keys",
-        "google_service_account_key.json"
-    )
-    if os.path.exists(keys_file):
-        return keys_file
-    
+
     raise FileNotFoundError(
-        "Google credentials not found. Please set either:\n"
-        "  - GOOGLE_CREDENTIALS_JSON environment variable (JSON string)\n"
-        "  - GOOGLE_SHEET_CREDENTIALS_FILE environment variable (file path)\n"
-        "  - Or place credentials at: credentials/google_sheets_credentials.json"
+        f"Google credentials file not found at: {credentials_file}. Please check the 'GOOGLE_SHEET_CREDENTIALS_FILE' environment variable."
     )
 
 # Google Sheets API configuration

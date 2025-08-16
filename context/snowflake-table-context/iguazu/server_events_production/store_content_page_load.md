@@ -1,305 +1,1820 @@
 # iguazu.server_events_production.store_content_page_load
 
 ## Table Overview
-The `store_content_page_load` table is a **web platform event tracking table** that captures front-end events on **mobile web (mWeb) and desktop** when users view the **explore page** (store content discovery page). This table is part of DoorDash's Iguazu event tracking infrastructure and serves as the web counterpart to the mobile app explore page events, providing critical insights into user engagement with restaurant discovery across web platforms.
 
-## Event Description
-**Event Type**: `store_content_page_load`  
-**Trigger**: When a user loads the explore/store content page on DoorDash web platforms (mobile web/desktop)  
-**Business Context**: This captures the critical first step in the web user journey where users discover available restaurants and food options. It represents the web equivalent of the mobile app explore page experience.
+**Database:** iguazu
+**Schema:** server_events_production
+**Table:** store_content_page_load
+**Owner:** SERVICE_METAMORPH
+**Row Count:** 3,050,764,077 rows
+**Created:** 2022-12-19 06:02:39.791000+00:00
+**Last Modified:** 2025-07-17 17:26:58.732000+00:00
 
-## Platform Coverage
-- **Mobile Web**: Mobile browser access to DoorDash website
-- **Desktop**: Desktop browser access to DoorDash website
-- **Tablets**: iPad and other tablet browsers
-
-
-## Table Metadata
-*Unable to retrieve table metadata from Snowflake*
-
-## Schema Information
-*Based on actual table schema with 211 columns covering comprehensive web event tracking:*
-
-### Core Iguazu Event Identifiers (1-10)
-- **iguazu_id**: Unique identifier for each event record (e.g., "1b1c2e6d-679c-4f7c-811e-50c68e2b78d5")
-- **iguazu_user_id**: Iguazu user identifier (e.g., 242289615)
-- **iguazu_event**: Event name ("store_content_page_load")
-- **iguazu_anonymous_id**: Anonymous device identifier for tracking (e.g., "dx_624e8b01a5874b378f8cf17486f0c48d")
-- **iguazu_original_timestamp**: Original client timestamp
-- **iguazu_timestamp**: Server-side timestamp when event occurred
-- **iguazu_sent_at**: When event was sent from client
-- **iguazu_received_at**: When event was received by Iguazu
-- **iguazu_other_properties**: JSON object with additional event properties
-- **iguazu_ingest_timestamp**: When event was ingested into warehouse
-
-### Context & Device Information (context_*)
-- **context_app_build, context_app_name, context_app_namespace, context_app_version**: Application context
-- **context_campaign_content, context_campaign_medium, context_campaign_name, context_campaign_source, context_campaign_term**: Campaign attribution
-- **context_device_ad_tracking_enabled, context_device_advertising_id, context_device_id**: Device identifiers
-- **context_device_manufacturer, context_device_model, context_device_name, context_device_type, context_device_version**: Device specifications
-- **context_ip**: Client IP address
-- **context_library_name, context_library_version**: Tracking library information
-- **context_locale**: User locale setting
-- **context_network_bluetooth, context_network_carrier, context_network_cellular, context_network_wifi**: Network connectivity
-- **context_os_name, context_os_version**: Operating system details
-- **context_page_path, context_page_referrer, context_page_search, context_page_title, context_page_url**: Page context
-- **context_screen_density, context_screen_height, context_screen_width**: Screen properties
-- **context_timezone**: User timezone
-- **context_user_agent**: Browser user agent string
-
-### Context Traits (context_traits_*)
-- **context_traits_anonymous_id**: Anonymous identifier
-- **context_traits_city, context_traits_state, context_traits_zip_code**: Geographic traits
-- **context_traits_email, context_traits_first_name, context_traits_last_name, context_traits_name**: User profile traits
-- **context_traits_latitude, context_traits_longitude**: Location coordinates
-- **context_traits_orders_count**: Historical order count
-- **context_traits_store_id**: Associated store identifier
-- **context_traits_submarket, context_traits_submarket_id**: Geographic submarket traits
-
-### DoorDash-Specific Identifiers (dd_*)
-- **dd_device_id, dd_device_id_2**: DoorDash device identifiers (critical for cross-session tracking)
-- **dd_session_id, dd_session_id_2**: Web session identifiers
-- **dd_submarket_id**: Geographic submarket ID
-- **dd_zip_code**: User's ZIP code (with variations like dd_zip_code_33020, dd_zip_code_34668, dd_zip_code_75038)
-- **dd_guest_id**: Guest user identifier
-- **dd_language, dd_locale**: Language and locale settings
-- **dd_login_id**: Login session identifier
-- **dd_loginas_from_user_id**: Login-as functionality tracking
-- **dd_testing_common_cookies**: Testing cookie information
-
-### App & Platform Context
-- **app, app_env, app_name, app_type, app_version**: Application identifiers
-- **app_web_next, app_web_sha**: Web application build information
-- **platform**: Web platform type (key field used in queries)
-- **build_type**: Build environment type
-- **target_app**: Target application
-
-### Geographic & Location Context
-- **city**: User's city
-- **country_code**: Country code
-- **lat, lng**: Latitude and longitude coordinates
-- **zip_code**: User's ZIP code
-- **submarket_id, submarket_name**: Geographic submarket information
-- **place_id**: Place identifier
-- **delivery_address, default_address**: Address information
-
-### Page & Navigation Context
-- **page**: Page identifier
-- **page_id**: Unique page identifier
-- **page_type**: Type of page (e.g., "group-cart-ssr")
-- **href**: Current URL
-- **referrer**: Previous page that led to explore page
-- **utm_campaign, utm_medium, utm_source**: Marketing attribution parameters
-
-### Store Discovery & Content Context
-- **store_count, num_stores**: Number of stores shown on explore page
-- **store_id**: Specific store identifier if applicable
-- **num_carousels**: Number of carousels displayed
-- **num_tiles**: Number of tiles shown
-- **num_in_store_feed**: Number of in-store feed items
-- **item_count**: Count of items shown
-- **tiles_list**: List of tiles displayed
-- **all_banner_data**: Banner information
-- **all_vertical_ids, all_verticals_count**: Vertical categorization
-- **eligible_vertical_ids, eligible_verticals_count**: Eligible verticals
-- **vertical_id, vertical_name**: Specific vertical information
-
-### Search & Filter Context
-- **query, raw_query**: Search queries
-- **search_term**: Search term used
-- **filters_applied**: Applied filters
-- **autocomplete_name**: Autocomplete suggestions
-- **num_keystroke, num_keystrokes**: User typing behavior
-- **num_query_suggestions, num_store_suggestions**: Suggestion counts
-- **num_results**: Number of search results
-- **is_hybrid_search**: Hybrid search indicator
-
-### Performance & Technical Metrics
-- **load_time**: Page load time in milliseconds
-- **page_load_time**: Page loading time
-- **bundle_load_time, bundle_parse_time**: JavaScript bundle performance
-- **connection_speed**: Connection speed
-- **device_connection_*****: Network connection details (dispatch_event, downlink, effective_type, rtt, etc.)
-
-### Web Vitals & Performance
-- **web_vitals**: General web vitals indicator
-- **web_vitals_cls_***: Cumulative Layout Shift metrics (delta, entries, id, name, value)
-- **web_vitals_fcp_***: First Contentful Paint metrics
-- **web_vitals_fid_***: First Input Delay metrics
-- **web_vitals_ttfb_***: Time to First Byte metrics
-- **cls, fcp, fid, lcp, ttfb**: Core web vitals abbreviations
-
-### User Experience & Behavior
-- **is_guest**: Boolean indicating guest user
-- **is_scheduled**: Scheduled delivery indicator
-- **is_segment_script_loaded**: Segment tracking status
-- **is_seo_visit**: SEO traffic indicator
-- **is_ssr**: Server-side rendering indicator
-- **is_initial_vertical**: Initial vertical page indicator
-- **has_bio, has_phone, has_website**: Store feature indicators
-- **has_completed_first_order**: First order completion status
-- **num_saved_items, num_saved_stores**: User saved items/stores
-- **homepage_navigation_type**: Homepage navigation method
-
-### Device & Browser Metrics
-- **browser_height, browser_width**: Browser dimensions
-- **device_height, device_width**: Device dimensions
-- **device_metrics_inner_height, device_metrics_inner_width**: Inner viewport dimensions
-- **user_agent**: Browser user agent
-- **touch**: Touch device indicator
-- **driver, driver_version, driver_facets_version**: Driver information
-
-### Technical & Development Context
-- **locale**: Locale setting
-- **meta**: Metadata information
-- **name**: Event name
-- **event_text**: Event text description
-- **experience**: Product experience
-- **fbp**: Facebook pixel information
-- **segment_dedupe_id**: Segment deduplication ID
-- **uuid_ts**: UUID timestamp
-- **correlation_event_id**: Event correlation ID
-- **using_telemetry_js**: Telemetry usage indicator
-- **testing_ssrbuild**: SSR build testing flag
-
-## Data Characteristics
-- **Total Columns**: 211 columns covering comprehensive web event tracking, performance metrics, and user context
-- **Update Frequency**: Real-time event streaming from web platforms
-- **Data Freshness**: Near real-time (typically within minutes)
-- **Partitioning**: Typically partitioned by `iguazu_timestamp` date for query performance
-- **Row Volume**: High volume - millions of events daily across all web explore page views
-- **Retention**: Historical data maintained for user behavior analysis
-- **Granularity**: One row per explore page load event per user session
-- **Event Structure**: Follows Iguazu server-side event schema optimized for web tracking
-
-## Common Use Cases
-1. **Web Funnel Analysis**: Track top-of-funnel web user engagement
-2. **Cross-Platform Comparison**: Compare web vs mobile app explore page performance
-3. **Web User Journey Mapping**: Study navigation patterns on web platforms
-4. **Geographic Web Analysis**: Understand web usage by region/country
-5. **Store Discovery Optimization**: Analyze how users discover stores on web
-6. **Platform Performance**: Monitor explore page load performance across browsers
-7. **Attribution Analysis**: Track how users arrive at explore page (SEO, ads, direct)
-8. **A/B Testing for Web Experience**: Measure impact of web explore page experiments
-9. **Conversion Funnel Analysis**: Track progression from explore page to orders on web
-10. **Mobile Web vs Desktop Analysis**: Compare user behavior across web platforms
-
-## Critical Filters & Query Patterns
-```sql
--- Standard web explore page events
-WHERE iguazu_timestamp >= '2024-01-01'
-  AND app_name IS NULL  -- Web events typically have null app_name
-  AND platform IN ('mobile', 'desktop')
-
--- Platform-specific analysis
-WHERE platform = 'mobile'    -- Mobile web
-  OR platform = 'desktop'   -- Desktop web
-
--- Geographic filtering
-WHERE country_id = 1  -- US only
-  AND submarket_id IS NOT NULL
-
--- Performance analysis
-WHERE load_time IS NOT NULL 
-  AND load_time BETWEEN 100 AND 30000  -- Exclude outliers
-```
-
-## Useful Query Patterns
-```sql
--- Web explore page views by platform
-SELECT 
-  platform,
-  DATE(iguazu_timestamp) as date,
-  COUNT(*) as page_views,
-  COUNT(DISTINCT dd_device_id) as unique_visitors,
-  AVG(load_time::FLOAT) as avg_load_time_ms
-FROM iguazu.server_events_production.store_content_page_load
-WHERE iguazu_timestamp >= CURRENT_DATE - 7
-  AND app_name IS NULL
-GROUP BY 1, 2
-ORDER BY 2 DESC, 3 DESC;
-
--- Cross-platform explore page comparison (Web vs Mobile App)
--- Combine with mobile app events
-SELECT 
-  'Web' as platform_type,
-  platform,
-  COUNT(*) as page_views
-FROM iguazu.server_events_production.store_content_page_load
-WHERE DATE(iguazu_timestamp) = CURRENT_DATE - 1
-  AND app_name IS NULL
-GROUP BY 2
-UNION ALL
-SELECT 
-  'Mobile App' as platform_type,
-  context_device_type as platform,
-  COUNT(*) as page_views  
-FROM iguazu.server_events_production.m_store_content_page_load
-WHERE DATE(iguazu_timestamp) = CURRENT_DATE - 1
-GROUP BY 2;
-
--- Web user session analysis
-SELECT 
-  dd_session_id,
-  dd_device_id,
-  platform,
-  MIN(iguazu_timestamp) as session_start,
-  COUNT(*) as explore_page_views,
-  AVG(load_time::FLOAT) as avg_load_time
-FROM iguazu.server_events_production.store_content_page_load
-WHERE DATE(iguazu_timestamp) = CURRENT_DATE - 1
-  AND dd_session_id IS NOT NULL
-  AND app_name IS NULL
-GROUP BY 1, 2, 3
-HAVING explore_page_views > 1;
-```
-
-## Relationship to User Journey
-This table captures the **first critical step** in the web ordering funnel:
-1. **Explore Page** (`store_content_page_load`) - **THIS TABLE** - Users discover restaurants on web
-2. **Store Page** - Users view specific restaurant details
-3. **Menu/Item Pages** - Users browse menu items
-4. **Cart/Checkout** - Users place orders
-
-## Data Quality Notes
-- **Web-Only Events**: This table only captures web platform events (mobile web/desktop)
-- **App Name Filtering**: Use `app_name IS NULL` to filter for web events vs mobile app
-- **Platform Values**: Main values are 'mobile' (mobile web) and 'desktop'
-- **Load Time Outliers**: Filter extreme load_time values (>30 seconds) which may indicate errors
-- **Guest vs Logged-in Users**: Use `dd_user_id IS NOT NULL` to filter for logged-in users
-- **Device Tracking**: Use `dd_device_id` for cross-session user tracking on web
-- **Geographic Data**: Some events may have incomplete location information
-- **Historical Context**: Use with `m_store_content_page_load` for comprehensive cross-platform analysis
-
-## Related Tables
-- **iguazu.server_events_production.m_store_content_page_load**: Mobile app explore page events (companion table)
-- **iguazu.server_events_production.store_page_load_consumer**: Web store page events (downstream)
-- **iguazu.server_events_production.checkout_page_load**: Web checkout events (conversion)
-- **iguazu.server_events_production.system_checkout_success_consumer**: Web order success events
-- **proddb.public.fact_region**: Geographic information for submarket mapping
-- **edw.consumer.event_attribution**: Attribution analysis linking explore page to conversions
-- **proddb.public.fact_unique_visitors_full_pt**: Visitor analytics across platforms
-
-## Performance Considerations
-- **Large Table**: High-volume event table with millions of daily rows
-- **Time-based Filtering**: Always filter by `iguazu_timestamp` date for performance
-- **Platform Filtering**: Use `app_name IS NULL` to identify web events
-- **Join Optimization**: Use dd_device_id for joining with other user behavior tables
-- **Column Selection**: Select only needed columns due to event table width
-- **Cross-Platform Analysis**: Combine with mobile app tables for comprehensive view
-
-## Differences from Mobile App Events
-**Key Differences from iguazu.server_events_production.m_store_content_page_load:**
-- **Web vs Mobile App**: Different platforms and user experiences
-- **Platform Values**: 'mobile'/'desktop' vs 'iOS'/'Android'
-- **App Context**: Web events have app_name = NULL
-- **Device Capabilities**: Different tracking capabilities on web vs native apps
-- **Performance Metrics**: Web-specific load time and browser metrics
-- **User Behavior**: Different interaction patterns on web vs mobile app
+**Description:** The store_content_page_load table captures detailed data on the loading of store content pages, focusing on user interactions and performance metrics. It includes geographic information (city, state, country, zip code), device and connection details (device type, OS, connection speed), user identifiers (user ID, session ID, email), and web performance metrics (TTFB, FCP, CLS). The table also tracks campaign and marketing data (campaign name, source, medium) and app-specific details (app version, app name, platform). This comprehensive dataset supports analysis of user experience and store engagement. (AIDataAnnotator generated)
 
 ## Business Context
-This table captures critical web platform engagement with DoorDash's restaurant discovery experience. Web traffic represents a significant portion of DoorDash's user base, particularly for desktop users and users who prefer browser-based experiences. The data drives decisions around web platform optimization, cross-platform feature parity, SEO/SEM performance, and understanding how web users discover and engage with restaurants compared to mobile app users.
 
----
-*This file was created based on historical usage patterns and web event analytics best practices*
-*Last updated: 2025-07-30*
+The `store_content_page_load` table in the IGUAZU catalog captures extensive data regarding the loading of store content pages, emphasizing user interactions and performance metrics. This dataset includes geographic details, device specifications, user identifiers, and web performance indicators, which are crucial for analyzing user experience and engagement with the store. It is particularly valuable for marketing and product teams to assess the effectiveness of campaigns and optimize user interfaces. The table is maintained by the SERVICE_METAMORPH team.
+
+## Metadata
+
+### Table Metadata
+
+**Type:** BASE TABLE
+**Size:** 498612.2 MB
+**Transient:** NO
+**Retention Time:** 0 days
+**Raw Row Count:** 3,050,764,077
+
+### Most Common Joins
+
+| Joined Table | Query Count |
+|--------------|-------------|
+| proddb.public.explore_page | 104 |
+| proddb.public.fact_dedup_experiment_exposure | 102 |
+| iguazu.server_events_production.m_store_content_page_load | 96 |
+| segment_events_raw.consumer_production.be_signup_success | 73 |
+| proddb.public.mau | 73 |
+| segment_events_raw.consumer_production.social_login_success | 73 |
+| iguazu.server_events_production.m_launch_instant_login_success | 73 |
+| segment_events_raw.consumer_production.be_login_success | 73 |
+| segment_events_raw.consumer_production.m_login_continue_with_saved_account_success | 73 |
+| segment_events_raw.consumer_production.social_login_new_user | 73 |
+
+### Column Metadata
+
+| Usage Rank | Column Name | Queries | Ordinal | Data Type | Is Cluster Key | Comment |
+|------------|-------------|---------|---------|-----------|----------------|---------|
+| 1 | DD_DEVICE_ID | 206 | 85 | TEXT | 0 | No comment |
+| 2 | NAME | 183 | 149 | TEXT | 0 | No comment |
+| 3 | PLATFORM | 115 | 166 | TEXT | 0 | No comment |
+| 4 | PAGE | 105 | 161 | TEXT | 0 | No comment |
+| 5 | IGUAZU_TIMESTAMP | 53 | 6 | TIMESTAMP_NTZ | 0 | No comment |
+| 6 | STORE_ID | 52 | 173 | NUMBER | 0 | No comment |
+| 7 | EXPERIENCE | 46 | 124 | TEXT | 0 | No comment |
+| 8 | CONTEXT_PAGE_PATH | 43 | 38 | TEXT | 0 | No comment |
+| 9 | CONTEXT_DEVICE_TYPE | 35 | 26 | TEXT | 0 | No comment |
+| 10 | NUM_STORES | 33 | 159 | NUMBER | 0 | No comment |
+| 11 | STORE_COUNT | 33 | 172 | NUMBER | 0 | No comment |
+| 12 | CONSUMER_ID | 30 | 82 | NUMBER | 0 | No comment |
+| 13 | IS_GUEST | 25 | 135 | BOOLEAN | 0 | No comment |
+| 14 | IGUAZU_USER_ID | 23 | 2 | TEXT | 0 | No comment |
+| 15 | PAGE_TYPE | 23 | 164 | TEXT | 0 | No comment |
+| 16 | CONTEXT_OS_NAME | 20 | 36 | TEXT | 0 | No comment |
+| 17 | ZIP_CODE | 20 | 211 | TEXT | 0 | No comment |
+| 18 | CONTEXT_TRAITS_ZIP_CODE | 17 | 60 | TEXT | 0 | No comment |
+| 19 | APP | 15 | 65 | TEXT | 0 | No comment |
+| 20 | SUBMARKET_ID | 14 | 174 | NUMBER | 0 | No comment |
+| 21 | DD_SESSION_ID | 13 | 95 | TEXT | 0 | No comment |
+| 22 | DD_SUBMARKET_ID | 13 | 97 | TEXT | 0 | No comment |
+| 23 | REFERRER | 11 | 169 | TEXT | 0 | No comment |
+| 24 | USER_AGENT | 11 | 181 | TEXT | 0 | No comment |
+| 25 | QUERY | 10 | 167 | TEXT | 0 | No comment |
+| 26 | CONTEXT_DEVICE_ID | 8 | 22 | TEXT | 0 | No comment |
+| 27 | CONTEXT_PAGE_REFERRER | 8 | 39 | TEXT | 0 | No comment |
+| 28 | UTM_CAMPAIGN | 8 | 183 | TEXT | 0 | No comment |
+| 29 | UTM_MEDIUM | 8 | 184 | TEXT | 0 | No comment |
+| 30 | UTM_SOURCE | 8 | 185 | TEXT | 0 | No comment |
+| 31 | CONTEXT_CAMPAIGN_MEDIUM | 7 | 16 | TEXT | 0 | No comment |
+| 32 | CONTEXT_CAMPAIGN_NAME | 7 | 17 | TEXT | 0 | No comment |
+| 33 | CONTEXT_CAMPAIGN_SOURCE | 7 | 18 | TEXT | 0 | No comment |
+| 34 | CONTEXT_APP_VERSION | 5 | 14 | TEXT | 0 | No comment |
+| 35 | APP_VERSION | 5 | 69 | TEXT | 0 | No comment |
+| 36 | APP_NAME | 4 | 67 | TEXT | 0 | No comment |
+| 37 | IGUAZU_ID | 3 | 1 | TEXT | 0 | No comment |
+| 38 | IGUAZU_RECEIVED_AT | 3 | 8 | TIMESTAMP_NTZ | 1 | No comment |
+| 39 | CONTEXT_APP_NAME | 3 | 12 | TEXT | 0 | No comment |
+| 40 | CONTEXT_APP_NAMESPACE | 3 | 13 | TEXT | 0 | No comment |
+| 41 | CONTEXT_USER_AGENT | 3 | 61 | TEXT | 0 | No comment |
+| 42 | DD_ZIP_CODE | 3 | 100 | TEXT | 0 | No comment |
+| 43 | CONTEXT_IP | 1 | 28 | TEXT | 0 | No comment |
+| 44 | CONTEXT_PAGE_SEARCH | 1 | 40 | TEXT | 0 | No comment |
+| 45 | HREF | 1 | 134 | TEXT | 0 | No comment |
+| 46 | IGUAZU_EVENT | 0 | 3 | TEXT | 0 | No comment |
+| 47 | IGUAZU_ANONYMOUS_ID | 0 | 4 | TEXT | 0 | No comment |
+| 48 | IGUAZU_ORIGINAL_TIMESTAMP | 0 | 5 | TIMESTAMP_NTZ | 0 | No comment |
+| 49 | IGUAZU_SENT_AT | 0 | 7 | TIMESTAMP_NTZ | 0 | No comment |
+| 50 | IGUAZU_OTHER_PROPERTIES | 0 | 9 | VARIANT | 0 | No comment |
+| 51 | IGUAZU_INGEST_TIMESTAMP | 0 | 10 | TIMESTAMP_NTZ | 0 | No comment |
+| 52 | CONTEXT_APP_BUILD | 0 | 11 | TEXT | 0 | No comment |
+| 53 | CONTEXT_CAMPAIGN_CONTENT | 0 | 15 | TEXT | 0 | No comment |
+| 54 | CONTEXT_CAMPAIGN_TERM | 0 | 19 | TEXT | 0 | No comment |
+| 55 | CONTEXT_DEVICE_AD_TRACKING_ENABLED | 0 | 20 | BOOLEAN | 0 | No comment |
+| 56 | CONTEXT_DEVICE_ADVERTISING_ID | 0 | 21 | TEXT | 0 | No comment |
+| 57 | CONTEXT_DEVICE_MANUFACTURER | 0 | 23 | TEXT | 0 | No comment |
+| 58 | CONTEXT_DEVICE_MODEL | 0 | 24 | TEXT | 0 | No comment |
+| 59 | CONTEXT_DEVICE_NAME | 0 | 25 | TEXT | 0 | No comment |
+| 60 | CONTEXT_DEVICE_VERSION | 0 | 27 | TEXT | 0 | No comment |
+| 61 | CONTEXT_LIBRARY_NAME | 0 | 29 | TEXT | 0 | No comment |
+| 62 | CONTEXT_LIBRARY_VERSION | 0 | 30 | TEXT | 0 | No comment |
+| 63 | CONTEXT_LOCALE | 0 | 31 | TEXT | 0 | No comment |
+| 64 | CONTEXT_NETWORK_BLUETOOTH | 0 | 32 | BOOLEAN | 0 | No comment |
+| 65 | CONTEXT_NETWORK_CARRIER | 0 | 33 | TEXT | 0 | No comment |
+| 66 | CONTEXT_NETWORK_CELLULAR | 0 | 34 | BOOLEAN | 0 | No comment |
+| 67 | CONTEXT_NETWORK_WIFI | 0 | 35 | BOOLEAN | 0 | No comment |
+| 68 | CONTEXT_OS_VERSION | 0 | 37 | TEXT | 0 | No comment |
+| 69 | CONTEXT_PAGE_TITLE | 0 | 41 | TEXT | 0 | No comment |
+| 70 | CONTEXT_PAGE_URL | 0 | 42 | TEXT | 0 | No comment |
+| 71 | CONTEXT_SCREEN_DENSITY | 0 | 43 | FLOAT | 0 | No comment |
+| 72 | CONTEXT_SCREEN_HEIGHT | 0 | 44 | NUMBER | 0 | No comment |
+| 73 | CONTEXT_SCREEN_WIDTH | 0 | 45 | NUMBER | 0 | No comment |
+| 74 | CONTEXT_TIMEZONE | 0 | 46 | TEXT | 0 | No comment |
+| 75 | CONTEXT_TRAITS_ANONYMOUS_ID | 0 | 47 | TEXT | 0 | No comment |
+| 76 | CONTEXT_TRAITS_CITY | 0 | 48 | TEXT | 0 | No comment |
+| 77 | CONTEXT_TRAITS_EMAIL | 0 | 49 | TEXT | 0 | No comment |
+| 78 | CONTEXT_TRAITS_FIRST_NAME | 0 | 50 | TEXT | 0 | No comment |
+| 79 | CONTEXT_TRAITS_LAST_NAME | 0 | 51 | TEXT | 0 | No comment |
+| 80 | CONTEXT_TRAITS_LATITUDE | 0 | 52 | FLOAT | 0 | No comment |
+| 81 | CONTEXT_TRAITS_LONGITUDE | 0 | 53 | FLOAT | 0 | No comment |
+| 82 | CONTEXT_TRAITS_NAME | 0 | 54 | TEXT | 0 | No comment |
+| 83 | CONTEXT_TRAITS_ORDERS_COUNT | 0 | 55 | NUMBER | 0 | No comment |
+| 84 | CONTEXT_TRAITS_STATE | 0 | 56 | TEXT | 0 | No comment |
+| 85 | CONTEXT_TRAITS_STORE_ID | 0 | 57 | TEXT | 0 | No comment |
+| 86 | CONTEXT_TRAITS_SUBMARKET | 0 | 58 | TEXT | 0 | No comment |
+| 87 | CONTEXT_TRAITS_SUBMARKET_ID | 0 | 59 | TEXT | 0 | No comment |
+| 88 | ALL_BANNER_DATA | 0 | 62 | TEXT | 0 | No comment |
+| 89 | ALL_VERTICAL_IDS | 0 | 63 | TEXT | 0 | No comment |
+| 90 | ALL_VERTICALS_COUNT | 0 | 64 | NUMBER | 0 | No comment |
+| 91 | APP_ENV | 0 | 66 | TEXT | 0 | No comment |
+| 92 | APP_TYPE | 0 | 68 | TEXT | 0 | No comment |
+| 93 | APP_WEB_NEXT | 0 | 70 | TEXT | 0 | No comment |
+| 94 | APP_WEB_SHA | 0 | 71 | TEXT | 0 | No comment |
+| 95 | AUTOCOMPLETE_NAME | 0 | 72 | TEXT | 0 | No comment |
+| 96 | BROWSER_HEIGHT | 0 | 73 | NUMBER | 0 | No comment |
+| 97 | BROWSER_WIDTH | 0 | 74 | NUMBER | 0 | No comment |
+| 98 | BUILD_TYPE | 0 | 75 | TEXT | 0 | No comment |
+| 99 | BUNDLE_CONTEXT | 0 | 76 | TEXT | 0 | No comment |
+| 100 | BUNDLE_LOAD_TIME | 0 | 77 | FLOAT | 0 | No comment |
+| 101 | BUNDLE_PARSE_TIME | 0 | 78 | FLOAT | 0 | No comment |
+| 102 | CITY | 0 | 79 | TEXT | 0 | No comment |
+| 103 | CLS | 0 | 80 | FLOAT | 0 | No comment |
+| 104 | CONNECTION_SPEED | 0 | 81 | NUMBER | 0 | No comment |
+| 105 | CORRELATION_EVENT_ID | 0 | 83 | TEXT | 0 | No comment |
+| 106 | COUNTRY_CODE | 0 | 84 | TEXT | 0 | No comment |
+| 107 | DD_DEVICE_ID_2 | 0 | 86 | TEXT | 0 | No comment |
+| 108 | DD_DEVICE_IF | 0 | 87 | TEXT | 0 | No comment |
+| 109 | DD_DIQTRICT_ID | 0 | 88 | TEXT | 0 | No comment |
+| 110 | DD_DISTRICT_ID | 0 | 89 | TEXT | 0 | No comment |
+| 111 | DD_GUEST_ID | 0 | 90 | TEXT | 0 | No comment |
+| 112 | DD_LANGUAGE | 0 | 91 | TEXT | 0 | No comment |
+| 113 | DD_LOCALE | 0 | 92 | TEXT | 0 | No comment |
+| 114 | DD_LOGIN_ID | 0 | 93 | TEXT | 0 | No comment |
+| 115 | DD_LOGINAS_FROM_USER_ID | 0 | 94 | TEXT | 0 | No comment |
+| 116 | DD_SESSION_ID_2 | 0 | 96 | TEXT | 0 | No comment |
+| 117 | DD_SUBOARKET_ID | 0 | 98 | TEXT | 0 | No comment |
+| 118 | DD_TESTING_COMMON_COOKIES | 0 | 99 | TEXT | 0 | No comment |
+| 119 | DD_ZIP_CODE_33020 | 0 | 101 | TEXT | 0 | No comment |
+| 120 | DD_ZIP_CODE_34668 | 0 | 102 | TEXT | 0 | No comment |
+| 121 | DD_ZIP_CODE_75038 | 0 | 103 | TEXT | 0 | No comment |
+| 122 | DD_ZIP_COFE | 0 | 104 | TEXT | 0 | No comment |
+| 123 | DEFAULT_ADDRESS | 0 | 105 | TEXT | 0 | No comment |
+| 124 | DELIVERY_ADDRESS | 0 | 106 | TEXT | 0 | No comment |
+| 125 | DEVICE_CONNECTION_DISPATCH_EVENT | 0 | 107 | TEXT | 0 | No comment |
+| 126 | DEVICE_CONNECTION_DOWNLINK | 0 | 108 | NUMBER | 0 | No comment |
+| 127 | DEVICE_CONNECTION_DOWNLINK_MAX | 0 | 109 | NUMBER | 0 | No comment |
+| 128 | DEVICE_CONNECTION_EFFECTIVE_TYPE | 0 | 110 | TEXT | 0 | No comment |
+| 129 | DEVICE_CONNECTION_RTT | 0 | 111 | NUMBER | 0 | No comment |
+| 130 | DEVICE_CONNECTION_SAVE_DATA | 0 | 112 | BOOLEAN | 0 | No comment |
+| 131 | DEVICE_CONNECTION_TYPE | 0 | 113 | TEXT | 0 | No comment |
+| 132 | DEVICE_HEIGHT | 0 | 114 | NUMBER | 0 | No comment |
+| 133 | DEVICE_METRICS_INNER_HEIGHT | 0 | 115 | NUMBER | 0 | No comment |
+| 134 | DEVICE_METRICS_INNER_WIDTH | 0 | 116 | NUMBER | 0 | No comment |
+| 135 | DEVICE_WIDTH | 0 | 117 | NUMBER | 0 | No comment |
+| 136 | DRIVER | 0 | 118 | TEXT | 0 | No comment |
+| 137 | DRIVER_FACETS_VERSION | 0 | 119 | TEXT | 0 | No comment |
+| 138 | DRIVER_VERSION | 0 | 120 | TEXT | 0 | No comment |
+| 139 | ELIGIBLE_VERTICAL_IDS | 0 | 121 | TEXT | 0 | No comment |
+| 140 | ELIGIBLE_VERTICALS_COUNT | 0 | 122 | NUMBER | 0 | No comment |
+| 141 | EVENT_TEXT | 0 | 123 | TEXT | 0 | No comment |
+| 142 | FBP | 0 | 125 | TEXT | 0 | No comment |
+| 143 | FCP | 0 | 126 | FLOAT | 0 | No comment |
+| 144 | FID | 0 | 127 | FLOAT | 0 | No comment |
+| 145 | FILTERS_APPLIED | 0 | 128 | TEXT | 0 | No comment |
+| 146 | HAS_BIO | 0 | 129 | BOOLEAN | 0 | No comment |
+| 147 | HAS_COMPLETED_FIRST_ORDER | 0 | 130 | BOOLEAN | 0 | No comment |
+| 148 | HAS_PHONE | 0 | 131 | BOOLEAN | 0 | No comment |
+| 149 | HAS_WEBSITE | 0 | 132 | BOOLEAN | 0 | No comment |
+| 150 | HOMEPAGE_NAVIGATION_TYPE | 0 | 133 | TEXT | 0 | No comment |
+| 151 | IS_HYBRID_SEARCH | 0 | 136 | BOOLEAN | 0 | No comment |
+| 152 | IS_INITIAL_VERTICAL | 0 | 137 | BOOLEAN | 0 | No comment |
+| 153 | IS_SCHEDULED | 0 | 138 | BOOLEAN | 0 | No comment |
+| 154 | IS_SEGMENT_SCRIPT_LOADED | 0 | 139 | BOOLEAN | 0 | No comment |
+| 155 | IS_SEO_VISIT | 0 | 140 | BOOLEAN | 0 | No comment |
+| 156 | IS_SSR | 0 | 141 | BOOLEAN | 0 | No comment |
+| 157 | ITEM_COUNT | 0 | 142 | NUMBER | 0 | No comment |
+| 158 | LAT | 0 | 143 | FLOAT | 0 | No comment |
+| 159 | LCP | 0 | 144 | FLOAT | 0 | No comment |
+| 160 | LNG | 0 | 145 | FLOAT | 0 | No comment |
+| 161 | LOAD_TIME | 0 | 146 | NUMBER | 0 | No comment |
+| 162 | LOCALE | 0 | 147 | TEXT | 0 | No comment |
+| 163 | META | 0 | 148 | TEXT | 0 | No comment |
+| 164 | NUM_CAROUSELS | 0 | 150 | NUMBER | 0 | No comment |
+| 165 | NUM_IN_STORE_FEED | 0 | 151 | NUMBER | 0 | No comment |
+| 166 | NUM_KEYSTROKE | 0 | 152 | TEXT | 0 | No comment |
+| 167 | NUM_KEYSTROKES | 0 | 153 | NUMBER | 0 | No comment |
+| 168 | NUM_QUERY_SUGGESTIONS | 0 | 154 | NUMBER | 0 | No comment |
+| 169 | NUM_RESULTS | 0 | 155 | NUMBER | 0 | No comment |
+| 170 | NUM_SAVED_ITEMS | 0 | 156 | NUMBER | 0 | No comment |
+| 171 | NUM_SAVED_STORES | 0 | 157 | NUMBER | 0 | No comment |
+| 172 | NUM_STORE_SUGGESTIONS | 0 | 158 | NUMBER | 0 | No comment |
+| 173 | NUM_TILES | 0 | 160 | NUMBER | 0 | No comment |
+| 174 | PAGE_ID | 0 | 162 | TEXT | 0 | No comment |
+| 175 | PAGE_LOAD_TIME | 0 | 163 | FLOAT | 0 | No comment |
+| 176 | PLACE_ID | 0 | 165 | TEXT | 0 | No comment |
+| 177 | RAW_QUERY | 0 | 168 | TEXT | 0 | No comment |
+| 178 | SEARCH_TERM | 0 | 170 | TEXT | 0 | No comment |
+| 179 | SEGMENT_DEDUPE_ID | 0 | 171 | TEXT | 0 | No comment |
+| 180 | SUBMARKET_NAME | 0 | 175 | TEXT | 0 | No comment |
+| 181 | TARGET_APP | 0 | 176 | TEXT | 0 | No comment |
+| 182 | TESTING_SSRBUILD | 0 | 177 | TEXT | 0 | No comment |
+| 183 | TILES_LIST | 0 | 178 | TEXT | 0 | No comment |
+| 184 | TOUCH | 0 | 179 | BOOLEAN | 0 | No comment |
+| 185 | TTFB | 0 | 180 | FLOAT | 0 | No comment |
+| 186 | USING_TELEMETRY_JS | 0 | 182 | BOOLEAN | 0 | No comment |
+| 187 | UUID_TS | 0 | 186 | TIMESTAMP_NTZ | 0 | No comment |
+| 188 | VERTICAL_ID | 0 | 187 | NUMBER | 0 | No comment |
+| 189 | VERTICAL_NAME | 0 | 188 | TEXT | 0 | No comment |
+| 190 | WEB_VITALS | 0 | 189 | TEXT | 0 | No comment |
+| 191 | WEB_VITALS_CLS_DELTA | 0 | 190 | NUMBER | 0 | No comment |
+| 192 | WEB_VITALS_CLS_ENTRIES | 0 | 191 | TEXT | 0 | No comment |
+| 193 | WEB_VITALS_CLS_ID | 0 | 192 | TEXT | 0 | No comment |
+| 194 | WEB_VITALS_CLS_NAME | 0 | 193 | TEXT | 0 | No comment |
+| 195 | WEB_VITALS_CLS_VALUE | 0 | 194 | NUMBER | 0 | No comment |
+| 196 | WEB_VITALS_FCP_DELTA | 0 | 195 | FLOAT | 0 | No comment |
+| 197 | WEB_VITALS_FCP_ENTRIES | 0 | 196 | TEXT | 0 | No comment |
+| 198 | WEB_VITALS_FCP_ID | 0 | 197 | TEXT | 0 | No comment |
+| 199 | WEB_VITALS_FCP_NAME | 0 | 198 | TEXT | 0 | No comment |
+| 200 | WEB_VITALS_FCP_VALUE | 0 | 199 | FLOAT | 0 | No comment |
+| 201 | WEB_VITALS_FID_DELTA | 0 | 200 | FLOAT | 0 | No comment |
+| 202 | WEB_VITALS_FID_ENTRIES | 0 | 201 | TEXT | 0 | No comment |
+| 203 | WEB_VITALS_FID_ID | 0 | 202 | TEXT | 0 | No comment |
+| 204 | WEB_VITALS_FID_NAME | 0 | 203 | TEXT | 0 | No comment |
+| 205 | WEB_VITALS_FID_VALUE | 0 | 204 | FLOAT | 0 | No comment |
+| 206 | WEB_VITALS_TTFB | 0 | 205 | FLOAT | 0 | No comment |
+| 207 | WEB_VITALS_TTFB_DELTA | 0 | 206 | FLOAT | 0 | No comment |
+| 208 | WEB_VITALS_TTFB_ENTRIES | 0 | 207 | TEXT | 0 | No comment |
+| 209 | WEB_VITALS_TTFB_ID | 0 | 208 | TEXT | 0 | No comment |
+| 210 | WEB_VITALS_TTFB_NAME | 0 | 209 | TEXT | 0 | No comment |
+| 211 | WEB_VITALS_TTFB_VALUE | 0 | 210 | FLOAT | 0 | No comment |
+
+## Granularity Analysis
+
+
+## Sample Queries
+
+### Query 1
+**Last Executed:** 2025-08-14 09:44:40.840000
+
+```sql
+WITH exposure AS
+(SELECT DISTINCT ee.tag
+               , ee.result
+               , bucket_key
+               , replace(lower(CASE WHEN bucket_key like 'dx_%' then bucket_key
+                         else 'dx_'||bucket_key end), '-') AS dd_device_ID_filtered
+               , MIN(convert_timezone('UTC','America/Los_Angeles',ee.EXPOSURE_TIME)::date) AS day
+               , MIN(convert_timezone('UTC','America/Los_Angeles',ee.EXPOSURE_TIME)) as ts 
+FROM PRODDB.PUBLIC.FACT_DEDUP_EXPERIMENT_EXPOSURE ee
+WHERE experiment_name = $exp_name
+AND experiment_version::INT = $version
+AND custom_attributes:revision_version::INT = $revision
+AND segment = 'Web' 
+AND custom_attributes:platform = 'desktop'
+--AND segment= 'Experiment Users'
+-- AND calling_context = 'JS DVES Client'
+AND convert_timezone('UTC','America/Los_Angeles',EXPOSURE_TIME) BETWEEN $start_date AND $end_date
+GROUP BY 1,2,3,4
+)
+
+
+
+
+, login_success_overall AS (
+select distinct replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts 
+  , 'save_login_info' as Source
+from segment_events_RAW.consumer_production.m_login_continue_with_saved_account_success
+where convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+
+UNION
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered 
+  , convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp) as ts
+  , 'instant_login' AS source
+FROM iguazu.server_events_production.m_launch_instant_login_success
+WHERE convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp) BETWEEN $start_date AND $end_date
+
+UNION
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered 
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , SOCIAL_PROVIDER AS Source
+from segment_events_RAW.consumer_production.social_login_success
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND SOCIAL_PROVIDER IN ('google-plus','facebook','apple')
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'email' AS source
+from segment_events_raw.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND type = 'login'
+AND sub_Type = 'credential'
+ 
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'bypass_login_promo' AS source
+from segment_events_raw.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND type = 'login'
+AND sub_Type = 'magic_link'
+AND MAGIC_LINK_SOURCE = 'api' 
+ 
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'bypass_login_known' AS source
+from segment_events_raw.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND type = 'login'
+AND sub_Type = 'magic_link'
+AND MAGIC_LINK_SOURCE = 'bypass_login_wrong_credentials'
+
+UNION
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'bypass_login_unknown' AS source
+from segment_events_raw.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND type = 'login'
+AND sub_Type = 'bypass_login_wrong_credentials'
+AND bypass_login_category = 'bypass_login_unknown'
+
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'otc_known' AS source
+from segment_events_raw.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND type = 'login'
+AND sub_Type = 'phone_otp'
+AND PHONE_OTP_CATEGORY = 'known_device'
+ 
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'otc_unknown' AS source
+from segment_events_raw.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND type = 'login'
+AND sub_Type = 'phone_otp'
+AND PHONE_OTP_CATEGORY = 'unknown_device' 
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'seemless_otc_known' AS source
+from segment_events_raw.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND type = 'login'
+AND sub_Type = 'guided_email_seamless_login'
+AND PHONE_OTP_CATEGORY = 'known_device'
+ 
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'seemless_otc_unknown' AS source
+from segment_events_raw.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND type = 'login'
+AND sub_Type = 'guided_email_seamless_login'
+AND PHONE_OTP_CATEGORY = 'unknown_device' 
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+       , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+       , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+       , 'otc_magiclink_known' AS source
+from segment_events_raw.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+-- AND type = 'login'
+ AND sub_type = 'magic_link'
+ AND magic_link_source  = 'otc'
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'guided_login_from_password' AS source
+from segment_events_RAW.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND sub_type = 'guided_login_v2'
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'guided_login_from_phone_email' AS source
+from segment_events_RAW.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND sub_type = 'guided_login_phone_signup_existing_account'
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'guided_login_from_seamless' AS source
+from segment_events_RAW.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND sub_type = 'guided_login_phone_signup_seamless'
+
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'phone_signin_on_signup_known' AS source
+from segment_events_RAW.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND sub_type = 'phone_sign_in_on_signup'
+AND PHONE_OTP_CATEGORY = 'known_device'
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'phone_signin_on_signup_unknown' AS source
+from segment_events_RAW.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND sub_type = 'phone_sign_in_on_signup'
+AND PHONE_OTP_CATEGORY = 'unknown_device'
+
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'guided_phone_login_known' AS source
+from segment_events_RAW.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND sub_type = 'guided_phone_login'
+AND PHONE_OTP_CATEGORY = 'known_device'
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'guided_phone_login_unknown' AS source
+from segment_events_RAW.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND sub_type = 'guided_phone_login'
+AND PHONE_OTP_CATEGORY = 'unknown_device'
+
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'guided_phone_seamless_login_known' AS source
+from segment_events_RAW.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND sub_type = 'guided_phone_seamless_login'
+AND PHONE_OTP_CATEGORY = 'known_device'
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'guided_phone_seamless_login_unknown' AS source
+from segment_events_RAW.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND sub_type = 'guided_phone_seamless_login'
+AND PHONE_OTP_CATEGORY = 'unknown_device'
+)
+
+
+
+, signup_success_overall AS ( 
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , SOCIAL_PROVIDER AS Source
+from segment_events_RAW.consumer_production.social_login_new_user 
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND SOCIAL_PROVIDER IN ('google-plus','facebook','apple')
+
+UNION
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'email' AS source
+from segment_events_RAW.consumer_production.be_signup_success 
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND sub_type = 'email_signup'
+
+UNION
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered 
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'phone' AS source
+from segment_events_RAW.consumer_production.be_signup_success 
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND sub_type = 'phone_signup'
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered 
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'phone_seamless' AS source
+from segment_events_RAW.consumer_production.be_signup_success 
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND sub_type = 'phone_signup_seamless'
+)
+
+
+-- logout 
+, logout as (
+select distinct replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                        else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts 
+  , 'logout' as source 
+from segment_events_raw.consumer_production.m_logout 
+where convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+)
+
+
+, overall_switch AS 
+(
+    SELECT 
+        DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+        ,convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp)::date AS day
+        ,convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp) as ts 
+        ,'switch' AS source
+    FROM 
+        iguazu.consumer.m_profile_switch_account_complete
+    WHERE 
+        convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp) BETWEEN $start_date AND $end_date
+)
+
+
+, switch_with_one_click AS 
+(
+    SELECT 
+        DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+        ,convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp)::date AS day
+        ,convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp) as ts 
+        ,'switch' AS source
+    FROM 
+        iguazu.consumer.m_switch_account_phase_4_ice
+    WHERE 
+        convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp) BETWEEN $start_date AND $end_date
+        ANd event = 'success'
+)
+
+
+
+, Auth_success AS (
+SELECT e.tag
+        , COUNT(DISTINCT e.dd_device_ID_filtered) AS exposure_onboard
+        , COUNT(DISTINCT l.dd_device_ID_filtered) AS overall_login
+        , COUNT(DISTINCT l.dd_device_ID_filtered) / COUNT(DISTINCT e.dd_device_ID_filtered) AS overall_login_rate
+        , COUNT(DISTINCT s.dd_device_ID_filtered) AS overall_signup
+        , COUNT(DISTINCT s.dd_device_ID_filtered) / COUNT(DISTINCT e.dd_device_ID_filtered) AS overall_signup_rate
+        , COUNT(DISTINCT g.dd_device_ID_filtered) AS overall_logout
+        , COUNT(DISTINCT g.dd_device_ID_filtered) / COUNT(DISTINCT e.dd_device_ID_filtered) AS overall_logout_rate 
+        , COUNT(DISTINCT sw.dd_device_ID_filtered) AS overall_switch
+        , COUNT(DISTINCT sw.dd_device_ID_filtered) / COUNT(DISTINCT e.dd_device_ID_filtered) AS overall_switch_rate 
+        , COUNT(DISTINCT so.dd_device_ID_filtered) AS one_click_switch
+        , COUNT(DISTINCT so.dd_device_ID_filtered) / COUNT(DISTINCT e.dd_device_ID_filtered) AS one_click_switch_rate 
+        
+        , COUNT(DISTINCT CASE WHEN l.source = 'instant_login' THEN l.dd_device_ID_filtered ELSE NULL END) AS instant_login
+        , COUNT(DISTINCT CASE WHEN l.source = 'instant_login' THEN l.dd_device_ID_filtered ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS instant_login_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'save_login_info' THEN l.dd_device_ID_filtered ELSE NULL END) AS save_info_login
+        , COUNT(DISTINCT CASE WHEN l.source = 'save_login_info' THEN l.dd_device_ID_filtered ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS save_info_login_rate
+ 
+        , COUNT(DISTINCT CASE WHEN l.source = 'email' THEN l.dd_device_ID_filtered  ELSE NULL END) AS email_login
+        , COUNT(DISTINCT CASE WHEN l.source = 'email' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS email_login_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'guided_login_from_seamless' THEN l.dd_device_ID_filtered  ELSE NULL END) AS guided_login_from_seamless
+        , COUNT(DISTINCT CASE WHEN l.source = 'guided_login_from_seamless' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS guided_login_from_seamless_rate        
+        , COUNT(DISTINCT CASE WHEN l.source = 'guided_login_from_password' THEN l.dd_device_ID_filtered  ELSE NULL END) AS guided_login_from_password
+        , COUNT(DISTINCT CASE WHEN l.source = 'guided_login_from_password' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS guided_login_from_password_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'guided_login_from_phone_email' THEN l.dd_device_ID_filtered  ELSE NULL END) AS guided_login_from_phone_email
+        , COUNT(DISTINCT CASE WHEN l.source = 'guided_login_from_phone_email' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS guided_login_from_phone_email_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'guided_phone_login_known' THEN l.dd_device_ID_filtered  ELSE NULL END) AS guided_phone_login_known
+        , COUNT(DISTINCT CASE WHEN l.source = 'guided_phone_login_known' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS guided_phone_login_known_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'guided_phone_login_unknown' THEN l.dd_device_ID_filtered  ELSE NULL END) AS guided_phone_login_unknown
+        , COUNT(DISTINCT CASE WHEN l.source = 'guided_phone_login_unknown' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS guided_phone_login_unknown_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'guided_phone_seamless_login_known' THEN l.dd_device_ID_filtered  ELSE NULL END) AS guided_phone_seamless_login_known
+        , COUNT(DISTINCT CASE WHEN l.source = 'guided_phone_seamless_login_known' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS guided_phone_seamless_login_known_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'guided_phone_seamless_login_unknown' THEN l.dd_device_ID_filtered  ELSE NULL END) AS guided_phone_seamless_login_unknown
+        , COUNT(DISTINCT CASE WHEN l.source = 'guided_phone_seamless_login_unknown' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS guided_phone_seamless_login_unknown_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'bypass_login_promo' THEN l.dd_device_ID_filtered  ELSE NULL END) AS bypass_login_promo
+        , COUNT(DISTINCT CASE WHEN l.source = 'bypass_login_promo' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS bypass_login_promo_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'bypass_login_known' THEN l.dd_device_ID_filtered  ELSE NULL END) AS bypass_login_known
+        , COUNT(DISTINCT CASE WHEN l.source = 'bypass_login_known' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS bypass_login_known_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'bypass_login_unknown' THEN l.dd_device_ID_filtered  ELSE NULL END) AS bypass_login_unknown
+        , COUNT(DISTINCT CASE WHEN l.source = 'bypass_login_unknown' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS bypass_login_unknown_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'otc_known' THEN l.dd_device_ID_filtered  ELSE NULL END) AS otc_known
+        , COUNT(DISTINCT CASE WHEN l.source = 'otc_known' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS otc_known_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'otc_unknown' THEN l.dd_device_ID_filtered  ELSE NULL END) AS otc_unknown
+        , COUNT(DISTINCT CASE WHEN l.source = 'otc_unknown' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS otc_unknown_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'seemless_otc_known' THEN l.dd_device_ID_filtered  ELSE NULL END) AS seemless_otc_known
+        , COUNT(DISTINCT CASE WHEN l.source = 'seemless_otc_known' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS seemless_otc_known_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'seemless_otc_unknown' THEN l.dd_device_ID_filtered  ELSE NULL END) AS seemless_otc_unknown
+        , COUNT(DISTINCT CASE WHEN l.source = 'seemless_otc_unknown' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS seemless_otc_unknown_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'otc_magiclink_known' THEN l.dd_device_ID_filtered  ELSE NULL END) AS otc_magiclink_known
+        , COUNT(DISTINCT CASE WHEN l.source = 'otc_magiclink_known' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS otc_magiclink_known_rate
+        
+        , COUNT(DISTINCT CASE WHEN l.source IN ('google-plus','google') THEN l.dd_device_ID_filtered  ELSE NULL END) AS Google_login
+        , COUNT(DISTINCT CASE WHEN l.source IN ('google-plus','google') THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS Google_login_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'facebook' THEN l.dd_device_ID_filtered  ELSE NULL END) AS FB_login
+        , COUNT(DISTINCT CASE WHEN l.source = 'facebook' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS FB_login_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'apple' THEN l.dd_device_ID_filtered  ELSE NULL END) AS apple_login
+        , COUNT(DISTINCT CASE WHEN l.source = 'apple' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS apple_login_rate
+        , COUNT(DISTINCT CASE WHEN l.source IN ('google-plus','google','facebook','apple') THEN l.dd_device_ID_filtered  ELSE NULL END) AS Social_login
+        , COUNT(DISTINCT CASE WHEN l.source IN ('google-plus','google','facebook','apple') THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered ) AS Social_login_rate
+
+        , COUNT(DISTINCT CASE WHEN s.source = 'email' THEN s.dd_device_ID_filtered  ELSE NULL END) AS email_SignUp
+        , COUNT(DISTINCT CASE WHEN s.source = 'email' THEN s.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS email_SignUp_rate
+        , COUNT(DISTINCT CASE WHEN s.source = 'phone' THEN s.dd_device_ID_filtered  ELSE NULL END) AS phone_SignUp
+        , COUNT(DISTINCT CASE WHEN s.source = 'phone' THEN s.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS phone_SignUp_rate
+        , COUNT(DISTINCT CASE WHEN s.source = 'phone_seamless' THEN s.dd_device_ID_filtered  ELSE NULL END) AS phone_seamless_SignUp
+        , COUNT(DISTINCT CASE WHEN s.source = 'phone_seamless' THEN s.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS phone_seamless_SignUp_rate
+        , COUNT(DISTINCT CASE WHEN s.source IN ('google-plus','google') THEN s.dd_device_ID_filtered  ELSE NULL END) AS Google_SignUp
+        , COUNT(DISTINCT CASE WHEN s.source IN ('google-plus','google') THEN s.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS Google_SignUp_rate
+        , COUNT(DISTINCT CASE WHEN s.source = 'facebook' THEN s.dd_device_ID_filtered  ELSE NULL END) AS FB_SignUp
+        , COUNT(DISTINCT CASE WHEN s.source = 'facebook' THEN s.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS FB_SignUp_rate
+        , COUNT(DISTINCT CASE WHEN s.source = 'apple' THEN s.dd_device_ID_filtered  ELSE NULL END) AS apple_SignUp
+        , COUNT(DISTINCT CASE WHEN s.source = 'apple' THEN s.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS apple_SignUp_rate
+        , COUNT(DISTINCT CASE WHEN s.source IN ('google-plus','google','facebook','apple') THEN s.dd_device_ID_filtered  ELSE NULL END) AS Social_SignUp
+        , COUNT(DISTINCT CASE WHEN s.source IN ('google-plus','google','facebook','apple') THEN s.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered ) AS Social_SignUp_rate
+
+FROM exposure e
+LEFT JOIN login_success_overall l
+    ON to_char(e.dd_device_ID_filtered) = to_char(l.dd_device_ID_filtered)
+    AND l.ts >= dateadd('second', -60, e.ts) 
+LEFT JOIN signup_success_overall s
+    ON to_char(e.dd_device_ID_filtered) = to_char(s.dd_device_ID_filtered) 
+    AND s.ts >= dateadd('second', -60, e.ts) 
+LEFT JOIN logout g 
+    ON to_char(e.dd_device_ID_filtered) = to_char(g.dd_device_ID_filtered) 
+    AND g.ts >= dateadd('second', -60, e.ts) 
+LEFT JOIN overall_switch sw ON to_char(e.dd_device_ID_filtered) = to_char(sw.dd_device_ID_filtered) AND sw.ts >= dateadd('second', -60, e.ts) 
+LEFT JOIN switch_with_one_click so ON to_char(e.dd_device_ID_filtered) = to_char(so.dd_device_ID_filtered) AND so.ts >= dateadd('second', -60, e.ts) 
+WHERE TAG != 'reserve'
+GROUP BY 1
+ORDER BY 1
+)
+
+
+
+
+-- explore page view
+, explore_page AS
+(SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+       , convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp)::date AS day
+from IGUAZU.SERVER_EVENTS_PRODUCTION.M_STORE_CONTENT_PAGE_LOAD
+WHERE convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp) BETWEEN $start_date AND $end_date
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+       , convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp)::date AS day
+from IGUAZU.SERVER_EVENTS_PRODUCTION.STORE_CONTENT_PAGE_LOAD
+WHERE convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp) BETWEEN $start_date AND $end_date
+)
+
+, store_page AS
+(SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+       , convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp)::date AS day
+from IGUAZU.SERVER_EVENTS_PRODUCTION.M_STORE_PAGE_LOAD
+WHERE convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp) BETWEEN $start_date AND $end_date
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+       , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+from segment_events_raw.consumer_production.STORE_PAGE_LOAD
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+)
+
+
+
+, explore AS
+(SELECT DISTINCT e.tag
+                , e.dd_device_ID_filtered
+                , e.day
+                , MAX(CASE WHEN ep.dd_device_ID_filtered IS NOT NULL THEN 1 ELSE 0 END) AS explore_view
+FROM exposure e
+LEFT JOIN explore_page ep
+    ON e.dd_device_ID_filtered = ep.dd_device_ID_filtered
+    AND e.day <= ep.day
+GROUP BY 1,2,3
+)
+
+, store AS
+(SELECT DISTINCT e.tag
+                , e.dd_device_ID_filtered
+                , e.day
+                , MAX(CASE WHEN ep.dd_device_ID_filtered IS NOT NULL THEN 1 ELSE 0 END) AS store_view
+FROM exposure e
+LEFT JOIN store_page ep
+    ON e.dd_device_ID_filtered = ep.dd_device_ID_filtered
+    AND e.day <= ep.day
+GROUP BY 1,2,3
+)
+
+
+
+, explore_res AS
+(SELECT tag
+        , SUM(explore_view) explore_view
+        , SUM(explore_view) / COUNT(DISTINCT e.dd_device_ID_filtered) AS explore_rate
+FROM explore e
+GROUP BY 1
+ORDER BY 1)
+
+, store_res AS
+(SELECT tag
+        , SUM(store_view) store_view
+        , SUM(store_view) / COUNT(DISTINCT e.dd_device_ID_filtered) AS store_rate
+FROM store e
+GROUP BY 1
+ORDER BY 1)
+
+
+,  orders AS (
+    SELECT 
+        DISTINCT a.dd_device_id
+            , replace(lower(CASE WHEN a.dd_device_id like 'dx_%' then a.dd_device_id else 'dx_'||a.dd_device_id end), '-') AS dd_device_ID_filtered
+            , convert_timezone('UTC','America/Los_Angeles',a.timestamp)::date as day
+            , dd.delivery_ID
+            , dd.is_first_ordercart_DD
+            , dd.is_filtered_core
+            , dd.variable_profit * 0.01 AS variable_profit
+            , dd.gov * 0.01 AS gov
+    FROM 
+        segment_events_raw.consumer_production.order_cart_submit_received a
+        JOIN dimension_deliveries dd
+        ON a.order_cart_id = dd.order_cart_id
+        AND dd.is_filtered_core = 1
+        AND (convert_timezone('UTC','America/Los_Angeles',dd.created_at) BETWEEN LEAST($start_date,DATEADD('day',-28,$end_date)) AND $end_date)
+        AND (convert_timezone('UTC','America/Los_Angeles',a.timestamp) BETWEEN LEAST($start_date,DATEADD('day',-28,$end_date))  AND $end_date)
+    WHERE
+        a.dd_device_id is not null
+)
+
+
+
+, checkout AS (
+SELECT  
+        e.tag
+        , COUNT(DISTINCT CASE WHEN is_filtered_core = 1 AND (o.day BETWEEN $start_date AND $end_date) THEN o.delivery_id ELSE NULL END) AS orders
+        , COUNT(DISTINCT CASE WHEN is_first_ordercart_DD = 1 AND (o.day BETWEEN $start_date AND $end_date) AND is_filtered_core = 1 THEN o.delivery_ID ELSE NULL END) AS new_Cx
+        , orders/COUNT(DISTINCT e.dd_device_ID_filtered) AS order_rate
+        , new_Cx/COUNT(DISTINCT e.dd_device_ID_filtered) AS new_cx_rate
+        , SUM(CASE WHEN is_filtered_core = 1 AND (o.day BETWEEN $start_date AND $end_date) THEN variable_profit END) AS variable_profit
+        , SUM(variable_profit) / COUNT(DISTINCT e.dd_device_ID_filtered) AS VP_per_device
+        , SUM(CASE WHEN is_filtered_core = 1 AND (o.day BETWEEN $start_date AND $end_date) THEN gov END) AS gov
+        , SUM(gov) / COUNT(DISTINCT e.dd_device_ID_filtered) AS gov_per_device
+FROM 
+  exposure e
+  LEFT JOIN orders o ON e.dd_device_ID_filtered = o.dd_device_ID_filtered AND e.day <= o.day
+WHERE 
+  TAG NOT IN ('internal_test','reserved')
+GROUP BY 1
+ORDER BY 1
+)
+
+
+
+
+, MAU AS (
+SELECT  e.tag
+        , COUNT(DISTINCT o.dd_device_ID_filtered) as MAU
+        , COUNT(DISTINCT o.dd_device_ID_filtered) / COUNT(DISTINCT e.dd_device_ID_filtered) as MAU_rate
+FROM exposure e
+LEFT JOIN orders o
+    ON e.dd_device_ID_filtered = o.dd_device_ID_filtered 
+    --AND e.day <= o.day
+    AND o.day BETWEEN DATEADD('day',-28,$end_date) AND DATEADD('day',-1,$end_date) -- past 28 days orders
+-- WHERE e.day <= DATEADD('day',-28,$end_date) --- exposed at least 28 days ago
+GROUP BY 1
+ORDER BY 1
+)
+
+
+
+, res AS (
+SELECT a.*
+        , c.orders
+        , c.order_rate
+        , c.new_cx
+        , c.new_cx_rate
+        , c.variable_profit
+        , c.VP_per_device
+        , c.gov
+        , c.gov_per_device
+        , e.explore_view
+        , e.explore_rate
+        , s.store_view
+        , s.store_rate
+        , m.MAU
+        , m.MAU_rate
+FROM auth_success a
+JOIN checkout c
+    ON a.tag = c.tag
+JOIN explore_res e
+  ON c.tag = e.tag
+JOIN store_res s
+  ON c.tag = s.tag
+JOIN MAU m
+  ON a.tag = m.tag
+ORDER BY 1
+)
+
+
+
+SELECT r1.tag 
+        , r1.exposure_onboard
+        , r1.overall_login
+        , r1.overall_login_rate
+        , iff(r2.overall_login_rate != 0, r1.overall_login_rate / NULLIF(r2.overall_login_rate,0) - 1, null) AS Lift_overall_login_rate
+        , r1.overall_signup
+        , r1.overall_signup_rate
+        , iff(r2.overall_signup_rate != 0, r1.overall_signup_rate / NULLIF(r2.overall_signup_rate,0) - 1, null) AS Lift_overall_signup_rate
+        , r1.overall_logout
+        , r1.overall_logout_rate
+        , iff(r2.overall_logout_rate != 0, r1.overall_logout_rate / NULLIF(r2.overall_logout_rate,0) - 1, null) AS Lift_overall_logout_rate
+        , r1.overall_switch
+        , r1.overall_switch_rate
+        , iff(r2.overall_switch_rate != 0, r1.overall_switch_rate / NULLIF(r2.overall_switch_rate,0) - 1, null) AS Lift_overall_switch_rate
+        , r1.one_click_switch
+        , r1.one_click_switch_rate
+        , iff(r2.one_click_switch_rate != 0, r1.one_click_switch_rate / NULLIF(r2.one_click_switch_rate,0) - 1, null) AS Lift_one_click_switch_rate
+        
+        
+        , r1.orders
+        , r1.order_rate
+        , iff(r2.order_rate != 0, r1.order_rate / NULLIF(r2.order_rate,0) - 1, null) AS Lift_order_rate
+        , r1.new_cx
+        , r1.new_cx_rate
+        , iff(r2.new_cx_rate != 0, r1.new_cx_rate / NULLIF(r2.new_cx_rate,0) - 1,null) AS Lift_new_cx_rate
+        , r1.MAU
+        , r1.MAU_rate
+        , IFF(r2.MAU_rate=0, null, r1.MAU_rate / NULLIF(r2.MAU_rate,0) - 1) AS lift_MAU_rate
+        , r1.explore_view
+        , r1.explore_rate
+        , iff(r2.explore_rate !=0, r1.explore_rate / r2.explore_rate -1,null) AS Lift_explore_rate
+        , r1.store_view
+        , r1.store_rate
+        , iff(r2.store_rate !=0, r1.store_rate / r2.store_rate -1,null) AS Lift_store_rate
+        , r1.variable_profit
+        , iff(r2.variable_profit !=0, r1.variable_profit / r2.variable_profit - 1, null) AS Lift_VP
+        , r1.VP_per_device
+        , iff(r2.VP_per_device !=0, r1.VP_per_device / r2.VP_per_device -1,null) AS Lift_VP_per_device
+        , r1.gov
+        , r1.gov / r2.gov - 1 AS Lift_gov
+        , r1.gov_per_device
+        , r1.gov_per_device / r2.gov_per_device -1 AS Lift_gov_per_device
+        
+        , r1.instant_login
+        , r1.instant_login_rate
+        , r1.instant_login_rate / NULLIF(r2.instant_login_rate,0) - 1 as Lift_instant_login_rate
+        , r1.save_info_login
+        , r1.save_info_login_rate
+        , r1.save_info_login_rate / NULLIF(r2.save_info_login_rate,0) - 1 as Lift_save_info_login_rate
+        
+        , r1.email_login
+        , r1.email_login_rate
+        , r1.email_login_rate / NULLIF(r2.email_login_rate,0)- 1 AS Lift_email_login_rate
+        , r1.otc_known
+        , r1.otc_known_rate
+        , r1.otc_known_rate / NULLIF(r2.otc_known_rate,0) - 1 AS Lift_otc_known_rate
+        , r1.otc_unknown
+        , r1.otc_unknown_rate
+        , r1.otc_unknown_rate / NULLIF(r2.otc_unknown_rate,0) - 1 AS Lift_otc_unknown_rate
+        , r1.seemless_otc_known
+        , r1.seemless_otc_known_rate
+        , r1.seemless_otc_known_rate / NULLIF(r2.seemless_otc_known_rate,0) - 1 AS Lift_seemless_otc_known_rate
+        , r1.seemless_otc_unknown
+        , r1.seemless_otc_unknown_rate
+        , r1.seemless_otc_unknown_rate / NULLIF(r2.seemless_otc_unknown_rate,0) - 1 AS Lift_seemless_otc_unknown_rate
+        , r1.otc_magiclink_known
+        , r1.otc_magiclink_known_rate
+        , r1.otc_magiclink_known_rate / NULLIF(r2.otc_magiclink_known_rate,0) - 1 AS Lift_otc_magiclink_known_rate
+        , r1.bypass_login_promo 
+        , r1.bypass_login_promo_rate 
+        , r1.bypass_login_promo_rate / NULLIF(r2.bypass_login_promo_rate,0) - 1 as Lift_bypass_login_promo_rate
+        , r1.bypass_login_known
+        , r1.bypass_login_known_rate
+        , r1.bypass_login_known_rate / NULLIF(r2.bypass_login_known_rate,0) - 1 AS Lift_bypass_login_known_rate
+        , r1.bypass_login_unknown
+        , r1.bypass_login_unknown_rate
+        , r1.bypass_login_unknown_rate / NULLIF(r2.bypass_login_unknown_rate,0) - 1 AS Lift_bypass_login_unknown_rate
+        , r1.guided_login_from_seamless
+        , r1.guided_login_from_seamless_rate
+        , r1.guided_login_from_seamless_rate / NULLIF(r2.guided_login_from_seamless_rate,0) - 1 AS Lift_guided_login_from_seamless_rate
+        , r1.guided_login_from_password 
+        , r1.guided_login_from_password_rate
+        , r1.guided_login_from_password_rate / NULLIF(r2.guided_login_from_password_rate,0) - 1 AS Lift_guided_login_from_password_rate
+        , r1.guided_login_from_phone_email
+        , r1.guided_login_from_phone_email_rate
+        , r1.guided_login_from_phone_email_rate / NULLIF(r2.guided_login_from_phone_email_rate,0) - 1 AS Lift_guided_login_from_phone_email_rate
+        , r1.guided_phone_login_known
+        , r1.guided_phone_login_known_rate
+        , r1.guided_phone_login_known / NULLIF(r2.guided_phone_login_known,0) - 1 AS Lift_guided_phone_login_known_rate
+        , r1.guided_phone_login_unknown
+        , r1.guided_phone_login_unknown_rate
+        , r1.guided_phone_login_unknown / NULLIF(r2.guided_phone_login_unknown,0) - 1 AS Lift_guided_phone_login_unknown_rate
+        , r1.guided_phone_seamless_login_known
+        , r1.guided_phone_seamless_login_known_rate
+        , r1.guided_phone_seamless_login_known / NULLIF(r2.guided_phone_seamless_login_known,0) - 1 AS Lift_guided_phone_seamless_login_known_rate
+        , r1.guided_phone_seamless_login_unknown
+        , r1.guided_phone_seamless_login_unknown_rate
+        , r1.guided_phone_seamless_login_unknown / NULLIF(r2.guided_phone_seamless_login_unknown,0) - 1 AS Lift_guided_phone_seamless_login_unknown_rate
+        , r1.social_login
+        , r1.social_login_rate
+        , r1.Social_login_rate / NULLIF(r2.Social_login_rate,0) - 1 AS Lift_Social_login_rate
+        , r1.Google_login
+        , r1.google_login_rate
+        , r1.google_login_rate / NULLIF(r2.google_login_rate,0) - 1 AS Lift_google_login_rate
+        , r1.FB_login
+        , r1.FB_login_rate
+        , r1.FB_login_rate / NULLIF(r2.FB_login_rate,0) - 1 AS Lift_FB_login_rate
+        , r1.Apple_login
+        , r1.Apple_login_rate
+        , r1.Apple_login_rate / NULLIF(r2.Apple_login_rate,0) - 1 AS Lift_Apple_login_rate
+        
+        , r1.Email_signup
+        , r1.Email_signup_rate
+        , r1.Email_signup_rate /  NULLIF(r2.Email_signup_rate,0) - 1 AS Lift_Email_signup_rate
+        , r1.phone_signup
+        , r1.phone_signup_rate
+        , r1.phone_signup_rate /  NULLIF(r2.phone_signup_rate,0) - 1 AS Lift_phone_signup_rate
+        , r1.phone_seamless_signup
+        , r1.phone_seamless_signup_rate
+        , r1.phone_seamless_signup_rate /  NULLIF(r2.phone_seamless_signup_rate,0) - 1 AS Lift_phone_seamless_signup_rate
+        , r1.Social_signup
+        , r1.Social_signup_rate
+        , r1.Social_signup_rate /  NULLIF(r2.Social_signup_rate,0) - 1 AS Lift_Social_signup_rate
+        , r1.Google_signup
+        , r1.Google_signup_rate
+        , r1.Google_signup_rate /  NULLIF(r2.Google_signup_rate,0) - 1 AS Lift_Google_signup_rate
+        , r1.FB_signup
+        , r1.FB_signup_rate
+        , r1.FB_signup_rate /  NULLIF(r2.FB_signup_rate,0) - 1 AS Lift_FB_signup_rate
+        , r1.Apple_signup
+        , r1.Apple_signup_rate
+        , r1.Apple_signup_rate /  NULLIF(r2.Apple_signup_rate,0) - 1 AS Lift_Apple_signup_rate
+FROM res r1
+LEFT JOIN res r2
+    ON r1.tag != r2.tag
+    AND r2.tag = 'control'
+ORDER BY 1 desc, 2
+-- {"user":"@heming_chen","email":"heming.chen@doordash.com","url":"https://modeanalytics.com/doordash/reports/6cd1c70e0bfe/runs/2adea176dc59/queries/4e97036fedcd","scheduled":false}
+```
+
+### Query 2
+**Last Executed:** 2025-08-14 09:44:38.637000
+
+```sql
+WITH exposure AS
+(SELECT DISTINCT ee.tag
+               , ee.result
+               , bucket_key
+               , replace(lower(CASE WHEN bucket_key like 'dx_%' then bucket_key
+                         else 'dx_'||bucket_key end), '-') AS dd_device_ID_filtered
+               , MIN(convert_timezone('UTC','America/Los_Angeles',ee.EXPOSURE_TIME)::date) AS day
+               , MIN(convert_timezone('UTC','America/Los_Angeles',ee.EXPOSURE_TIME)) as ts 
+FROM PRODDB.PUBLIC.FACT_DEDUP_EXPERIMENT_EXPOSURE ee
+WHERE experiment_name = $exp_name
+AND experiment_version::INT = $version
+AND custom_attributes:revision_version::INT = $revision
+-- AND segment = 'Web' 
+-- AND custom_attributes:platform = 'desktop'
+--AND segment= 'Experiment Users'
+-- AND calling_context = 'JS DVES Client'
+AND convert_timezone('UTC','America/Los_Angeles',EXPOSURE_TIME) BETWEEN $start_date AND $end_date
+GROUP BY 1,2,3,4
+)
+
+
+
+
+, login_success_overall AS (
+select distinct replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts 
+  , 'save_login_info' as Source
+from segment_events_RAW.consumer_production.m_login_continue_with_saved_account_success
+where convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+
+UNION
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered 
+  , convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp) as ts
+  , 'instant_login' AS source
+FROM iguazu.server_events_production.m_launch_instant_login_success
+WHERE convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp) BETWEEN $start_date AND $end_date
+
+UNION
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered 
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , SOCIAL_PROVIDER AS Source
+from segment_events_RAW.consumer_production.social_login_success
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND SOCIAL_PROVIDER IN ('google-plus','facebook','apple')
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'email' AS source
+from segment_events_raw.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND type = 'login'
+AND sub_Type = 'credential'
+ 
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'bypass_login_promo' AS source
+from segment_events_raw.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND type = 'login'
+AND sub_Type = 'magic_link'
+AND MAGIC_LINK_SOURCE = 'api' 
+ 
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'bypass_login_known' AS source
+from segment_events_raw.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND type = 'login'
+AND sub_Type = 'magic_link'
+AND MAGIC_LINK_SOURCE = 'bypass_login_wrong_credentials'
+
+UNION
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'bypass_login_unknown' AS source
+from segment_events_raw.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND type = 'login'
+AND sub_Type = 'bypass_login_wrong_credentials'
+AND bypass_login_category = 'bypass_login_unknown'
+
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'otc_known' AS source
+from segment_events_raw.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND type = 'login'
+AND sub_Type = 'phone_otp'
+AND PHONE_OTP_CATEGORY = 'known_device'
+ 
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'otc_unknown' AS source
+from segment_events_raw.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND type = 'login'
+AND sub_Type = 'phone_otp'
+AND PHONE_OTP_CATEGORY = 'unknown_device' 
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'seemless_otc_known' AS source
+from segment_events_raw.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND type = 'login'
+AND sub_Type = 'guided_email_seamless_login'
+AND PHONE_OTP_CATEGORY = 'known_device'
+ 
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'seemless_otc_unknown' AS source
+from segment_events_raw.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND type = 'login'
+AND sub_Type = 'guided_email_seamless_login'
+AND PHONE_OTP_CATEGORY = 'unknown_device' 
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+       , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+       , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+       , 'otc_magiclink_known' AS source
+from segment_events_raw.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+-- AND type = 'login'
+ AND sub_type = 'magic_link'
+ AND magic_link_source  = 'otc'
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'guided_login_from_password' AS source
+from segment_events_RAW.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND sub_type = 'guided_login_v2'
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'guided_login_from_phone_email' AS source
+from segment_events_RAW.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND sub_type = 'guided_login_phone_signup_existing_account'
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'guided_login_from_seamless' AS source
+from segment_events_RAW.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND sub_type = 'guided_login_phone_signup_seamless'
+
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'phone_signin_on_signup_known' AS source
+from segment_events_RAW.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND sub_type = 'phone_sign_in_on_signup'
+AND PHONE_OTP_CATEGORY = 'known_device'
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'phone_signin_on_signup_unknown' AS source
+from segment_events_RAW.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND sub_type = 'phone_sign_in_on_signup'
+AND PHONE_OTP_CATEGORY = 'unknown_device'
+
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'guided_phone_login_known' AS source
+from segment_events_RAW.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND sub_type = 'guided_phone_login'
+AND PHONE_OTP_CATEGORY = 'known_device'
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'guided_phone_login_unknown' AS source
+from segment_events_RAW.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND sub_type = 'guided_phone_login'
+AND PHONE_OTP_CATEGORY = 'unknown_device'
+
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'guided_phone_seamless_login_known' AS source
+from segment_events_RAW.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND sub_type = 'guided_phone_seamless_login'
+AND PHONE_OTP_CATEGORY = 'known_device'
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'guided_phone_seamless_login_unknown' AS source
+from segment_events_RAW.consumer_production.be_login_success  
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND sub_type = 'guided_phone_seamless_login'
+AND PHONE_OTP_CATEGORY = 'unknown_device'
+)
+
+
+
+, signup_success_overall AS ( 
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , SOCIAL_PROVIDER AS Source
+from segment_events_RAW.consumer_production.social_login_new_user 
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND SOCIAL_PROVIDER IN ('google-plus','facebook','apple')
+
+UNION
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'email' AS source
+from segment_events_RAW.consumer_production.be_signup_success 
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND sub_type = 'email_signup'
+
+UNION
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered 
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'phone' AS source
+from segment_events_RAW.consumer_production.be_signup_success 
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND sub_type = 'phone_signup'
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered 
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts
+  , 'phone_seamless' AS source
+from segment_events_RAW.consumer_production.be_signup_success 
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+AND sub_type = 'phone_signup_seamless'
+)
+
+
+-- logout 
+, logout as (
+select distinct replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                        else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+  , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+  , convert_timezone('UTC','America/Los_Angeles',timestamp) as ts 
+  , 'logout' as source 
+from segment_events_raw.consumer_production.m_logout 
+where convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+)
+
+
+, overall_switch AS 
+(
+    SELECT 
+        DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+        ,convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp)::date AS day
+        ,convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp) as ts 
+        ,'switch' AS source
+    FROM 
+        iguazu.consumer.m_profile_switch_account_complete
+    WHERE 
+        convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp) BETWEEN $start_date AND $end_date
+)
+
+
+, switch_with_one_click AS 
+(
+    SELECT 
+        DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+        ,convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp)::date AS day
+        ,convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp) as ts 
+        ,'switch' AS source
+    FROM 
+        iguazu.consumer.m_switch_account_phase_4_ice
+    WHERE 
+        convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp) BETWEEN $start_date AND $end_date
+        ANd event = 'success'
+)
+
+
+
+, Auth_success AS (
+SELECT e.tag
+        , COUNT(DISTINCT e.dd_device_ID_filtered) AS exposure_onboard
+        , COUNT(DISTINCT l.dd_device_ID_filtered) AS overall_login
+        , COUNT(DISTINCT l.dd_device_ID_filtered) / COUNT(DISTINCT e.dd_device_ID_filtered) AS overall_login_rate
+        , COUNT(DISTINCT s.dd_device_ID_filtered) AS overall_signup
+        , COUNT(DISTINCT s.dd_device_ID_filtered) / COUNT(DISTINCT e.dd_device_ID_filtered) AS overall_signup_rate
+        , COUNT(DISTINCT g.dd_device_ID_filtered) AS overall_logout
+        , COUNT(DISTINCT g.dd_device_ID_filtered) / COUNT(DISTINCT e.dd_device_ID_filtered) AS overall_logout_rate 
+        , COUNT(DISTINCT sw.dd_device_ID_filtered) AS overall_switch
+        , COUNT(DISTINCT sw.dd_device_ID_filtered) / COUNT(DISTINCT e.dd_device_ID_filtered) AS overall_switch_rate 
+        , COUNT(DISTINCT so.dd_device_ID_filtered) AS one_click_switch
+        , COUNT(DISTINCT so.dd_device_ID_filtered) / COUNT(DISTINCT e.dd_device_ID_filtered) AS one_click_switch_rate 
+        
+        , COUNT(DISTINCT CASE WHEN l.source = 'instant_login' THEN l.dd_device_ID_filtered ELSE NULL END) AS instant_login
+        , COUNT(DISTINCT CASE WHEN l.source = 'instant_login' THEN l.dd_device_ID_filtered ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS instant_login_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'save_login_info' THEN l.dd_device_ID_filtered ELSE NULL END) AS save_info_login
+        , COUNT(DISTINCT CASE WHEN l.source = 'save_login_info' THEN l.dd_device_ID_filtered ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS save_info_login_rate
+ 
+        , COUNT(DISTINCT CASE WHEN l.source = 'email' THEN l.dd_device_ID_filtered  ELSE NULL END) AS email_login
+        , COUNT(DISTINCT CASE WHEN l.source = 'email' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS email_login_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'guided_login_from_seamless' THEN l.dd_device_ID_filtered  ELSE NULL END) AS guided_login_from_seamless
+        , COUNT(DISTINCT CASE WHEN l.source = 'guided_login_from_seamless' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS guided_login_from_seamless_rate        
+        , COUNT(DISTINCT CASE WHEN l.source = 'guided_login_from_password' THEN l.dd_device_ID_filtered  ELSE NULL END) AS guided_login_from_password
+        , COUNT(DISTINCT CASE WHEN l.source = 'guided_login_from_password' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS guided_login_from_password_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'guided_login_from_phone_email' THEN l.dd_device_ID_filtered  ELSE NULL END) AS guided_login_from_phone_email
+        , COUNT(DISTINCT CASE WHEN l.source = 'guided_login_from_phone_email' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS guided_login_from_phone_email_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'guided_phone_login_known' THEN l.dd_device_ID_filtered  ELSE NULL END) AS guided_phone_login_known
+        , COUNT(DISTINCT CASE WHEN l.source = 'guided_phone_login_known' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS guided_phone_login_known_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'guided_phone_login_unknown' THEN l.dd_device_ID_filtered  ELSE NULL END) AS guided_phone_login_unknown
+        , COUNT(DISTINCT CASE WHEN l.source = 'guided_phone_login_unknown' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS guided_phone_login_unknown_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'guided_phone_seamless_login_known' THEN l.dd_device_ID_filtered  ELSE NULL END) AS guided_phone_seamless_login_known
+        , COUNT(DISTINCT CASE WHEN l.source = 'guided_phone_seamless_login_known' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS guided_phone_seamless_login_known_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'guided_phone_seamless_login_unknown' THEN l.dd_device_ID_filtered  ELSE NULL END) AS guided_phone_seamless_login_unknown
+        , COUNT(DISTINCT CASE WHEN l.source = 'guided_phone_seamless_login_unknown' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS guided_phone_seamless_login_unknown_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'bypass_login_promo' THEN l.dd_device_ID_filtered  ELSE NULL END) AS bypass_login_promo
+        , COUNT(DISTINCT CASE WHEN l.source = 'bypass_login_promo' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS bypass_login_promo_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'bypass_login_known' THEN l.dd_device_ID_filtered  ELSE NULL END) AS bypass_login_known
+        , COUNT(DISTINCT CASE WHEN l.source = 'bypass_login_known' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS bypass_login_known_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'bypass_login_unknown' THEN l.dd_device_ID_filtered  ELSE NULL END) AS bypass_login_unknown
+        , COUNT(DISTINCT CASE WHEN l.source = 'bypass_login_unknown' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS bypass_login_unknown_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'otc_known' THEN l.dd_device_ID_filtered  ELSE NULL END) AS otc_known
+        , COUNT(DISTINCT CASE WHEN l.source = 'otc_known' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS otc_known_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'otc_unknown' THEN l.dd_device_ID_filtered  ELSE NULL END) AS otc_unknown
+        , COUNT(DISTINCT CASE WHEN l.source = 'otc_unknown' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS otc_unknown_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'seemless_otc_known' THEN l.dd_device_ID_filtered  ELSE NULL END) AS seemless_otc_known
+        , COUNT(DISTINCT CASE WHEN l.source = 'seemless_otc_known' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS seemless_otc_known_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'seemless_otc_unknown' THEN l.dd_device_ID_filtered  ELSE NULL END) AS seemless_otc_unknown
+        , COUNT(DISTINCT CASE WHEN l.source = 'seemless_otc_unknown' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS seemless_otc_unknown_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'otc_magiclink_known' THEN l.dd_device_ID_filtered  ELSE NULL END) AS otc_magiclink_known
+        , COUNT(DISTINCT CASE WHEN l.source = 'otc_magiclink_known' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS otc_magiclink_known_rate
+        
+        , COUNT(DISTINCT CASE WHEN l.source IN ('google-plus','google') THEN l.dd_device_ID_filtered  ELSE NULL END) AS Google_login
+        , COUNT(DISTINCT CASE WHEN l.source IN ('google-plus','google') THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS Google_login_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'facebook' THEN l.dd_device_ID_filtered  ELSE NULL END) AS FB_login
+        , COUNT(DISTINCT CASE WHEN l.source = 'facebook' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS FB_login_rate
+        , COUNT(DISTINCT CASE WHEN l.source = 'apple' THEN l.dd_device_ID_filtered  ELSE NULL END) AS apple_login
+        , COUNT(DISTINCT CASE WHEN l.source = 'apple' THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS apple_login_rate
+        , COUNT(DISTINCT CASE WHEN l.source IN ('google-plus','google','facebook','apple') THEN l.dd_device_ID_filtered  ELSE NULL END) AS Social_login
+        , COUNT(DISTINCT CASE WHEN l.source IN ('google-plus','google','facebook','apple') THEN l.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered ) AS Social_login_rate
+
+        , COUNT(DISTINCT CASE WHEN s.source = 'email' THEN s.dd_device_ID_filtered  ELSE NULL END) AS email_SignUp
+        , COUNT(DISTINCT CASE WHEN s.source = 'email' THEN s.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS email_SignUp_rate
+        , COUNT(DISTINCT CASE WHEN s.source = 'phone' THEN s.dd_device_ID_filtered  ELSE NULL END) AS phone_SignUp
+        , COUNT(DISTINCT CASE WHEN s.source = 'phone' THEN s.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS phone_SignUp_rate
+        , COUNT(DISTINCT CASE WHEN s.source = 'phone_seamless' THEN s.dd_device_ID_filtered  ELSE NULL END) AS phone_seamless_SignUp
+        , COUNT(DISTINCT CASE WHEN s.source = 'phone_seamless' THEN s.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS phone_seamless_SignUp_rate
+        , COUNT(DISTINCT CASE WHEN s.source IN ('google-plus','google') THEN s.dd_device_ID_filtered  ELSE NULL END) AS Google_SignUp
+        , COUNT(DISTINCT CASE WHEN s.source IN ('google-plus','google') THEN s.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS Google_SignUp_rate
+        , COUNT(DISTINCT CASE WHEN s.source = 'facebook' THEN s.dd_device_ID_filtered  ELSE NULL END) AS FB_SignUp
+        , COUNT(DISTINCT CASE WHEN s.source = 'facebook' THEN s.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS FB_SignUp_rate
+        , COUNT(DISTINCT CASE WHEN s.source = 'apple' THEN s.dd_device_ID_filtered  ELSE NULL END) AS apple_SignUp
+        , COUNT(DISTINCT CASE WHEN s.source = 'apple' THEN s.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered) AS apple_SignUp_rate
+        , COUNT(DISTINCT CASE WHEN s.source IN ('google-plus','google','facebook','apple') THEN s.dd_device_ID_filtered  ELSE NULL END) AS Social_SignUp
+        , COUNT(DISTINCT CASE WHEN s.source IN ('google-plus','google','facebook','apple') THEN s.dd_device_ID_filtered  ELSE NULL END) / COUNT(DISTINCT e.dd_device_ID_filtered ) AS Social_SignUp_rate
+
+FROM exposure e
+LEFT JOIN login_success_overall l
+    ON to_char(e.dd_device_ID_filtered) = to_char(l.dd_device_ID_filtered)
+    AND l.ts >= dateadd('second', -60, e.ts) 
+LEFT JOIN signup_success_overall s
+    ON to_char(e.dd_device_ID_filtered) = to_char(s.dd_device_ID_filtered) 
+    AND s.ts >= dateadd('second', -60, e.ts) 
+LEFT JOIN logout g 
+    ON to_char(e.dd_device_ID_filtered) = to_char(g.dd_device_ID_filtered) 
+    AND g.ts >= dateadd('second', -60, e.ts) 
+LEFT JOIN overall_switch sw ON to_char(e.dd_device_ID_filtered) = to_char(sw.dd_device_ID_filtered) AND sw.ts >= dateadd('second', -60, e.ts) 
+LEFT JOIN switch_with_one_click so ON to_char(e.dd_device_ID_filtered) = to_char(so.dd_device_ID_filtered) AND so.ts >= dateadd('second', -60, e.ts) 
+WHERE TAG != 'reserve'
+GROUP BY 1
+ORDER BY 1
+)
+
+
+
+
+-- explore page view
+, explore_page AS
+(SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+       , convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp)::date AS day
+from IGUAZU.SERVER_EVENTS_PRODUCTION.M_STORE_CONTENT_PAGE_LOAD
+WHERE convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp) BETWEEN $start_date AND $end_date
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+       , convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp)::date AS day
+from IGUAZU.SERVER_EVENTS_PRODUCTION.STORE_CONTENT_PAGE_LOAD
+WHERE convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp) BETWEEN $start_date AND $end_date
+)
+
+, store_page AS
+(SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+       , convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp)::date AS day
+from IGUAZU.SERVER_EVENTS_PRODUCTION.M_STORE_PAGE_LOAD
+WHERE convert_timezone('UTC','America/Los_Angeles',iguazu_timestamp) BETWEEN $start_date AND $end_date
+
+UNION 
+
+SELECT DISTINCT replace(lower(CASE WHEN DD_DEVICE_ID like 'dx_%' then DD_DEVICE_ID
+                         else 'dx_'||DD_DEVICE_ID end), '-') AS dd_device_ID_filtered
+       , convert_timezone('UTC','America/Los_Angeles',timestamp)::date AS day
+from segment_events_raw.consumer_production.STORE_PAGE_LOAD
+WHERE convert_timezone('UTC','America/Los_Angeles',timestamp) BETWEEN $start_date AND $end_date
+)
+
+
+
+, explore AS
+(SELECT DISTINCT e.tag
+                , e.dd_device_ID_filtered
+                , e.day
+                , MAX(CASE WHEN ep.dd_device_ID_filtered IS NOT NULL THEN 1 ELSE 0 END) AS explore_view
+FROM exposure e
+LEFT JOIN explore_page ep
+    ON e.dd_device_ID_filtered = ep.dd_device_ID_filtered
+    AND e.day <= ep.day
+GROUP BY 1,2,3
+)
+
+, store AS
+(SELECT DISTINCT e.tag
+                , e.dd_device_ID_filtered
+                , e.day
+                , MAX(CASE WHEN ep.dd_device_ID_filtered IS NOT NULL THEN 1 ELSE 0 END) AS store_view
+FROM exposure e
+LEFT JOIN store_page ep
+    ON e.dd_device_ID_filtered = ep.dd_device_ID_filtered
+    AND e.day <= ep.day
+GROUP BY 1,2,3
+)
+
+
+
+, explore_res AS
+(SELECT tag
+        , SUM(explore_view) explore_view
+        , SUM(explore_view) / COUNT(DISTINCT e.dd_device_ID_filtered) AS explore_rate
+FROM explore e
+GROUP BY 1
+ORDER BY 1)
+
+, store_res AS
+(SELECT tag
+        , SUM(store_view) store_view
+        , SUM(store_view) / COUNT(DISTINCT e.dd_device_ID_filtered) AS store_rate
+FROM store e
+GROUP BY 1
+ORDER BY 1)
+
+
+,  orders AS (
+    SELECT 
+        DISTINCT a.dd_device_id
+            , replace(lower(CASE WHEN a.dd_device_id like 'dx_%' then a.dd_device_id else 'dx_'||a.dd_device_id end), '-') AS dd_device_ID_filtered
+            , convert_timezone('UTC','America/Los_Angeles',a.timestamp)::date as day
+            , dd.delivery_ID
+            , dd.is_first_ordercart_DD
+            , dd.is_filtered_core
+            , dd.variable_profit * 0.01 AS variable_profit
+            , dd.gov * 0.01 AS gov
+    FROM 
+        segment_events_raw.consumer_production.order_cart_submit_received a
+        JOIN dimension_deliveries dd
+        ON a.order_cart_id = dd.order_cart_id
+        AND dd.is_filtered_core = 1
+        AND (convert_timezone('UTC','America/Los_Angeles',dd.created_at) BETWEEN LEAST($start_date,DATEADD('day',-28,$end_date)) AND $end_date)
+        AND (convert_timezone('UTC','America/Los_Angeles',a.timestamp) BETWEEN LEAST($start_date,DATEADD('day',-28,$end_date))  AND $end_date)
+    WHERE
+        a.dd_device_id is not null
+)
+
+
+
+, checkout AS (
+SELECT  
+        e.tag
+        , COUNT(DISTINCT CASE WHEN is_filtered_core = 1 AND (o.day BETWEEN $start_date AND $end_date) THEN o.delivery_id ELSE NULL END) AS orders
+        , COUNT(DISTINCT CASE WHEN is_first_ordercart_DD = 1 AND (o.day BETWEEN $start_date AND $end_date) AND is_filtered_core = 1 THEN o.delivery_ID ELSE NULL END) AS new_Cx
+        , orders/COUNT(DISTINCT e.dd_device_ID_filtered) AS order_rate
+        , new_Cx/COUNT(DISTINCT e.dd_device_ID_filtered) AS new_cx_rate
+        , SUM(CASE WHEN is_filtered_core = 1 AND (o.day BETWEEN $start_date AND $end_date) THEN variable_profit END) AS variable_profit
+        , SUM(variable_profit) / COUNT(DISTINCT e.dd_device_ID_filtered) AS VP_per_device
+        , SUM(CASE WHEN is_filtered_core = 1 AND (o.day BETWEEN $start_date AND $end_date) THEN gov END) AS gov
+        , SUM(gov) / COUNT(DISTINCT e.dd_device_ID_filtered) AS gov_per_device
+FROM 
+  exposure e
+  LEFT JOIN orders o ON e.dd_device_ID_filtered = o.dd_device_ID_filtered AND e.day <= o.day
+WHERE 
+  TAG NOT IN ('internal_test','reserved')
+GROUP BY 1
+ORDER BY 1
+)
+
+
+
+
+, MAU AS (
+SELECT  e.tag
+        , COUNT(DISTINCT o.dd_device_ID_filtered) as MAU
+        , COUNT(DISTINCT o.dd_device_ID_filtered) / COUNT(DISTINCT e.dd_device_ID_filtered) as MAU_rate
+FROM exposure e
+LEFT JOIN orders o
+    ON e.dd_device_ID_filtered = o.dd_device_ID_filtered 
+    --AND e.day <= o.day
+    AND o.day BETWEEN DATEADD('day',-28,$end_date) AND DATEADD('day',-1,$end_date) -- past 28 days orders
+-- WHERE e.day <= DATEADD('day',-28,$end_date) --- exposed at least 28 days ago
+GROUP BY 1
+ORDER BY 1
+)
+
+
+
+, res AS (
+SELECT a.*
+        , c.orders
+        , c.order_rate
+        , c.new_cx
+        , c.new_cx_rate
+        , c.variable_profit
+        , c.VP_per_device
+        , c.gov
+        , c.gov_per_device
+        , e.explore_view
+        , e.explore_rate
+        , s.store_view
+        , s.store_rate
+        , m.MAU
+        , m.MAU_rate
+FROM auth_success a
+JOIN checkout c
+    ON a.tag = c.tag
+JOIN explore_res e
+  ON c.tag = e.tag
+JOIN store_res s
+  ON c.tag = s.tag
+JOIN MAU m
+  ON a.tag = m.tag
+ORDER BY 1
+)
+
+
+
+SELECT r1.tag 
+        , r1.exposure_onboard
+        , r1.overall_login
+        , r1.overall_login_rate
+        , iff(r2.overall_login_rate != 0, r1.overall_login_rate / NULLIF(r2.overall_login_rate,0) - 1, null) AS Lift_overall_login_rate
+        , r1.overall_signup
+        , r1.overall_signup_rate
+        , iff(r2.overall_signup_rate != 0, r1.overall_signup_rate / NULLIF(r2.overall_signup_rate,0) - 1, null) AS Lift_overall_signup_rate
+        , r1.overall_logout
+        , r1.overall_logout_rate
+        , iff(r2.overall_logout_rate != 0, r1.overall_logout_rate / NULLIF(r2.overall_logout_rate,0) - 1, null) AS Lift_overall_logout_rate
+        , r1.overall_switch
+        , r1.overall_switch_rate
+        , iff(r2.overall_switch_rate != 0, r1.overall_switch_rate / NULLIF(r2.overall_switch_rate,0) - 1, null) AS Lift_overall_switch_rate
+        , r1.one_click_switch
+        , r1.one_click_switch_rate
+        , iff(r2.one_click_switch_rate != 0, r1.one_click_switch_rate / NULLIF(r2.one_click_switch_rate,0) - 1, null) AS Lift_one_click_switch_rate
+        
+        
+        , r1.orders
+        , r1.order_rate
+        , iff(r2.order_rate != 0, r1.order_rate / NULLIF(r2.order_rate,0) - 1, null) AS Lift_order_rate
+        , r1.new_cx
+        , r1.new_cx_rate
+        , iff(r2.new_cx_rate != 0, r1.new_cx_rate / NULLIF(r2.new_cx_rate,0) - 1,null) AS Lift_new_cx_rate
+        , r1.MAU
+        , r1.MAU_rate
+        , IFF(r2.MAU_rate=0, null, r1.MAU_rate / NULLIF(r2.MAU_rate,0) - 1) AS lift_MAU_rate
+        , r1.explore_view
+        , r1.explore_rate
+        , iff(r2.explore_rate !=0, r1.explore_rate / r2.explore_rate -1,null) AS Lift_explore_rate
+        , r1.store_view
+        , r1.store_rate
+        , iff(r2.store_rate !=0, r1.store_rate / r2.store_rate -1,null) AS Lift_store_rate
+        , r1.variable_profit
+        , iff(r2.variable_profit !=0, r1.variable_profit / r2.variable_profit - 1, null) AS Lift_VP
+        , r1.VP_per_device
+        , iff(r2.VP_per_device !=0, r1.VP_per_device / r2.VP_per_device -1,null) AS Lift_VP_per_device
+        , r1.gov
+        , r1.gov / r2.gov - 1 AS Lift_gov
+        , r1.gov_per_device
+        , r1.gov_per_device / r2.gov_per_device -1 AS Lift_gov_per_device
+        
+        , r1.instant_login
+        , r1.instant_login_rate
+        , r1.instant_login_rate / NULLIF(r2.instant_login_rate,0) - 1 as Lift_instant_login_rate
+        , r1.save_info_login
+        , r1.save_info_login_rate
+        , r1.save_info_login_rate / NULLIF(r2.save_info_login_rate,0) - 1 as Lift_save_info_login_rate
+        
+        , r1.email_login
+        , r1.email_login_rate
+        , r1.email_login_rate / NULLIF(r2.email_login_rate,0)- 1 AS Lift_email_login_rate
+        , r1.otc_known
+        , r1.otc_known_rate
+        , r1.otc_known_rate / NULLIF(r2.otc_known_rate,0) - 1 AS Lift_otc_known_rate
+        , r1.otc_unknown
+        , r1.otc_unknown_rate
+        , r1.otc_unknown_rate / NULLIF(r2.otc_unknown_rate,0) - 1 AS Lift_otc_unknown_rate
+        , r1.seemless_otc_known
+        , r1.seemless_otc_known_rate
+        , r1.seemless_otc_known_rate / NULLIF(r2.seemless_otc_known_rate,0) - 1 AS Lift_seemless_otc_known_rate
+        , r1.seemless_otc_unknown
+        , r1.seemless_otc_unknown_rate
+        , r1.seemless_otc_unknown_rate / NULLIF(r2.seemless_otc_unknown_rate,0) - 1 AS Lift_seemless_otc_unknown_rate
+        , r1.otc_magiclink_known
+        , r1.otc_magiclink_known_rate
+        , r1.otc_magiclink_known_rate / NULLIF(r2.otc_magiclink_known_rate,0) - 1 AS Lift_otc_magiclink_known_rate
+        , r1.bypass_login_promo 
+        , r1.bypass_login_promo_rate 
+        , r1.bypass_login_promo_rate / NULLIF(r2.bypass_login_promo_rate,0) - 1 as Lift_bypass_login_promo_rate
+        , r1.bypass_login_known
+        , r1.bypass_login_known_rate
+        , r1.bypass_login_known_rate / NULLIF(r2.bypass_login_known_rate,0) - 1 AS Lift_bypass_login_known_rate
+        , r1.bypass_login_unknown
+        , r1.bypass_login_unknown_rate
+        , r1.bypass_login_unknown_rate / NULLIF(r2.bypass_login_unknown_rate,0) - 1 AS Lift_bypass_login_unknown_rate
+        , r1.guided_login_from_seamless
+        , r1.guided_login_from_seamless_rate
+        , r1.guided_login_from_seamless_rate / NULLIF(r2.guided_login_from_seamless_rate,0) - 1 AS Lift_guided_login_from_seamless_rate
+        , r1.guided_login_from_password 
+        , r1.guided_login_from_password_rate
+        , r1.guided_login_from_password_rate / NULLIF(r2.guided_login_from_password_rate,0) - 1 AS Lift_guided_login_from_password_rate
+        , r1.guided_login_from_phone_email
+        , r1.guided_login_from_phone_email_rate
+        , r1.guided_login_from_phone_email_rate / NULLIF(r2.guided_login_from_phone_email_rate,0) - 1 AS Lift_guided_login_from_phone_email_rate
+        , r1.guided_phone_login_known
+        , r1.guided_phone_login_known_rate
+        , r1.guided_phone_login_known / NULLIF(r2.guided_phone_login_known,0) - 1 AS Lift_guided_phone_login_known_rate
+        , r1.guided_phone_login_unknown
+        , r1.guided_phone_login_unknown_rate
+        , r1.guided_phone_login_unknown / NULLIF(r2.guided_phone_login_unknown,0) - 1 AS Lift_guided_phone_login_unknown_rate
+        , r1.guided_phone_seamless_login_known
+        , r1.guided_phone_seamless_login_known_rate
+        , r1.guided_phone_seamless_login_known / NULLIF(r2.guided_phone_seamless_login_known,0) - 1 AS Lift_guided_phone_seamless_login_known_rate
+        , r1.guided_phone_seamless_login_unknown
+        , r1.guided_phone_seamless_login_unknown_rate
+        , r1.guided_phone_seamless_login_unknown / NULLIF(r2.guided_phone_seamless_login_unknown,0) - 1 AS Lift_guided_phone_seamless_login_unknown_rate
+        , r1.social_login
+        , r1.social_login_rate
+        , r1.Social_login_rate / NULLIF(r2.Social_login_rate,0) - 1 AS Lift_Social_login_rate
+        , r1.Google_login
+        , r1.google_login_rate
+        , r1.google_login_rate / NULLIF(r2.google_login_rate,0) - 1 AS Lift_google_login_rate
+        , r1.FB_login
+        , r1.FB_login_rate
+        , r1.FB_login_rate / NULLIF(r2.FB_login_rate,0) - 1 AS Lift_FB_login_rate
+        , r1.Apple_login
+        , r1.Apple_login_rate
+        , r1.Apple_login_rate / NULLIF(r2.Apple_login_rate,0) - 1 AS Lift_Apple_login_rate
+        
+        , r1.Email_signup
+        , r1.Email_signup_rate
+        , r1.Email_signup_rate /  NULLIF(r2.Email_signup_rate,0) - 1 AS Lift_Email_signup_rate
+        , r1.phone_signup
+        , r1.phone_signup_rate
+        , r1.phone_signup_rate /  NULLIF(r2.phone_signup_rate,0) - 1 AS Lift_phone_signup_rate
+        , r1.phone_seamless_signup
+        , r1.phone_seamless_signup_rate
+        , r1.phone_seamless_signup_rate /  NULLIF(r2.phone_seamless_signup_rate,0) - 1 AS Lift_phone_seamless_signup_rate
+        , r1.Social_signup
+        , r1.Social_signup_rate
+        , r1.Social_signup_rate /  NULLIF(r2.Social_signup_rate,0) - 1 AS Lift_Social_signup_rate
+        , r1.Google_signup
+        , r1.Google_signup_rate
+        , r1.Google_signup_rate /  NULLIF(r2.Google_signup_rate,0) - 1 AS Lift_Google_signup_rate
+        , r1.FB_signup
+        , r1.FB_signup_rate
+        , r1.FB_signup_rate /  NULLIF(r2.FB_signup_rate,0) - 1 AS Lift_FB_signup_rate
+        , r1.Apple_signup
+        , r1.Apple_signup_rate
+        , r1.Apple_signup_rate /  NULLIF(r2.Apple_signup_rate,0) - 1 AS Lift_Apple_signup_rate
+FROM res r1
+LEFT JOIN res r2
+    ON r1.tag != r2.tag
+    AND r2.tag = 'control'
+ORDER BY 1 desc, 2
+-- {"user":"@heming_chen","email":"heming.chen@doordash.com","url":"https://modeanalytics.com/doordash/reports/6cd1c70e0bfe/runs/32182f9753e8/queries/41f82e998584","scheduled":false}
+```
+
