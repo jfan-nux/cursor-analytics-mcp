@@ -1397,7 +1397,6 @@ def fetch_cursor_rules(rule_name: str) -> str:
 @mcp.tool
 def describe_table(
     table_name: str,
-    print_only: bool = True,
     output_format: str = "markdown",
     sample_row_limit: int = 10,
     verbose: bool = False
@@ -1407,10 +1406,10 @@ def describe_table(
     
     This tool creates detailed documentation including business context, 
     metadata analysis, granularity detection, and sample queries.
+    Returns content only - does not write to filesystem.
     
     Args:
         table_name: Table name (can be partial or fully qualified)
-        print_only: If True, only returns content. If False, also saves to file.
         output_format: Output format - "markdown" or "json" 
         sample_row_limit: Number of sample rows for granularity analysis (1-20)
         verbose: Enable verbose logging for debugging
@@ -1431,49 +1430,13 @@ def describe_table(
             sample_row_limit = 10
             logger.warning(f"Invalid sample_row_limit, using default: {sample_row_limit}")
         
-        if print_only:
-            # Generate the table context using the agent (return content only)
-            result = generate_table_context(
-                table=table_name,
-                print_only=True,
-                sample_row_limit=sample_row_limit,
-                verbose=verbose
-            )
-            file_path = None
-        else:
-            # Import table resolution to get full qualified name for directory structure
-            from local_tools.table_context_agent.tyler_sources import resolve_table_name
-            
-            # Resolve table name first to construct proper output directory
-            with SnowflakeHook() as sf:
-                try:
-                    full_table_name = resolve_table_name(sf, table_name, verbose=False)
-                except Exception:
-                    # Fallback: use input as-is if resolution fails
-                    full_table_name = table_name
-            
-            # Construct output directory based on full table name
-            # Default context directory structure: context/analysis-context/snowflake-table-context/
-            context_base = PROJECT_ROOT / "context" / "analysis-context" / "snowflake-table-context"
-            
-            # Generate and save the table context using the agent
-            result_path = generate_table_context(
-                table=table_name,
-                output_root=str(context_base),
-                sample_row_limit=sample_row_limit,
-                verbose=verbose
-            )
-            
-            # Also get the content to return
-            result = generate_table_context(
-                table=table_name,
-                print_only=True,
-                sample_row_limit=sample_row_limit,
-                verbose=verbose
-            )
-            
-            file_path = str(result_path)
-            logger.info(f"Table context saved to: {file_path}")
+        # Generate the table context using the agent (content only)
+        result = generate_table_context(
+            table=table_name,
+            print_only=True,
+            sample_row_limit=sample_row_limit,
+            verbose=verbose
+        )
         
         if output_format.lower() == "json":
             # Convert markdown result to JSON structure
@@ -1484,16 +1447,10 @@ def describe_table(
                 "generated_at": "auto",
                 "status": "success"
             }
-            if file_path:
-                response["file_path"] = file_path
-                response["message"] = f"Content generated and saved to {file_path}"
             return json.dumps(response, indent=2)
         else:
-            # Return raw markdown with optional file path info
-            if file_path:
-                return f"📁 File saved to: {file_path}\n\n{result}"
-            else:
-                return result
+            # Return raw markdown
+            return result
             
     except Exception as e:
         logger.error(f"Error generating table context for {table_name}: {e}")
