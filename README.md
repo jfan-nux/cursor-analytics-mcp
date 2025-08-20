@@ -202,6 +202,32 @@ Fetch Cursor rules from `.cursor/rules/` directory. Use `rule_name="list"` to se
 #### `describe_table(table_name, output_format="markdown", sample_row_limit=10, verbose=False)`
 Generate comprehensive documentation for a Snowflake table including business context, metadata analysis, and granularity detection.
 
+#### Table Context Agent Architecture
+
+The Table Context Agent uses a sophisticated 6-step process to generate comprehensive table documentation:
+
+![Table Context Agent Flow](local_tools/table_context_agent/table_context_agent_flow.png)
+
+**Process Overview:**
+1. **Table Resolution** - Resolves partial names using Tyler's usage analytics
+2. **Documentation Search** - Searches Confluence for existing documentation  
+3. **Metadata Collection** - Gathers comprehensive table and column metadata
+4. **Granularity Analysis** - AI-powered detection of data granularity and patterns
+5. **AI Enhancement** - Generates business context using GPT-4o-mini
+6. **Report Generation** - Renders structured markdown documentation
+
+#### Granularity Analysis Engine
+
+The system includes an intelligent granularity analysis engine that determines what each row represents:
+
+![Granularity Analysis Flow](local_tools/table_context_agent/granularity_analysis_flow.png)
+
+**Key Features:**
+- **Performance-Aware Processing** - Lightweight analysis for massive tables (>10B rows)
+- **AI-Powered Predictions** - Uses LLM to predict entity and time columns
+- **Pattern Recognition** - Detects SCDs, event logs, status tracking, and more
+- **Business Context Generation** - Explains complex patterns in user-friendly language
+
 ## Context Management System
 
 The system uses a sophisticated **dual-table hybrid search** approach combining:

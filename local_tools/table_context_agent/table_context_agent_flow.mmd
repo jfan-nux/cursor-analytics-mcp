@@ -1,0 +1,114 @@
+graph TB
+    %% User Input
+    User["🧑‍💻 User Input<br/>Table Name"]
+
+    %% Main Agent Entry Point
+    Agent["🤖 Table Context Agent<br/>main() function"]
+    
+    %% Step 1: Table Resolution
+    subgraph "Step 1: Table Resolution"
+        Resolver["📍 resolve_table_name()<br/>Tyler Sources"]
+        UsageDB[("📊 Tyler's Usage Tables<br/>sf_table_usage<br/>sf_tables_full")]
+        
+        Resolver --> UsageDB
+    end
+
+    %% Step 2: External Documentation Search
+    subgraph "Step 2: Documentation Search"
+        ConfluenceClient["📚 Confluence Client<br/>atlassian-python-api"]
+        ConfluenceAPI["🌐 Confluence API<br/>CQL Search"]
+        
+        ConfluenceClient --> ConfluenceAPI
+    end
+
+    %% Step 3: Metadata Collection
+    subgraph "Step 3: Metadata Collection"
+        TylerSources["📋 Tyler Sources<br/>Metadata Queries"]
+        SnowflakeConn["❄️ Snowflake Connection<br/>SnowflakeHook"]
+        
+        TableMeta["📊 Table Overview<br/>fetch_table_overview()"]
+        ColumnMeta["📝 Column Metadata<br/>fetch_columns_metadata_with_usage()"]
+        JoinMeta["🔗 Common Joins<br/>fetch_most_common_joins()"]
+        SampleQueries["💻 Sample Queries<br/>fetch_sample_queries_from_most_used_user()"]
+        
+        TylerSources --> SnowflakeConn
+        SnowflakeConn --> TableMeta
+        SnowflakeConn --> ColumnMeta
+        SnowflakeConn --> JoinMeta
+        SnowflakeConn --> SampleQueries
+    end
+
+    %% Step 4: Advanced Analysis
+    subgraph "Step 4: Granularity Analysis"
+        GranularityEngine["🔍 Snowflake Explorer<br/>enhanced_granularity_analysis()"]
+        LLMPredictor["🧠 LLM Predictor<br/>_predict_granularity_columns()"]
+        PatternDetector["🔎 Pattern Detector<br/>_detect_pattern_from_columns()"]
+        
+        GranularityEngine --> LLMPredictor
+        GranularityEngine --> PatternDetector
+        GranularityEngine --> SnowflakeConn
+    end
+
+    %% Step 5: AI Enhancement
+    subgraph "Step 5: AI Enhancement"
+        PortkeyLLM["🤖 Portkey LLM<br/>GPT-4o-mini"]
+        BusinessContext["💼 Business Context Generator<br/>synthesize_descriptions()"]
+        
+        PortkeyLLM --> BusinessContext
+    end
+
+    %% Step 6: Report Generation
+    subgraph "Step 6: Report Generation"
+        Renderer["📄 Markdown Renderer<br/>build_enhanced_markdown_content()"]
+        OutputFile["📝 Context File<br/>{db}_{schema}_{table}.md"]
+        
+        Renderer --> OutputFile
+    end
+
+    %% External Services
+    subgraph "External Services"
+        PortkeyAPI["🌐 Portkey API<br/>DoorDash GenAI Gateway"]
+        SnowflakeDB[("❄️ Snowflake Database<br/>Production Tables<br/>Tyler's Analytics Tables")]
+    end
+
+    %% Data Flow
+    User --> Agent
+    Agent --> Resolver
+    Agent --> ConfluenceClient
+    Agent --> TylerSources
+    Agent --> GranularityEngine
+    Agent --> BusinessContext
+    Agent --> Renderer
+
+    %% External Connections
+    PortkeyLLM --> PortkeyAPI
+    SnowflakeConn --> SnowflakeDB
+    
+    %% LLM Usage Points
+    LLMPredictor -.-> PortkeyLLM
+    PatternDetector -.-> PortkeyLLM
+    BusinessContext -.-> PortkeyLLM
+
+    %% Output Flow
+    TableMeta --> Renderer
+    ColumnMeta --> Renderer  
+    JoinMeta --> Renderer
+    SampleQueries --> Renderer
+    GranularityEngine --> Renderer
+    BusinessContext --> Renderer
+    ConfluenceClient --> Renderer
+
+    %% Styling
+    classDef userClass fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef agentClass fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef dataClass fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    classDef llmClass fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef outputClass fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    classDef externalClass fill:#f1f8e9,stroke:#33691e,stroke-width:2px
+
+    class User userClass
+    class Agent,Resolver,ConfluenceClient,TylerSources,GranularityEngine,Renderer agentClass
+    class UsageDB,SnowflakeConn,TableMeta,ColumnMeta,JoinMeta,SampleQueries dataClass
+    class PortkeyLLM,LLMPredictor,PatternDetector,BusinessContext llmClass
+    class OutputFile outputClass
+    class PortkeyAPI,SnowflakeDB,ConfluenceAPI externalClass
