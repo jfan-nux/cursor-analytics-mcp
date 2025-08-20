@@ -1,0 +1,156 @@
+graph TB
+    %% Entry Point
+    Start["🔍 Start Granularity Analysis"]
+    
+    %% Input Assessment
+    InputAnalysis["📊 Analyze Input<br/>• Extract table name patterns<br/>• Count total rows<br/>• Gather column metadata<br/>• Collect business context"]
+    
+    %% Performance Gate
+    SizeGate{"📏 Performance Check<br/>Table has >10B rows?"}
+    
+    %% Fast Path for Large Tables
+    FastPath["⚡ Lightweight Analysis<br/>• Skip deep queries<br/>• Use AI predictions only<br/>• Optimize for speed"]
+    FastResult["📋 Quick Result<br/>AI-predicted entity level<br/>with performance notes"]
+    
+    %% AI-Powered Column Prediction
+    AIAnalysis["🧠 AI Column Analysis<br/>Send table structure to LLM:<br/>• Table name hints<br/>• Column names & types<br/>• Business context<br/>• Usage patterns"]
+    
+    %% Smart Time Window Logic
+    TimeLogic["⏱️ Adaptive Time Windows<br/>Based on table size:<br/>• Massive tables: 1 day<br/>• Large tables: 3 days<br/>• Medium tables: 7 days<br/>• Small tables: 30 days"]
+    
+    %% Prediction Results
+    Predictions["🎯 AI Predictions<br/>• Most likely entity column<br/>• Time column for filtering<br/>• Calculated lookback period"]
+    
+    %% Technical Uniqueness Check
+    TechCheck["🔧 Technical Uniqueness Scan<br/>Test each column for uniqueness<br/>to find actual granularity"]
+    
+    %% Entity Validation Gate
+    EntityGate{"❓ Found Entity Column?"}
+    NoEntityPath["❌ No Entity Found<br/>Cannot determine<br/>business granularity"]
+    
+    %% Duplicate Testing
+    DuplicateCheck["🔍 Duplicate Analysis<br/>Count duplicates in predicted<br/>entity column with time filter"]
+    
+    %% Granularity Decision
+    GranularityDecision{"📊 Duplicate Count > 0?"}
+    
+    %% Simple Case: Unique Entity
+    UniqueCase["✅ Simple Granularity<br/>• Each row = unique entity<br/>• 1:1 mapping confirmed<br/>• Granularity identified"]
+    
+    %% Complex Case: Multiple Rows per Entity
+    ComplexCase["🔍 Complex Investigation<br/>Entity has multiple rows<br/>Need to understand why"]
+    
+    %% Sample Investigation
+    SampleStrategy["📝 Sample Investigation<br/>• Find entity with duplicates<br/>• Extract sample rows<br/>• Apply time filtering<br/>• Limit sample size"]
+    
+    %% Change Pattern Analysis
+    ChangeAnalysis["🔄 Change Pattern Detection<br/>• Compare rows for same entity<br/>• Identify changing columns<br/>• Extract timeline information<br/>• Detect variation patterns"]
+    
+    %% AI Pattern Recognition
+    PatternAI["🧠 AI Pattern Analysis<br/>Send sample data to LLM:<br/>• Sample rows for entity<br/>• Changing columns<br/>• Timeline data<br/>• Ask for pattern explanation"]
+    
+    %% Heuristic Pattern Detection
+    HeuristicPatterns["🔎 Pattern Recognition Logic<br/>Analyze changing columns for:<br/>• Date/time patterns<br/>• Status/flag patterns<br/>• Version/sequence patterns<br/>• ID relationship patterns"]
+    
+    %% Pattern Classification
+    subgraph "Pattern Types Detected"
+        SCDType["📊 Slowly Changing Dimension<br/>Tracks attribute changes<br/>over time with dates"]
+        EventType["📅 Event/Transaction Log<br/>Multiple events per entity<br/>with timestamps"]
+        StatusType["🔄 Status Tracking<br/>State changes with<br/>status/flag columns"]
+        VersionType["🔢 Version Control<br/>Multiple versions per<br/>entity with sequences"]
+        RelationType["🔗 Relationship Mapping<br/>Entity linked to multiple<br/>other entities"]
+        PartitionType["📂 Data Partitioning<br/>Same entity across<br/>different segments"]
+        MetricType["📈 Metric Aggregation<br/>Different measurements<br/>for same entity"]
+        UnknownType["❓ Complex Business Logic<br/>Pattern unclear,<br/>needs investigation"]
+    end
+    
+    %% Business Explanation Generation
+    BusinessExplanation["💼 Business Context Generation<br/>AI generates user-friendly<br/>explanation of why entity<br/>has multiple rows"]
+    
+    %% Final Results Assembly
+    ComplexResult["📋 Complex Granularity Result<br/>• Entity level identified<br/>• Pattern explanation<br/>• Business reasoning<br/>• Sample evidence<br/>• Timeline analysis"]
+    
+    %% Data Interaction Points
+    subgraph "Data Sources"
+        Database[("❄️ Live Database<br/>Sample queries<br/>Duplicate counts<br/>Uniqueness tests")]
+        AI[("🤖 AI Service<br/>Pattern recognition<br/>Business explanations<br/>Column predictions")]
+    end
+    
+    %% Error Handling
+    ErrorFallback["🛠️ Graceful Fallback<br/>• Use heuristic patterns<br/>• Provide partial results<br/>• Log analysis attempts"]
+    
+    %% Main Flow
+    Start --> InputAnalysis
+    InputAnalysis --> SizeGate
+    
+    %% Size-based routing
+    SizeGate -->|Yes| FastPath
+    FastPath --> FastResult
+    SizeGate -->|No| AIAnalysis
+    
+    %% Normal analysis flow
+    AIAnalysis --> TimeLogic
+    TimeLogic --> Predictions
+    Predictions --> TechCheck
+    TechCheck --> EntityGate
+    
+    %% Entity validation routing
+    EntityGate -->|No| NoEntityPath
+    EntityGate -->|Yes| DuplicateCheck
+    
+    %% Granularity analysis routing
+    DuplicateCheck --> GranularityDecision
+    GranularityDecision -->|No| UniqueCase
+    GranularityDecision -->|Yes| ComplexCase
+    
+    %% Complex case investigation
+    ComplexCase --> SampleStrategy
+    SampleStrategy --> ChangeAnalysis
+    ChangeAnalysis --> PatternAI
+    PatternAI --> HeuristicPatterns
+    
+    %% Pattern routing
+    HeuristicPatterns --> SCDType
+    HeuristicPatterns --> EventType
+    HeuristicPatterns --> StatusType
+    HeuristicPatterns --> VersionType
+    HeuristicPatterns --> RelationType
+    HeuristicPatterns --> PartitionType
+    HeuristicPatterns --> MetricType
+    HeuristicPatterns --> UnknownType
+    
+    %% Business explanation
+    PatternAI --> BusinessExplanation
+    BusinessExplanation --> ComplexResult
+    
+    %% External connections
+    AIAnalysis -.-> AI
+    PatternAI -.-> AI
+    BusinessExplanation -.-> AI
+    DuplicateCheck -.-> Database
+    SampleStrategy -.-> Database
+    TechCheck -.-> Database
+    
+    %% Error handling
+    AIAnalysis -.->|Error| ErrorFallback
+    SampleStrategy -.->|Error| ErrorFallback
+    PatternAI -.->|Error| ErrorFallback
+    
+    %% Styling
+    classDef startClass fill:#e8f5e8,stroke:#2e7d32,stroke-width:3px
+    classDef decisionClass fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef processClass fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    classDef aiClass fill:#fff8e1,stroke:#f9a825,stroke-width:2px
+    classDef resultClass fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef patternClass fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    classDef dataClass fill:#f1f8e9,stroke:#388e3c,stroke-width:2px
+    classDef errorClass fill:#ffebee,stroke:#d32f2f,stroke-width:2px
+    
+    class Start startClass
+    class SizeGate,EntityGate,GranularityDecision decisionClass
+    class InputAnalysis,TimeLogic,TechCheck,DuplicateCheck,SampleStrategy,ChangeAnalysis,HeuristicPatterns processClass
+    class AIAnalysis,PatternAI,BusinessExplanation aiClass
+    class FastResult,UniqueCase,ComplexResult,NoEntityPath,Predictions resultClass
+    class SCDType,EventType,StatusType,VersionType,RelationType,PartitionType,MetricType,UnknownType patternClass
+    class Database,AI dataClass
+    class ErrorFallback errorClass

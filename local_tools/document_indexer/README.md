@@ -4,7 +4,7 @@ This module provides hybrid search functionality combining BM25 and semantic emb
 
 ## Overview
 
-The document indexer processes all documents in the `context/` folder, extracts metadata, generates embeddings using BGE-large-en-v1.5, and uploads everything to a Snowflake table for fast hybrid search.
+The document indexer processes all documents in the `context/` folder, extracts metadata, generates embeddings using BGE-small-en-v1.5, and uploads everything to a Snowflake table for fast hybrid search.
 
 ## Components
 
@@ -19,14 +19,14 @@ The document indexer processes all documents in the `context/` folder, extracts 
 - Generates normalized embeddings for semantic search
 - Caches embeddings to avoid reprocessing
 
-### 3. Snowflake Uploader (`snowflake_uploader.py`)
-- Creates and manages document index table in `proddb.fionafan.document_index`
+### 3. Dual Table Uploader (`dual_table_uploader.py`)
+- Creates and manages document index tables in Snowflake
 - Uploads processed documents with embeddings in batches
 - Provides table statistics and management
 
-### 4. Hybrid Search (`hybrid_search.py`)
+### 4. Dual Table Hybrid Search (`dual_table_search.py`)
 - Combines BM25 (keyword) and embedding (semantic) search
-- Queries Snowflake table for fast retrieval
+- Queries Snowflake tables for fast retrieval
 - Returns ranked results with relevance scores
 
 ## Setup
@@ -36,6 +36,12 @@ Dependencies are now included in the main project `pyproject.toml`. Install with
 ```bash
 pip install -e .
 ```
+
+### Configuration
+The document indexer uses the following environment variables (configured via the main MCP server):
+- `SNOWFLAKE_*` - Snowflake connection parameters
+- `DOCUMENT_INDEX_TABLE` - Target table name (optional, defaults to `document_index`)
+- `CHUNK_INDEX_TABLE` - Target chunk table name (optional, defaults to `chunk_index`)
 
 ### Required packages (now in pyproject.toml):
 - `sentence-transformers>=2.2.0` - For BGE embeddings
@@ -50,26 +56,26 @@ pip install -e .
 ### 1. Index Documents
 ```bash
 # Full indexing pipeline
-python local_tools/document_indexer/index_documents.py
+python local_tools/document_indexer/index_documents_dual.py
 
 # Clear existing table and reindex
-python local_tools/document_indexer/index_documents.py --clear-table
+python local_tools/document_indexer/index_documents_dual.py --clear-table
 
 # Save processed documents to JSON for inspection
-python local_tools/document_indexer/index_documents.py --save-json processed_docs.json
+python local_tools/document_indexer/index_documents_dual.py --save-json processed_docs.json
 
 # Skip embeddings (for testing)
-python local_tools/document_indexer/index_documents.py --skip-embeddings
+python local_tools/document_indexer/index_documents_dual.py --skip-embeddings
 
 # Run quick test
-python local_tools/document_indexer/index_documents.py test
+python local_tools/document_indexer/index_documents_dual.py test
 ```
 
 ### 2. Use Search Functions in MCP Server
 
-The indexer updates three MCP tools to use hybrid search:
+The indexer provides five MCP tools for hybrid search:
 
-#### `fetch_table_context(query, top_k=5)`
+#### `fetch_table_context(query, top_k=5, team=None, write_to_local=False)`
 Search Snowflake table documentation:
 ```python
 # Example queries:
@@ -78,8 +84,8 @@ Search Snowflake table documentation:
 "consumer device settings"
 ```
 
-#### `fetch_pod_queries(query, top_k=3)`  
-Search validated SQL queries:
+#### `fetch_pod_queries(query, top_k=3, team=None)`  
+Search validated master SQL queries:
 ```python
 # Example queries:
 "pricing analysis"
@@ -87,8 +93,8 @@ Search validated SQL queries:
 "delivery performance"
 ```
 
-#### `fetch_user_context(query, top_k=5)`
-Search user context documents:
+#### `fetch_user_context(query, top_k=5, team=None, write_to_local=False)`
+Search user-specific context documents:
 ```python
 # Example queries:
 "notification analysis"
@@ -96,12 +102,30 @@ Search user context documents:
 "experimental setup"
 ```
 
+#### `fetch_experiment_readouts(query, top_k=5, team=None, write_to_local=False)`
+Search experiment readout documents:
+```python
+# Example queries:
+"iOS conversion test"
+"checkout funnel experiment"
+"mobile app experiment"
+```
+
+#### `fetch_deep_dives(query, top_k=5, team=None, write_to_local=False)`
+Search deep dive analysis documents:
+```python
+# Example queries:
+"MAU analysis"
+"user retention study"
+"experiment insights"
+```
+
 ## Database Schema
 
-The indexer creates table `proddb.fionafan.document_index` with the following structure:
+The indexer creates a document index table with the following structure:
 
 ```sql
-CREATE TABLE proddb.fionafan.document_index (
+CREATE TABLE {database}.{schema}.document_index (
     -- Primary identifiers
     document_id VARCHAR(64) NOT NULL,
     file_hash VARCHAR(32) NOT NULL,
@@ -152,14 +176,12 @@ CREATE TABLE proddb.fionafan.document_index (
 
 The indexer automatically categorizes documents based on their location:
 
-- `table_context` - Snowflake table documentation
-- `pod_queries` - Validated master SQL queries
-- `user_context` - User-specific context documents
-- `analysis_context` - General analysis context
-- `logistics` - Logistics-related documents
-- `training_materials` - Training and reference materials
-- `doordash_etl` - ETL pipeline documentation
-- `query_search` - Query search results
+- `table_context` - Snowflake table documentation (`context/snowflake-table-context/`)
+- `pod_queries` - Validated master SQL queries (`context/pod-level-validated-master-queries/`)
+- `user_context` - User-specific context documents (`context/user-context/`)
+- `experiment_readouts` - Experiment analysis documents (`context/experiment-readouts/`)
+- `deep_dives` - Deep dive analysis documents (`context/deep-dives/`)
+- `analysis_context` - General analysis context (`context/analysis-context/`)
 
 ## Hybrid Search Algorithm
 
@@ -201,10 +223,10 @@ python -c "from local_tools.document_indexer.embedding_generator import BGEEmbed
 ### Snowflake Connection Issues
 - Verify `utils/snowflake_connection.py` is configured correctly
 - Check Snowflake credentials and permissions
-- Ensure `proddb.fionafan` schema exists
+- Ensure target database and schema exist and are accessible
 
 ### Memory Issues
-- Reduce batch size in indexing script
+- Reduce batch size in `index_documents_dual.py` script
 - Use CPU instead of GPU if VRAM is limited
 - Process documents in smaller batches
 
