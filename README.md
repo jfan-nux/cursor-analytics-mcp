@@ -25,6 +25,16 @@ The Cursor Analytics MCP Server is a standalone MCP server built with FastMCP th
 - **Hybrid Context Search**: AI-powered document search with BM25 + embeddings
 - **Table Context Generation**: Automated documentation for Snowflake tables
 
+## 📖 Tool-Specific Documentation
+
+Each major tool has comprehensive documentation with setup, usage, and troubleshooting:
+
+- **[Curie Export](local_tools/curie_export/README.md)** - Export experiment results to Google Sheets
+- **[Document Indexer](local_tools/document_indexer/README.md)** - Hybrid search with BM25 + embeddings
+- **[Google Doc Crawler](local_tools/google_doc_crawler/README.md)** - Convert Google Docs to markdown
+- **[SQL to Sheets](local_tools/sql_to_sheets/README.md)** - Direct SQL query export to Google Sheets
+- **[Table Context Agent](local_tools/table_context_agent/README.md)** - AI-powered table documentation
+
 ## Setup and Installation
 
 ### 0) Prerequisites
@@ -149,6 +159,8 @@ search_queries_by_keyword(["conversion", "funnel"], limit=5)
 #### `execute_sql_and_upload_to_google_sheet(query, tab_name, spreadsheet_id=None, max_rows=20000, spreadsheet_title=None)`
 Execute a SQL query and upload results directly to Google Sheets.
 
+> 📖 **See detailed documentation:** [`local_tools/sql_to_sheets/README.md`](local_tools/sql_to_sheets/README.md)
+
 ### Experiment Analysis (Curie)
 
 #### `export_curie_experiment_to_sheet(experiment_name, primary_metrics=None, secondary_metrics=None, ...)`
@@ -156,6 +168,8 @@ Export Curie experiment results to Google Sheets with formatting.
 
 #### `curie_get_metadata(experiment_name)`
 Get comprehensive metadata about a Curie experiment including variants, metrics, and dimensions.
+
+> 📖 **See detailed documentation:** [`local_tools/curie_export/README.md`](local_tools/curie_export/README.md)
 
 ### Google Docs Integration
 
@@ -167,6 +181,8 @@ Convert a single Google Doc to markdown with team-based organization.
 
 #### `convert_google_doc_to_markdown(doc_url, write_file=False, output_path="context/experiment-readouts")`
 Convert a Google Doc to markdown content (returns as string).
+
+> 📖 **See detailed documentation:** [`local_tools/google_doc_crawler/README.md`](local_tools/google_doc_crawler/README.md)
 
 ### Context Search & Management
 
@@ -196,6 +212,8 @@ Search deep dive analysis documents.
 
 #### `fetch_cursor_rules(rule_name)`
 Fetch Cursor rules from `.cursor/rules/` directory. Use `rule_name="list"` to see available rules.
+
+> 📖 **See detailed documentation:** [`local_tools/document_indexer/README.md`](local_tools/document_indexer/README.md)
 
 ### Table Documentation
 
@@ -227,6 +245,8 @@ The system includes an intelligent granularity analysis engine that determines w
 - **AI-Powered Predictions** - Uses LLM to predict entity and time columns
 - **Pattern Recognition** - Detects SCDs, event logs, status tracking, and more
 - **Business Context Generation** - Explains complex patterns in user-friendly language
+
+> 📖 **See detailed documentation:** [`local_tools/table_context_agent/README.md`](local_tools/table_context_agent/README.md)
 
 ## Context Management System
 
@@ -288,6 +308,8 @@ python local_tools/document_indexer/index_documents_dual.py
 python local_tools/document_indexer/index_documents_dual.py --clear-table
 ```
 
+> 📖 **See detailed documentation:** [`local_tools/document_indexer/README.md`](local_tools/document_indexer/README.md)
+
 ## Architecture
 
 The system is organized into several key layers:
@@ -333,7 +355,7 @@ The system is organized into several key layers:
 ```
 cursor-analytics-mcp/
 ├── src/cursor_analytics_mcp/    # MCP server implementation
-├── local_tools/                 # Tool implementations
+├── local_tools/                 # Tool implementations (each has README.md)
 │   ├── curie_export/           # Curie experiment analysis
 │   ├── document_indexer/       # Hybrid search system
 │   ├── google_doc_crawler/     # Google Docs integration
@@ -351,6 +373,8 @@ cursor-analytics-mcp/
 ├── config/                     # Configuration files
 └── user-analysis/             # Analysis outputs
 ```
+
+> 📋 **Note:** Each tool in `local_tools/` has its own comprehensive `README.md` with detailed setup, usage, and troubleshooting instructions.
 
 ## Usage Examples
 
