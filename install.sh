@@ -45,9 +45,6 @@ uv pip install -e .
 mkdir -p config
 echo -e "${YELLOW}Config directory created at config/. Add your .env file here if needed.${NC}"
 
-# Test the installation
-echo -e "${GREEN}Testing installation...${NC}"
-python tests/test_server.py
 
 echo -e "${GREEN}Installation complete!${NC}"
 echo
