@@ -12,6 +12,7 @@ authors = [
 dependencies = [
     "mcp>=1.0.0",
     "fastmcp>=0.5.0",
+    "uvicorn>=0.20.0",
     "pandas>=2.2.0",
     "numpy>=1.24.0",
     "snowflake-connector-python[pandas]>=3.6.0",
@@ -50,6 +51,7 @@ license = {text = "MIT"}
 
 [project.scripts]
 cursor-analytics-mcp = "cursor_analytics_mcp.server:main"
+cursor-analytics-mcp-web = "cursor_analytics_mcp.web_server:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/cursor_analytics_mcp"]
