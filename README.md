@@ -37,87 +37,45 @@ Each major tool has comprehensive documentation with setup, usage, and troublesh
 
 ## Setup and Installation
 
-### 0) Prerequisites
+**📋 Complete Setup Guide:** See [SETUP.md](SETUP.md) for detailed installation and configuration instructions.
 
-- Python 3.10+ (recommended)
-- Access to Snowflake with appropriate credentials
-- Google API credentials for Sheets/Docs integration
+### Quick Start
 
-### 1) Run as MCP Server
+1. **Install dependencies:**
+   ```bash
+   git clone <repository-url>
+   cd cursor-analytics-mcp
+   ./install.sh
+   ```
 
-#### Automatic Installation
+2. **Configure credentials:**
+   ```bash
+   cp .env.template config/.env
+   nano config/.env  # Add your Snowflake and other credentials
+   ```
 
-```bash
-# Clone and install everything
-git clone <repository-url>
-cd cursor-analytics-mcp
-./install.sh
-```
+3. **Test the server:**
+   ```bash
+   source venv/bin/activate
+   cursor-analytics-mcp
+   ```
 
-The installation script will:
-- Install `uv` package manager if needed
-- Create a Python 3.10+ virtual environment
-- Install all dependencies including FastMCP
-- Set up the project structure
+4. **Add to Cursor configuration** (see [SETUP.md](SETUP.md) for details)
 
-#### Manual Installation
+### Required Configuration
 
-```bash
-# Create virtual environment
-python3.10 -m venv venv
-source venv/bin/activate
+- **Snowflake**: Database access credentials
+- **Document Tables**: `DOCUMENT_INDEX_TABLE` and `CHUNK_INDEX_TABLE`
+- **GitHub**: Repository info for document linking
 
-# Install dependencies
-pip install -e .
-```
+### Optional Integrations
 
-### 2) Configure Credentials
+- **AI/LLM**: Portkey + OpenAI for table documentation
+- **Confluence**: Documentation search and lookup
+- **Google Sheets**: Curie experiment exports, SQL-to-Sheets
+- **Google Docs**: Document crawling and markdown conversion
 
-Create a `config/.env` file like config/.env.template.
-
-
-### 3) Test the Server
-
-```bash
-source venv/bin/activate
-cursor-analytics-mcp
-```
-
-### 4) Add to MCP Client Configuration
-
-Add to your MCP client (like Cursor) configuration:
-
-```json
-{
-  "mcpServers": {
-    "cursor-analytics": {
-      "command": "/path/to/cursor-analytics-mcp/venv/bin/cursor-analytics-mcp",
-      "env": {
-        "SNOWFLAKE_USER": "your.username",
-        "SNOWFLAKE_PASSWORD": "your_secure_password",
-        "SNOWFLAKE_DATABASE": "proddb",
-        "SNOWFLAKE_SCHEMA": "your_schema",
-        "SNOWFLAKE_WAREHOUSE": "YOUR_WAREHOUSE",
-        "SNOWFLAKE_ROLE": "your_role",
-        "SNOWFLAKE_ACCOUNT": "your_account",
-        "DOCUMENT_INDEX_TABLE": "document_index_community",
-        "CHUNK_INDEX_TABLE": "chunk_index_community",
-        "GITHUB_REPO": "your-org/cursor-analytics-mcp",
-        "GITHUB_BRANCH": "main",
-        "PORTKEY_BASE_URL": "https://your-portkey-gateway.com/v1",
-        "PORTKEY_API_KEY": "your_portkey_api_key",
-        "PORTKEY_OPENAI_VIRTUAL_KEY": "your_openai_virtual_key",
-        "OPENAI_VIRTUAL_KEY": "sk-proj-your_openai_api_key_here",
-        "CONFLUENCE_BASE_URL": "https://your-org.atlassian.net/wiki",
-        "CONFLUENCE_USERNAME": "your.email@company.com",
-        "CONFLUENCE_API_TOKEN": "your_confluence_api_token",
-        "GOOGLE_SHEET_CREDENTIALS_FILE": "config/credentials/google_oauth_credentials.json",
-        "GOOGLE_DOCS_CREDENTIALS_FILE": "config/credentials/google_doc_credentials.json"
-      }
-    }
-  }
-}
-```
+> 📖 **Full setup instructions, Google API setup, troubleshooting, and configuration examples:** [SETUP.md](SETUP.md)
 
 ## MCP Tools Available
 
@@ -277,26 +235,103 @@ Documents are processed through:
 1. **Document Processor** - Scans context folder, extracts metadata, chunks large documents
 2. **BGE Embeddings** - Generates 384-dimensional embeddings using BGE-small-en-v1.5 model
 3. **BM25 Preprocessing** - Tokenizes and preprocesses text for keyword search
-4. **Snowflake Storage** - Uploads to `proddb.fionafan.document_index` table
+4. **Snowflake Storage** - Uploads to dual tables (`document_index_community` and `chunk_index_community`)
 
 ### 4. Snowflake Storage Schema
 
-Documents are stored in `proddb.fionafan.document_index` with:
+The document indexing system uses **two tables** for optimal storage and retrieval:
 
+#### Document Index Table (document_index_community)
 ```sql
-CREATE TABLE document_index (
-    document_id VARCHAR(64),
-    file_path VARCHAR(1000),
-    content TEXT,
+CREATE TABLE document_index_community (
+    -- Document Identity & Metadata
+    document_id VARCHAR(64) PRIMARY KEY,
+    document_hash VARCHAR(64) NOT NULL,
+    relative_path TEXT NOT NULL,
+    file_path TEXT,
+    file_name VARCHAR(255),
+    file_stem VARCHAR(255),
+    file_extension VARCHAR(10),
     category VARCHAR(50),
-    embedding ARRAY,           -- 384-dim BGE vectors
-    bm25_tokens ARRAY,        -- Preprocessed tokens
-    database_name VARCHAR(100), -- For table context
-    schema_name VARCHAR(100),   -- For table context
-    table_name VARCHAR(100),    -- For table context
-    -- ... additional metadata
+    subcategory VARCHAR(200),
+    document_title VARCHAR(500),
+    content_type VARCHAR(50),
+    
+    -- GitHub Integration
+    github_repo VARCHAR(200),
+    github_branch VARCHAR(100) DEFAULT 'main',
+    github_commit_sha VARCHAR(40),
+    github_pr_number INTEGER,
+    github_file_url TEXT,
+    github_author VARCHAR(100),
+    github_commit_message TEXT,
+    
+    -- Document Versioning & Lifecycle
+    document_version INTEGER DEFAULT 1,
+    is_latest_version BOOLEAN DEFAULT TRUE,
+    superseded_at TIMESTAMP,
+    change_type VARCHAR(20) DEFAULT 'created',
+    
+    -- Document Content & Summary
+    full_content TEXT,
+    chunk_count INTEGER DEFAULT 1,
+    file_size INTEGER,
+    last_modified TIMESTAMP,
+    processed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    indexed_by VARCHAR(50) DEFAULT 'local',
+    
+    -- Legacy Schema Support (Document-level)
+    database_name VARCHAR(100),
+    schema_name VARCHAR(100),
+    table_name VARCHAR(100),
+    query_name VARCHAR(200),
+    query_type VARCHAR(50),
+    referenced_tables ARRAY
 )
 ```
+
+#### Chunk Index Table (chunk_index_community)
+```sql
+CREATE TABLE chunk_index_community (
+    -- Chunk Identity
+    chunk_id VARCHAR(64) PRIMARY KEY,
+    document_id VARCHAR(64) NOT NULL,
+    chunk_hash VARCHAR(64) NOT NULL,
+    
+    -- Chunk Content & Position
+    content TEXT NOT NULL,
+    content_length INTEGER,
+    chunk_start INTEGER,
+    chunk_end INTEGER,
+    
+    -- Search & ML Features
+    bm25_text TEXT,
+    bm25_tokens ARRAY,
+    embedding ARRAY,           -- 384-dim BGE vectors for chunk-level search
+    embedding_dim INTEGER,
+    
+    -- Foreign Key to document_index table
+    FOREIGN KEY (document_id) REFERENCES document_index_community(document_id)
+)
+```
+
+**Table Configuration:**
+- `DOCUMENT_INDEX_TABLE`: Set to `document_index_community` in `.env.template`
+- `CHUNK_INDEX_TABLE`: Set to `chunk_index_community` in `.env.template`
+
+The dual-table approach enables:
+- **Document-level metadata**: Rich document information including GitHub integration, versioning, and categorization
+- **Chunk-level search**: Granular search within large documents with position tracking
+- **Optimized performance**: Separate indexing strategies for document vs. content search
+- **Flexible content organization**: Documents can be chunked dynamically while preserving document structure
+- **Advanced search features**: Both keyword (BM25) and semantic (embedding) search at chunk level
+- **Context windows**: Ability to retrieve chunks with surrounding context for better results
+
+**Key Features:**
+- **GitHub Integration**: Track source repository, commits, branches, and authors
+- **Document Versioning**: Support for document evolution with version tracking
+- **Content Positioning**: Precise chunk boundaries (`chunk_start`, `chunk_end`) for accurate retrieval
+- **Legacy Compatibility**: Support for Snowflake table context and SQL query metadata
 
 ### 5. Setting Up Document Indexing
 
