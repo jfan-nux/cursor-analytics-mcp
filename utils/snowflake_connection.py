@@ -214,8 +214,18 @@ class SnowflakeHook:
             Exception: If connection fails.
         """
         try:
-            self.conn = snowflake.connector.connect(**self.params)
-            logger.info("Successfully connected to Snowflake")
+            # Add keep-alive and timeout parameters to prevent connection drops
+            connection_params = {
+                **self.params,
+                'client_session_keep_alive': True,
+                'client_session_keep_alive_heartbeat_frequency': 60,  # Send heartbeat every 60 seconds
+                'network_timeout': 300,  # Network timeout: 5 minutes
+                'login_timeout': 60,     # Login timeout: 1 minute
+                'client_prefetch_threads': 4,  # Optimize data fetching
+            }
+            
+            self.conn = snowflake.connector.connect(**connection_params)
+            logger.info("Successfully connected to Snowflake with keep-alive enabled")
             return self.conn
         except Exception as e:
             logger.error(f"Error connecting to Snowflake: {str(e)}")
