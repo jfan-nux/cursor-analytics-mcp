@@ -1466,6 +1466,55 @@ def describe_table(
 
 
 
+@mcp.tool
+def upload_md_to_google_doc(
+    md_file_path: str,
+    google_doc_id: Optional[str] = None,
+    doc_title: Optional[str] = None
+) -> str:
+    """
+    Upload a local markdown file to Google Docs.
+    
+    Converts markdown formatting to Google Docs native formatting including:
+    - Headings (# ## ###, etc.)
+    - Bullet points and numbered lists
+    - Basic text formatting (bold, italic removed for simplicity)
+    - Tables and other markdown elements
+    
+    Args:
+        md_file_path: Path to the local markdown file
+        google_doc_id: Optional Google Doc ID. If not provided, creates new doc
+        doc_title: Optional title for the document. If not provided, uses filename
+        
+    Returns:
+        Google Doc URL
+    """
+    try:
+        logger.info(f"Uploading markdown file to Google Doc: {md_file_path}")
+        
+        # Import here to avoid naming conflicts
+        from local_tools.md_to_google_doc import upload_md_to_google_doc as upload_func
+        
+        # Call the upload function from the local_tools module
+        doc_url = upload_func(md_file_path, google_doc_id, doc_title)
+        
+        response = f"✅ Markdown file uploaded to Google Doc successfully!\n\n"
+        response += f"📄 **Source file:** {md_file_path}\n"
+        if doc_title:
+            response += f"📝 **Document title:** {doc_title}\n"
+        if google_doc_id:
+            response += f"🔄 **Updated existing document:** {google_doc_id}\n"
+        else:
+            response += f"📄 **Created new document**\n"
+        response += f"🔗 **Google Doc URL:** {doc_url}\n"
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"Error uploading markdown to Google Doc: {str(e)}")
+        return f"❌ Error uploading markdown file to Google Doc: {str(e)}"
+
+
 # ============================================================================
 # SERVER ENTRY POINT
 # ============================================================================

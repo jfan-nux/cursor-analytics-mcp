@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python:*)",
+      "Bash(/Users/fiona.fan/Documents/mcp/cursor-analytics-mcp/venv/bin/python -m pip show cursor-analytics-mcp)",
+      "Bash(/Users/fiona.fan/Documents/mcp/cursor-analytics-mcp/venv/bin/cursor-analytics-mcp --help)",
+      "Bash(/Users/fiona.fan/Documents/mcp/cursor-analytics-mcp/venv/bin/python -c \"\nfrom utils.snowflake_connection import SnowflakeHook\nprint(''Testing Snowflake connection with keep-alive...'')\ntry:\n    with SnowflakeHook() as hook:\n        result = hook.query_snowflake(''SELECT CURRENT_TIMESTAMP() as test_time'', method=''pandas'')\n        print(f''✅ Connection successful! Current time: {result.iloc[0,0]}'')\n        print(''✅ Keep-alive parameters applied successfully'')\nexcept Exception as e:\n    print(f''❌ Connection failed: {e}'')\n\")",
+      "Bash(./venv/bin/pip install -e .)",
+      "Bash(claude mcp:*)",
+      "Bash(pandoc:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
