@@ -8,19 +8,19 @@
 
 Guest Mode provides guests with a taste of DoorDash’s selection, especially when they are not ready to log in or sign up. However, we've learned that when customers log in or sign up, they have a more relevant and personalized experience, making them more likely to place an order.**Solution**An immediate solution to this problem is to introduce a prominent, action-oriented surface at the top of the funnel for Guest Browsers to help provide context on the value of signing up or logging in.**We believe this will improve login and signup rates in the Guest Funnel and lead to increased long-term Monthly Active Users (MAU).**|**Treatment (USA)**|
 | --- |
-| ![Drawing 1](images/image_2.png) |
+| ![Drawing 1](Experiment-Readout-Guest-Immersive-Header/images/image_2.png) |
 
 |**Treatment (Canada)**|
 | --- |
-| ![Drawing 2](images/image_3.png) |
+| ![Drawing 2](Experiment-Readout-Guest-Immersive-Header/images/image_3.png) |
 
 |**Treatment (AUS)**|
 | --- |
-| ![Drawing 3](images/image_4.png) |
+| ![Drawing 3](Experiment-Readout-Guest-Immersive-Header/images/image_4.png) |
 
 |**Treatment (NZ)**|
 | --- |
-| ![Drawing 4](images/image_1.png) |**Results**-**iOS**(All Cx who land on the explore page were exposed to the experiment, including Guest Cx and Cx who signed in)
+| ![Drawing 4](Experiment-Readout-Guest-Immersive-Header/images/image_1.png) |**Results**-**iOS**(All Cx who land on the explore page were exposed to the experiment, including Guest Cx and Cx who signed in)
 
 <u>Success Metric and Input Metrics
 </u>

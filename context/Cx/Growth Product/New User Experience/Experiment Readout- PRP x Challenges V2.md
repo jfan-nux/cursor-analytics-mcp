@@ -65,7 +65,7 @@ Control/Treatment 1/ Treatment 2 Split: 10%/45%/45%
 
 ### Experiment Timeline
 
-![Drawing 1](images/image_1_placeholder.png)
+![Drawing 1](Experiment-Readout-PRP-x-Challenges-V2/images/image_1_placeholder.png)
 
 ### Appendix
 

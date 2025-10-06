@@ -54,15 +54,15 @@ iOS “$0 delivery fee, 1st order” messaging for guest Cx has a stat sig **+28
 
 **Problems and Solution**The guest path attracts approximately 6.2M visits (6.3% of DoorDash new visits) per year and contributes ~1M New Cx. This path has a New Cx CVR of 15% compared to 42% for New Cx who registered before browsing. We believe there is opportunity to improve this conversion rate and significantly contribute at least additional 250K New Cx annually from this path.**Problem:**Cx who browse as a guest on iOS (i.e. skip sign-up at onboarding) see higher delivery fees on Explore, Store and Cart likely resulting in sticker shock. See below for what these Cx see:
 
-![Drawing 1](images/image_2.png)
+![Drawing 1](Experiment-Readout-Affordability-test-for-guest-browser-iOS/images/image_2.png)
 
 New Cx who browse in a signed-in state in contrast get clear messaging that highlights free delivery fee on their order.
 
-![Drawing 2](images/image_3.png)**Hypothesis:**Improving affordability messaging for iOS Guest Cx on Explore, Store and Cart will increase new Cx conversion of this path by at least 25% [23% to 29%] and will contribute > 250K New Cx/ year.**Solution:**
+![Drawing 2](Experiment-Readout-Affordability-test-for-guest-browser-iOS/images/image_3.png)**Hypothesis:**Improving affordability messaging for iOS Guest Cx on Explore, Store and Cart will increase new Cx conversion of this path by at least 25% [23% to 29%] and will contribute > 250K New Cx/ year.**Solution:**
 
 - Show Guest Cx “$0.00 delivery fee, first order” similar to logged in New Cx on Explore. We will also persist the free delivery fee on Store and Cart
 
-![Drawing 3](images/image_4.png)
+![Drawing 3](Experiment-Readout-Affordability-test-for-guest-browser-iOS/images/image_4.png)
 
 - Key bug fixes resolved for guest Cx (both control and treatment)
 
@@ -76,7 +76,7 @@ New Cx who browse in a signed-in state in contrast get clear messaging that high
 
 #### Experiment Timeline
 
-![Drawing 4](images/image_1_placeholder.png)
+![Drawing 4](Experiment-Readout-Affordability-test-for-guest-browser-iOS/images/image_1_placeholder.png)
 
 **Test mechanism:**A/B test**Test platform:**iOS**Country:**Global**Experience:**DoorDash only**Target Population:**Guest Cx**Test duration:**1 weeks experiment**Control/Treatment Split:**90/10
 

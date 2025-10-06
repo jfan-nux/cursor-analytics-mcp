@@ -99,13 +99,14 @@ class GoogleDriveFolderCrawler:
         self.logger.warning(f"Could not extract folder ID from URL: {url}")
         return None
     
-    def list_folder_contents(self, folder_id: str) -> List[Dict[str, Any]]:
+    def list_folder_contents(self, folder_id: str, resolve_shortcuts: bool = True) -> List[Dict[str, Any]]:
         """
         List all files and folders in a Google Drive folder.
         Supports both My Drive and Shared Drives.
         
         Args:
             folder_id: Google Drive folder ID
+            resolve_shortcuts: If True, resolve shortcuts to their target files
             
         Returns:
             List of file/folder metadata dictionaries
@@ -117,7 +118,7 @@ class GoogleDriveFolderCrawler:
             query = f"'{folder_id}' in parents and trashed=false"
             results = self.drive_service.files().list(
                 q=query,
-                fields="files(id, name, mimeType, parents, createdTime, modifiedTime)",
+                fields="files(id, name, mimeType, parents, createdTime, modifiedTime, shortcutDetails)",
                 orderBy="name",
                 pageSize=1000,
                 supportsAllDrives=True,  # Enable Shared Drive support
@@ -126,6 +127,52 @@ class GoogleDriveFolderCrawler:
             ).execute()
             
             items = results.get('files', [])
+            
+            # Resolve shortcuts if requested
+            if resolve_shortcuts:
+                resolved_items = []
+                shortcuts_found = 0
+                shortcuts_resolved = 0
+                
+                for item in items:
+                    if item['mimeType'] == 'application/vnd.google-apps.shortcut':
+                        shortcuts_found += 1
+                        # Get the target file details
+                        shortcut_details = item.get('shortcutDetails', {})
+                        target_id = shortcut_details.get('targetId')
+                        target_mime_type = shortcut_details.get('targetMimeType')
+                        
+                        if target_id:
+                            try:
+                                # Fetch the actual target file
+                                target_file = self.drive_service.files().get(
+                                    fileId=target_id,
+                                    fields="id, name, mimeType, parents, createdTime, modifiedTime",
+                                    supportsAllDrives=True
+                                ).execute()
+                                
+                                # Use the shortcut's name but the target's ID and type
+                                target_file['name'] = item['name']  # Keep shortcut name
+                                target_file['is_shortcut'] = True
+                                target_file['shortcut_id'] = item['id']
+                                resolved_items.append(target_file)
+                                shortcuts_resolved += 1
+                                self.logger.debug(f"Resolved shortcut: {item['name']} -> {target_id}")
+                            except Exception as e:
+                                self.logger.warning(f"Could not resolve shortcut {item['name']}: {e}")
+                                # Keep the shortcut as-is if we can't resolve it
+                                resolved_items.append(item)
+                        else:
+                            self.logger.warning(f"Shortcut {item['name']} has no target ID")
+                            resolved_items.append(item)
+                    else:
+                        resolved_items.append(item)
+                
+                if shortcuts_found > 0:
+                    self.logger.info(f"Resolved {shortcuts_resolved}/{shortcuts_found} shortcuts")
+                
+                items = resolved_items
+            
             self.logger.info(f"Found {len(items)} items in folder {folder_id}")
             return items
             
@@ -234,9 +281,26 @@ class GoogleDriveFolderCrawler:
                 # Move/rename if needed
                 if source_file != target_file:
                     if source_file.exists():
-                        source_file.rename(target_file)
+                        # The enhanced converter creates a subfolder with images inside
+                        # We need to fix the image paths in the markdown to point to the subfolder
+                        source_parent = source_file.parent
+                        subfolder_name = source_parent.name
+                        
+                        # Read the markdown and fix image paths
+                        content = source_file.read_text(encoding='utf-8')
+                        
+                        # Replace image paths: images/xxx.png -> Subfolder-Name/images/xxx.png
+                        if subfolder_name and subfolder_name != str(output_folder):
+                            content = content.replace('](images/', f']({subfolder_name}/images/')
+                        
+                        # Write to target location
+                        target_file.write_text(content, encoding='utf-8')
+                        
+                        # Remove source file
+                        source_file.unlink()
+                        
                         result['markdown_file'] = str(target_file)
-                        self.logger.info(f"Moved file to: {target_file}")
+                        self.logger.info(f"Moved file to: {target_file} and fixed image paths")
             
             return {
                 'status': 'success',

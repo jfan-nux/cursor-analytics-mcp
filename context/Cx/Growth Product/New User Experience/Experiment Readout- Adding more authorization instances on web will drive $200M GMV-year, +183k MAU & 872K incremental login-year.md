@@ -38,13 +38,13 @@ Last updated: 03/21/2022
 
   - <mark>Google modal one tap sign in/ signup </mark>
 
-![Drawing 1](images/image_5.png) ![Drawing 2](images/image_1.png)
+![Drawing 1](Experiment-Readout-Adding-more-authorization-instances-on-web-will-drive-200M-GMVyear-183k-MAU-872K-incremental-loginyear/images/image_5.png) ![Drawing 2](Experiment-Readout-Adding-more-authorization-instances-on-web-will-drive-200M-GMVyear-183k-MAU-872K-incremental-loginyear/images/image_1.png)
 
-![Drawing 3](images/image_3.png) ![Drawing 4](images/image_6.png)
+![Drawing 3](Experiment-Readout-Adding-more-authorization-instances-on-web-will-drive-200M-GMVyear-183k-MAU-872K-incremental-loginyear/images/image_3.png) ![Drawing 4](Experiment-Readout-Adding-more-authorization-instances-on-web-will-drive-200M-GMVyear-183k-MAU-872K-incremental-loginyear/images/image_6.png)
 
 *Extra account entry points - Address bar*
 
-![Drawing 5](images/image_2.png)
+![Drawing 5](Experiment-Readout-Adding-more-authorization-instances-on-web-will-drive-200M-GMVyear-183k-MAU-872K-incremental-loginyear/images/image_2.png)
 
 *Extra account entry point - Nav bar*
 
@@ -52,7 +52,7 @@ For the full readout, please check out the [experiment result doc](https://docs.
 
 ### Experiment Timeline
 
-![Drawing 6](images/image_4_placeholder.png)
+![Drawing 6](Experiment-Readout-Adding-more-authorization-instances-on-web-will-drive-200M-GMVyear-183k-MAU-872K-incremental-loginyear/images/image_4_placeholder.png)
 
 ### Methodology
 

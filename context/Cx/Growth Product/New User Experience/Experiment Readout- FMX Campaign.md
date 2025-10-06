@@ -12,7 +12,7 @@
 
 - However, we **do not**highlight this upcoming benefit to New Cx on app entry (in an announcement) in a clear and consistent manner across all promotion types.**Solution**Pull from campaign manager to fetch benefits for Cx and surface the matched qualified New Cx promotion on**first app entry after their first order.**|**Control**|**Treatment**|
   | --- | --- |
-  | ![Drawing 1](images/image_1.png) | ![Drawing 2](images/image_2.png) |**Results**<u>Success Metric and Input Metrics
+  | ![Drawing 1](Experiment-Readout-FMX-Campaign/images/image_1.png) | ![Drawing 2](Experiment-Readout-FMX-Campaign/images/image_2.png) |**Results**<u>Success Metric and Input Metrics
   </u>
 
 - **MAU rate:** :

@@ -22,7 +22,7 @@ Last updated: 11/02/2021
 
 - Check metrics:
 
-  - MTO: **flat**- Never delivered:**flat**![Drawing 1](images/image_1.png)**Next:**-**Ramp to 100%**(timeline: ASAP)
+  - MTO: **flat**- Never delivered:**flat**![Drawing 1](Experiment-Readout-Address-flow-improvement-V2-iOS/images/image_1.png)**Next:**-**Ramp to 100%**(timeline: ASAP)
 
 - **V3 experiment:** to focus from the lens of a New Cx (Timeline: 2022 MAU candidate)
 

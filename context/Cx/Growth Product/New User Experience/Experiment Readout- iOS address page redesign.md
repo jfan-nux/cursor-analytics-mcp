@@ -47,9 +47,9 @@ Last updated: 09/01/2022
 
 | **Treatment**|
 | --- |
-| ![Drawing 1](images/image_2.png) ![Drawing 2](images/image_1.png)![Drawing 3](images/image_4.png) ![Drawing 4](images/image_5.png) |
+| ![Drawing 1](Experiment-Readout-iOS-address-page-redesign/images/image_2.png) ![Drawing 2](Experiment-Readout-iOS-address-page-redesign/images/image_1.png)![Drawing 3](Experiment-Readout-iOS-address-page-redesign/images/image_4.png) ![Drawing 4](Experiment-Readout-iOS-address-page-redesign/images/image_5.png) |
 |**Control**|
-| ![Drawing 5](images/image_3.png) ![Drawing 6](images/image_8.png) ![Drawing 7](images/image_6.png) |**Next steps:**
+| ![Drawing 5](Experiment-Readout-iOS-address-page-redesign/images/image_3.png) ![Drawing 6](Experiment-Readout-iOS-address-page-redesign/images/image_8.png) ![Drawing 7](Experiment-Readout-iOS-address-page-redesign/images/image_6.png) |**Next steps:**
 
 - <mark>Fast follow sizing bug that is resulting in the minor negative trend for ND. More details, including reasoning for the ship decision, can be found here </mark><mark>. (ETA: 2 weeks)
   </mark>
@@ -70,7 +70,7 @@ For the full readout, please check out the [experiment result doc](https://docs.
 
 ### Experiment Timeline
 
-![Drawing 8](images/image_7_placeholder.png)
+![Drawing 8](Experiment-Readout-iOS-address-page-redesign/images/image_7_placeholder.png)
 
 ### Methodology
 

@@ -20,7 +20,7 @@ This approach marks the beginning of a series of features aimed at driving mWeb 
 
 | **Control**|**Treatment (Blurred page prompt on scroll)**|**Treatment (Bottom Sheet Modal)**|
 | --- | --- | --- |
-| ![Drawing 1](images/image_2.png) | ![Drawing 2](images/image_4.png) | ![Drawing 3](images/image_1.png) |**Results Summary**The App Download Bottom Sheet Modal On Store Page experiment showed a massive lift in OR and MAU rate in the**Bottom Sheet group vs control group**. Observed to drive**121k**incremental orders over a**3 week**experiment period,**leading to an estimated +$114.6M**[^1]**GMV at 12 month exit,**+**$3.6M GMV at Q4 exit; And +92.1k MAU at 12 month exit, +14.7k MAU at Q4 exit.**
+| ![Drawing 1](Experiment-Readout-mWeb-App-Download-Bottom-Sheet-Modal/images/image_2.png) | ![Drawing 2](Experiment-Readout-mWeb-App-Download-Bottom-Sheet-Modal/images/image_4.png) | ![Drawing 3](Experiment-Readout-mWeb-App-Download-Bottom-Sheet-Modal/images/image_1.png) |**Results Summary**The App Download Bottom Sheet Modal On Store Page experiment showed a massive lift in OR and MAU rate in the**Bottom Sheet group vs control group**. Observed to drive**121k**incremental orders over a**3 week**experiment period,**leading to an estimated +$114.6M**[^1]**GMV at 12 month exit,**+**$3.6M GMV at Q4 exit; And +92.1k MAU at 12 month exit, +14.7k MAU at Q4 exit.**
 
 - <u>Success Metrics
   </u>
@@ -43,7 +43,7 @@ This approach marks the beginning of a series of features aimed at driving mWeb 
 
 ### Experiment Timeline
 
-![Drawing 4](images/image_3_placeholder.png)
+![Drawing 4](Experiment-Readout-mWeb-App-Download-Bottom-Sheet-Modal/images/image_3_placeholder.png)
 
 ### Methodology
 

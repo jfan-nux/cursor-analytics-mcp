@@ -22,7 +22,7 @@ We have proven through Cx research, data analytics, and marketing promotional Cx
 
 |**Treatment**|
 | --- |
-| ![Drawing 1](images/image_1.png) |**Results**<u>Success Metric and Input Metrics
+| ![Drawing 1](Experiment-Readout-NPWS-Immersive-New-Cx-Header/images/image_1.png) |**Results**<u>Success Metric and Input Metrics
 </u>
 
 - **MAU rate:** :

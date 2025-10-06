@@ -33,9 +33,9 @@ Last updated: 05/21/2021
 
   - Another observation is that non-logged in users could be subject to a higher percentage of bugs (e.g. payment entry issue) and a poorer UX (e.g non-optimized banner and announcement targeting) as this is a lesser known and underinvested path.
 
-![Drawing 1](images/image_2.png)
+![Drawing 1](Experiment-Readout-Improving-the-New-Cx-path-to-Explore-iOS/images/image_2.png)
 
-![Drawing 2](images/image_5.png)
+![Drawing 2](Experiment-Readout-Improving-the-New-Cx-path-to-Explore-iOS/images/image_5.png)
 
 - **Next step:** Overall we believe that Skip addresses a “help wanted sign for” visitors and we need to explore further how we can keep prominent to them while not impairing conversion.
 
@@ -57,13 +57,13 @@ For the full readout, please check out the [experiment result doc](https://docs.
 
 **Goal:**Our goal is to build the most seamless 1st order experience in the industry and get New Cx directly into the Explore page immediately upon app launch, similar to existing logged in DoorDash Cx or as companies such as Amazon do today for non-logged in Cx.**The goal of this test (V0) is making it easier to skip identity flow and reach the Explore page quickly.** Next step, we are going to test more designs that could smooth the process of new user experience, e.g. address entry flow/sign up flow/ payment added flow and etc
 
-![Drawing 3](images/image_1.png)
+![Drawing 3](Experiment-Readout-Improving-the-New-Cx-path-to-Explore-iOS/images/image_1.png)
 
 *Existing design:*
 
 *To skip signup, Cx need to tap “Get Started” on onboarding page and “Skip” button on the top right corner of identity page, 25% traffic never proceed from this page*
 
-![Drawing 4](images/image_4.png)
+![Drawing 4](Experiment-Readout-Improving-the-New-Cx-path-to-Explore-iOS/images/image_4.png)
 
 *New design:*
 
@@ -71,7 +71,7 @@ For the full readout, please check out the [experiment result doc](https://docs.
 
 ### Experiment Timeline
 
-![Drawing 5](images/image_3_placeholder.png)
+![Drawing 5](Experiment-Readout-Improving-the-New-Cx-path-to-Explore-iOS/images/image_3_placeholder.png)
 
 **Test mechanism:**A/B test**Test platform:**iOS**Country:**US, CAN & AUS**Experience:**DoorDash only**Target Population:**Non-logged in Cx**Test duration:**1 weeks experiment**Control/Treatment Split:**90/10
 

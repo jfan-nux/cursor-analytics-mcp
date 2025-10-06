@@ -1,6 +1,6 @@
 ## Positioned Elements
 
-![Positioned Drawing](images/image_kix.s4w9r277ylbq.png)
+![Positioned Drawing](Experiment-Readout-iOS-digital-keyboard-on-address-page/images/image_kix.s4w9r277ylbq.png)
 ---
 # Experiment Readout: iOS digital keyboard on address page
 
@@ -43,7 +43,7 @@ For the full readout, please check out the [experiment result doc](https://docs.
 
 ### Experiment Timeline
 
-![Drawing 1](images/image_1_placeholder.png)
+![Drawing 1](Experiment-Readout-iOS-digital-keyboard-on-address-page/images/image_1_placeholder.png)
 
 ### Methodology
 

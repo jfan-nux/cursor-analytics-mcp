@@ -20,7 +20,7 @@ Working team: [manolo](mailto:manolo.sanudo@doordash.com) (eng), [Zohaib Sibté 
 
 | **Before**|**After**|
 | --- | --- |
-| ![Drawing 1](images/image_3.png) | ![Drawing 2](images/image_2.png) |**Result Details**[Mode Dashboard](https://app.mode.com/doordash/reports/c3861964fa5d) (The migration from Mode to Curie still in progress, we are working on Curie metrics pack and aim for completion in Q1)
+| ![Drawing 1](Experiment-Readout-iOS-Cx-Guest-Nearby-Copy/images/image_3.png) | ![Drawing 2](Experiment-Readout-iOS-Cx-Guest-Nearby-Copy/images/image_2.png) |**Result Details**[Mode Dashboard](https://app.mode.com/doordash/reports/c3861964fa5d) (The migration from Mode to Curie still in progress, we are working on Curie metrics pack and aim for completion in Q1)
 
 [Curie Dashboard](https://admin-gateway.doordash.com/decision-systems/experiments/ae6c83fa-484a-4e16-87d6-e9f4e123d68e) for quality metrics
 
@@ -28,7 +28,7 @@ Working team: [manolo](mailto:manolo.sanudo@doordash.com) (eng), [Zohaib Sibté 
 
 ### Experiment Timeline
 
-![Drawing 3](images/image_1_placeholder.png)
+![Drawing 3](Experiment-Readout-iOS-Cx-Guest-Nearby-Copy/images/image_1_placeholder.png)
 
 ### Methodology
 

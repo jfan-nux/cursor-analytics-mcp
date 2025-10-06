@@ -42,9 +42,9 @@ Last updated: 09/25/2022
 
 \*50% haircut applies to MAU & GMV given mutual exclusive from other experiments
 
-| **Before**| ![Drawing 1](images/image_1.png) |
+| **Before**| ![Drawing 1](Experiment-Readout-Easy-Scroll-Checkout-on-Android/images/image_1.png) |
 | --- | --- |
-|**After**| ![Drawing 2](images/image_3.png) |**Next steps:**
+|**After**| ![Drawing 2](Experiment-Readout-Easy-Scroll-Checkout-on-Android/images/image_3.png) |**Next steps:**
 
 - <mark>Ramp-up plan: Ramped up to 90% treatment + 10% long-term holdout on 09/17
   </mark>
@@ -70,7 +70,7 @@ For the full readout, please check out the [experiment result doc](https://docs.
 
 ### Experiment Timeline
 
-![Drawing 3](images/image_2_placeholder.png)
+![Drawing 3](Experiment-Readout-Easy-Scroll-Checkout-on-Android/images/image_2_placeholder.png)
 
 ### Methodology
 

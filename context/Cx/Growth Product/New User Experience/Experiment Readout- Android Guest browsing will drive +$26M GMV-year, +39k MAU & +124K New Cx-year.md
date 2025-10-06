@@ -11,7 +11,7 @@ Last updated: 05/03/2022
 **Context:**<mark> Currently, Android users are required to sign in/up before they can explore DoorDash, while </mark><mark>iOS app has a guest mode (by clicking “continue as a guest” button) where users can skip authentication flow and browse stores without friction. In 03/2022, 22% of iOS landing page visitors chose guest browsing instead of sign in/up, which significantly decreased the bouncing rate on the landing page.Therefore, We believe bringing guest experience to Android will benefit users who wants to explore food as soon as possible!
 </mark>
 
-![Drawing 1](images/image_2.png) ![Drawing 2](images/image_1.png) ![Drawing 3](images/image_3.png)
+![Drawing 1](Experiment-Readout-Android-Guest-browsing-will-drive-26M-GMVyear-39k-MAU-124K-New-Cxyear/images/image_2.png) ![Drawing 2](Experiment-Readout-Android-Guest-browsing-will-drive-26M-GMVyear-39k-MAU-124K-New-Cxyear/images/image_1.png) ![Drawing 3](Experiment-Readout-Android-Guest-browsing-will-drive-26M-GMVyear-39k-MAU-124K-New-Cxyear/images/image_3.png)
 
 *Landing page of iOS, Android control group, Android treatment group*
 
@@ -60,7 +60,7 @@ For the full readout, please check out the [experiment result doc](https://docs.
 
 ### Experiment Timeline
 
-![Drawing 4](images/image_4_placeholder.png)
+![Drawing 4](Experiment-Readout-Android-Guest-browsing-will-drive-26M-GMVyear-39k-MAU-124K-New-Cxyear/images/image_4_placeholder.png)
 
 ### Methodology
 

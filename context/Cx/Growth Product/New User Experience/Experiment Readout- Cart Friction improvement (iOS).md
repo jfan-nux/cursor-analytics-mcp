@@ -28,11 +28,11 @@ When we nudge customers who are viewing carts to add more items (including for D
 
 ### DETAILS:**Problem:**If a Cx has items in Cart and clicks the CTAs that drive them to add more items, they are shown a Store Page without a Cart CTA
 
-![Drawing 1](images/image_1.png)**Solution:**We ensured that Cx who clicked on add more items CTAs were shown a Cart page that had the view cart CTA.
+![Drawing 1](Experiment-Readout-Cart-Friction-improvement-iOS/images/image_1.png)**Solution:**We ensured that Cx who clicked on add more items CTAs were shown a Cart page that had the view cart CTA.
 
 #### Experiment Timeline
 
-![Drawing 2](images/image_2_placeholder.png)**Test mechanism:**A/B test**Test platform:**iOS**Country:**Global**Experience:**DoorDash only**Test duration:**1 weeks experiment**Control/Treatment Split:**N/A
+![Drawing 2](Experiment-Readout-Cart-Friction-improvement-iOS/images/image_2_placeholder.png)**Test mechanism:**A/B test**Test platform:**iOS**Country:**Global**Experience:**DoorDash only**Test duration:**1 weeks experiment**Control/Treatment Split:**N/A
 
 ### Result Details
 
