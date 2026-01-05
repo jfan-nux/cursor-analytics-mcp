@@ -4,17 +4,34 @@ Cursor Analytics MCP Server using FastMCP
 
 A standalone MCP server providing tools for:
 - Snowflake operations (query execution, table management)
-- Query search functionality  
+- Query search functionality
 - Curie experiment exports
 - Table context generation and documentation
 - Context fetching from various sources
 - Cursor rules awareness
+- Google Docs to Markdown conversion (gd2md)
+- Markdown to Google Docs export (md2gd)
 """
 
-import json
-import logging
+# CRITICAL: Configure environment before any imports to prevent stdout pollution
 import os
 import sys
+import warnings
+
+# Suppress all warnings to prevent them from going to stdout
+warnings.filterwarnings('ignore')
+
+# Configure warnings to go to stderr
+warnings.simplefilter('default')
+import logging
+logging.captureWarnings(True)
+
+# Set environment variables to suppress verbose library output
+os.environ['PYTHONWARNINGS'] = 'ignore'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Suppress TensorFlow warnings
+os.environ['PYARROW_IGNORE_TIMEZONE'] = '1'  # Suppress PyArrow warnings
+
+import json
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -33,30 +50,35 @@ try:
         get_experiment_metadata
     )
     from local_tools.sql_to_sheets.sql_to_sheets_helper import export_sql_to_sheets
-    from local_tools.google_doc_crawler.doc_crawler import (
+    from local_tools.google_doc_crawler.gd2md.doc_crawler import (
         process_google_docs_batch,
-        convert_single_google_doc,
         GoogleDocCrawler,
-        convert_google_doc_to_markdown_string,
-        convert_google_docs_to_markdown_strings
+        convert_google_doc_to_markdown_string
     )
+    from local_tools.google_doc_crawler.md2gd.sync_cli import MarkdownGDocsSync
+    from local_tools.google_doc_crawler.md2gd.mapping_manager import MappingManager
     from utils.logger import get_logger
     # Setup logging
     logger = get_logger(__name__)
 except ImportError as e:
-    print(f"Warning: Could not import utils modules: {e}")
-    print("Make sure the utils directory is properly copied to the project root")
-    # Fallback to basic logging
+    # Fallback to basic logging (use stderr to not break MCP JSON protocol)
     import logging
-    logging.basicConfig(level=logging.INFO)
+    import sys
+    logging.basicConfig(
+        level=logging.INFO,
+        stream=sys.stderr,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
     logger = logging.getLogger(__name__)
+    logger.warning(f"Could not import utils modules: {e}")
+    logger.warning("Make sure the utils directory is properly copied to the project root")
 
 # Try to import dual-table hybrid search functionality
 try:
     from local_tools.document_indexer.dual_table_search import DualTableHybridSearcher
     HYBRID_SEARCH_AVAILABLE = True
 except ImportError:
-    print("Warning: Dual-table hybrid search not available. Document indexing may not be set up.")
+    logger.warning("Dual-table hybrid search not available. Document indexing may not be set up.")
     HYBRID_SEARCH_AVAILABLE = False
 
 # Try to import table context agent functionality
@@ -64,11 +86,10 @@ try:
     from local_tools.table_context_agent.agent import main as generate_table_context
     TABLE_CONTEXT_AVAILABLE = True
 except ImportError:
-    print("Warning: Table context agent not available.")
+    logger.warning("Table context agent not available.")
     TABLE_CONTEXT_AVAILABLE = False
 
 # Initialize FastMCP server
-# Disable banner to prevent JSON parsing errors in MCP Inspector
 mcp = FastMCP("Cursor Analytics MCP Server 🚀")
 
 # ============================================================================
@@ -588,52 +609,6 @@ def crawl_and_convert_google_docs(
 
 
 @mcp.tool
-def convert_single_google_doc_to_markdown(
-    doc_url: str,
-    output_path: str = "context/experiment-readouts"
-) -> str:
-    """
-    Convert a single Google Doc to markdown format.
-    
-    This tool converts a Google Doc to markdown while preserving:
-    - Text formatting (bold, italic, highlights)
-    - Document structure (headings, paragraphs)
-    - Tables with proper markdown syntax
-    - Bullet points and numbered lists
-    - Links and footnotes
-    - Team-based file organization
-    
-    Args:
-        doc_url: URL of the Google Doc to convert
-        output_path: Base directory to save the markdown file
-        
-    Returns:
-        Conversion results and file location
-    """
-    try:
-        logger.info(f"Converting single Google Doc: {doc_url}")
-        
-        result_json = convert_single_google_doc(doc_url, output_path)
-        result = json.loads(result_json)
-        
-        if result['status'] == 'success':
-            response = f"✅ Google Doc converted successfully!\n\n"
-            response += f"📄 **Document:** {result['title']}\n"
-            response += f"👥 **Team:** {result['team_path']}\n"
-            response += f"📁 **File:** {result['markdown_file']}\n"
-            response += f"🖼️ **Images:** {result['images_downloaded']} downloaded\n"
-            response += f"🔗 **Source:** {result['doc_url']}\n"
-        else:
-            response = f"❌ Conversion failed: {result.get('error', 'Unknown error')}"
-        
-        return response
-        
-    except Exception as e:
-        logger.error(f"Single Google Doc conversion error: {str(e)}")
-        return f"❌ Error converting Google Doc: {str(e)}"
-
-
-@mcp.tool
 def get_google_doc_links(doc_url: str) -> str:
     """
     Extract all Google Docs links from a document without converting them.
@@ -666,115 +641,462 @@ def get_google_doc_links(doc_url: str) -> str:
         return f"❌ Error extracting links: {str(e)}"
 
 
+# ============================================================================
+# MARKDOWN TO GOOGLE DOCS EXPORT (MD2GD)
+# ============================================================================
+
 @mcp.tool
-def convert_google_doc_to_markdown(
-    doc_url: str,
-    write_file: bool = False,
-    output_path: str = "context/experiment-readouts"
+def export_markdown_to_google_doc(
+    markdown_path: str,
+    open_browser: bool = False
 ) -> str:
     """
-    Convert a single Google Doc to markdown with optional file writing.
-    
-    Returns the markdown content as a string, with option to save to local context folder.
-    Preserves all formatting including tables, lists, images, footnotes, and team organization.
-    
+    Export a markdown file to Google Docs.
+
+    Creates a new Google Doc or updates an existing one if the markdown file
+    is already linked. Preserves formatting, images, and document structure.
+
     Args:
-        doc_url: URL of the Google Doc to convert
-        write_file: Whether to save markdown to local context folder (default: False)
-        output_path: Base directory for saving files (only used if write_file=True)
-        
+        markdown_path: Path to the markdown file to export
+        open_browser: Whether to open the document in browser after export
+
     Returns:
-        Markdown content as string, plus metadata about the conversion
+        Export results with Google Doc URL and document ID
     """
     try:
-        logger.info(f"Converting Google Doc to markdown: {doc_url}, write_file={write_file}")
-        
-        result = convert_google_doc_to_markdown_string(doc_url, write_file, output_path)
-        
-        if result['status'] == 'success':
-            response = f"✅ Google Doc converted to markdown successfully!\n\n"
-            response += f"📄 **Document:** {result['title']}\n"
-            response += f"👥 **Team:** {result['team_path']}\n"
-            response += f"🎯 **Quarter:** {result['detected_quarter']}\n"
-            response += f"🖼️ **Images:** {result['images_downloaded']} processed\n"
-            response += f"📝 **Footnotes:** {result['footnotes_processed']} processed\n"
-            
-            if write_file:
-                response += f"📁 **File saved:** {result['markdown_file']}\n"
+        import os
+        import webbrowser
+        from local_tools.google_doc_crawler.md2gd.gdocs_client import GoogleDocsClient
+        from local_tools.google_doc_crawler.md2gd.markdown_converter import MarkdownConverter
+        from local_tools.google_doc_crawler.md2gd.image_handler import ImageHandler
+        from googleapiclient.discovery import build
+
+        # Convert to absolute path
+        abs_path = os.path.abspath(os.path.expanduser(markdown_path))
+
+        logger.info(f"Exporting markdown to Google Docs: {abs_path}")
+
+        # Check if file exists
+        if not os.path.exists(abs_path):
+            return f"❌ Error: File not found: {abs_path}\n\nPlease provide the full absolute path to the markdown file."
+
+        # Read markdown content
+        with open(abs_path, 'r', encoding='utf-8') as f:
+            markdown_content = f.read()
+
+        # Initialize sync tool and mapping manager
+        sync = MarkdownGDocsSync()
+        mapping_manager = MappingManager()
+
+        # Get services
+        from local_tools.google_doc_crawler.shared import get_google_credentials
+        scopes = [
+            'https://www.googleapis.com/auth/documents',
+            'https://www.googleapis.com/auth/drive',
+            'https://www.googleapis.com/auth/script.projects'
+        ]
+        credentials = get_google_credentials(scopes=scopes)
+        docs_service = build('docs', 'v1', credentials=credentials)
+        drive_service = build('drive', 'v3', credentials=credentials)
+
+        # Initialize components
+        config = sync.config
+        template_id = config.get('template_doc_id')
+        gdocs_client = GoogleDocsClient(docs_service, drive_service, template_id)
+
+        # Check if document already exists
+        existing_mapping = mapping_manager.get_mapping(abs_path)
+
+        # Process images
+        markdown_dir = os.path.dirname(abs_path)
+        image_handler = ImageHandler(
+            drive_service,
+            markdown_dir,
+            config.get('image_download_dir', './gdocs_images')
+        )
+        _, images = image_handler.process_markdown_images(markdown_content)
+        image_paths = {}
+        for img_path, img_info in images.items():
+            upload_result = image_handler.upload_image(img_path)
+            if upload_result:
+                image_paths[img_path] = upload_result
+
+        # Convert markdown to Google Docs format
+        converter = MarkdownConverter()
+        tab_id = existing_mapping.get('tab_id') if existing_mapping else None
+        requests = converter.markdown_to_gdocs(markdown_content, image_paths, tab_id)
+
+        if existing_mapping:
+            # Update existing document
+            doc_id = existing_mapping['doc_id']
+            doc_url = existing_mapping['doc_url']
+            logger.info(f"Updating existing document (ID: {doc_id})...")
+
+            success = gdocs_client.update_doc(doc_id, requests, tab_id)
+
+            if success:
+                # Update mapping
+                mapping_manager.add_mapping(
+                    abs_path,
+                    doc_id,
+                    doc_url,
+                    'export',
+                    tab_id
+                )
+
+                # Process with Apps Script if configured
+                apps_script_id = config.get('apps_script_id', '').strip()
+                if apps_script_id:
+                    try:
+                        script_service = build('script', 'v1', credentials=credentials)
+                        from local_tools.google_doc_crawler.md2gd.apps_script_client import AppsScriptClient
+                        script_client = AppsScriptClient(script_service, apps_script_id)
+                        result = script_client.process_document(doc_id, template_id, tab_id)
+                        logger.info(f"Apps Script processing: {result}")
+                    except Exception as e:
+                        logger.warning(f"Apps Script processing failed: {e}")
+
+                if open_browser:
+                    webbrowser.open(doc_url)
+
+                response = f"✅ Markdown exported to Google Docs successfully!\n\n"
+                response += f"📄 **Title:** Updated existing document\n"
+                response += f"📝 **Document ID:** {doc_id}\n"
+                response += f"🔗 **URL:** {doc_url}\n"
+                response += f"🔄 **Action:** Updated existing document\n"
+                return response
             else:
-                response += f"📁 **File saved:** No (returned as string only)\n"
-            
-            response += f"🔗 **Source:** {result['doc_url']}\n\n"
-            response += "---\n\n"
-            response += "**Markdown Content:**\n\n"
-            response += result['markdown_content']
+                return "❌ Failed to update document"
         else:
-            response = f"❌ Conversion failed: {result.get('error', 'Unknown error')}"
-        
-        return response
-        
+            # Create new document
+            title = sync._format_title(os.path.basename(abs_path))
+            result = gdocs_client.create_doc(title, requests)
+
+            doc_id = result['doc_id']
+            doc_url = result['doc_url']
+
+            # Save mapping
+            mapping_manager.add_mapping(
+                abs_path,
+                doc_id,
+                doc_url,
+                'export'
+            )
+
+            # Process with Apps Script if configured
+            apps_script_id = config.get('apps_script_id', '').strip()
+            if apps_script_id:
+                try:
+                    script_service = build('script', 'v1', credentials=credentials)
+                    from local_tools.google_doc_crawler.md2gd.apps_script_client import AppsScriptClient
+                    script_client = AppsScriptClient(script_service, apps_script_id)
+                    result_script = script_client.process_document(doc_id, template_id, None)
+                    logger.info(f"Apps Script processing: {result_script}")
+                except Exception as e:
+                    logger.warning(f"Apps Script processing failed: {e}")
+
+            if open_browser:
+                webbrowser.open(doc_url)
+
+            response = f"✅ Markdown exported to Google Docs successfully!\n\n"
+            response += f"📄 **Title:** {title}\n"
+            response += f"📝 **Document ID:** {doc_id}\n"
+            response += f"🔗 **URL:** {doc_url}\n"
+            response += f"🔄 **Action:** Created new document\n"
+            response += f"💾 **Mapping:** Automatically created for future exports\n"
+            return response
+
     except Exception as e:
-        logger.error(f"Google Doc markdown conversion error: {str(e)}")
-        return f"❌ Error converting Google Doc to markdown: {str(e)}"
+        logger.error(f"Markdown to Google Docs export error: {str(e)}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return f"❌ Error exporting markdown to Google Docs: {str(e)}"
 
 
 @mcp.tool
-def convert_google_docs_to_markdown_bulk(
-    doc_urls: List[str],
-    write_files: bool = False,
-    output_path: str = "context/experiment-readouts"
+def import_google_doc_to_markdown(
+    doc_url: str,
+    markdown_path: str
 ) -> str:
     """
-    Convert multiple Google Docs to markdown with optional file writing.
-    
-    Returns a list of markdown contents as strings, with option to save to local context folder.
-    Processes documents in parallel for efficiency.
-    
+    Import a Google Doc to markdown format.
+
+    Converts a Google Doc to markdown and saves it to the specified path.
+    Preserves formatting including bold, italic, tables, lists, images, and footnotes.
+
     Args:
-        doc_urls: List of Google Doc URLs to convert
-        write_files: Whether to save markdown files to local context folder (default: False)
-        output_path: Base directory for saving files (only used if write_files=True)
-        
+        doc_url: Google Doc URL or ID
+        markdown_path: Path to save the markdown file
+
     Returns:
-        Summary of bulk conversion with markdown content for each document
+        Import results with conversion details
     """
     try:
-        logger.info(f"Starting bulk Google Docs to markdown conversion: {len(doc_urls)} documents, write_files={write_files}")
-        
-        result = convert_google_docs_to_markdown_strings(doc_urls, write_files, output_path)
-        
-        response = f"✅ Bulk Google Docs conversion completed!\n\n"
-        response += f"📊 **Summary:**\n"
-        response += f"- Total documents: {result['total_documents']}\n"
-        response += f"- Successfully converted: {result['successful_conversions']}\n"
-        response += f"- Failed: {result['failed_conversions']}\n"
-        response += f"- Files saved: {'Yes' if write_files else 'No (returned as strings only)'}\n\n"
-        
-        if result['results']:
-            response += f"📝 **Converted Documents:**\n\n"
-            for i, doc_result in enumerate(result['results'], 1):
-                if doc_result['status'] == 'success':
-                    response += f"**{i}. {doc_result['title']}**\n"
-                    response += f"   - Team: {doc_result['team_path']}\n"
-                    response += f"   - Quarter: {doc_result['detected_quarter']}\n"
-                    response += f"   - Images: {doc_result['images_downloaded']}\n"
-                    response += f"   - Footnotes: {doc_result['footnotes_processed']}\n"
-                    if write_files and 'markdown_file' in doc_result:
-                        response += f"   - File: {doc_result['markdown_file']}\n"
-                    response += f"   - Source: {doc_result['doc_url']}\n\n"
-                    response += "   **Markdown Content:**\n\n"
-                    response += f"   {doc_result['markdown_content'][:500]}...\n\n"  # Show first 500 chars
-                    response += "   ---\n\n"
-                else:
-                    response += f"**{i}. ❌ Failed Document**\n"
-                    response += f"   - URL: {doc_result['doc_url']}\n"
-                    response += f"   - Error: {doc_result['error']}\n\n"
-        
+        # Convert to absolute path to handle different working directories
+        import os
+        abs_path = os.path.abspath(os.path.expanduser(markdown_path))
+
+        logger.info(f"Importing Google Doc to markdown: {doc_url} -> {abs_path}")
+
+        # Use the gd2md converter to get markdown content
+        result = convert_google_doc_to_markdown_string(doc_url, write_file=False, output_path="")
+
+        if result['status'] != 'success':
+            return f"❌ Conversion failed: {result.get('error', 'Unknown error')}"
+
+        # Write markdown content to specified path
+        output_dir = os.path.dirname(abs_path)
+        if output_dir:
+            os.makedirs(output_dir, exist_ok=True)
+
+        with open(abs_path, 'w', encoding='utf-8') as f:
+            f.write(result['markdown_content'])
+
+        # Create mapping automatically so user can export/sync later
+        mapping_manager = MappingManager()
+        mapping_manager.add_mapping(
+            markdown_path=abs_path,
+            doc_id=result['doc_id'],
+            doc_url=result['doc_url'],
+            direction='import'
+        )
+
+        response = f"✅ Google Doc imported to markdown successfully!\n\n"
+        response += f"📄 **Document:** {result['title']}\n"
+        response += f"📁 **Saved to:** {abs_path}\n"
+        response += f"👥 **Team:** {result['team_path']}\n"
+        response += f"🖼️ **Images:** {result['images_downloaded']} processed\n"
+        response += f"📝 **Footnotes:** {result['footnotes_processed']} processed\n"
+        response += f"🔗 **Source:** {result['doc_url']}\n"
+        response += f"🔗 **Mapping created:** You can now use 'status' or 'export' commands\n"
+
         return response
-        
+
     except Exception as e:
-        logger.error(f"Bulk Google Docs markdown conversion error: {str(e)}")
-        return f"❌ Error in bulk Google Docs markdown conversion: {str(e)}"
+        logger.error(f"Google Doc to markdown import error: {str(e)}")
+        return f"❌ Error importing Google Doc to markdown: {str(e)}"
+
+
+@mcp.tool
+def link_markdown_to_google_doc(
+    markdown_path: str,
+    doc_url: str
+) -> str:
+    """
+    Link a markdown file to an existing Google Doc (or specific tab).
+
+    This establishes a connection between a local markdown file and a Google Doc,
+    allowing future exports to update the same document. The link can also target
+    a specific tab within a multi-tab document.
+
+    Args:
+        markdown_path: Path to the markdown file
+        doc_url: Google Doc URL or ID (can include #tab=t.TAB_ID parameter for specific tab)
+
+    Returns:
+        Link confirmation message
+    """
+    try:
+        import os
+        abs_path = os.path.abspath(os.path.expanduser(markdown_path))
+
+        logger.info(f"Linking markdown to Google Doc: {abs_path} -> {doc_url}")
+
+        # Initialize sync tool
+        sync = MarkdownGDocsSync()
+
+        # Capture output
+        import io
+        from contextlib import redirect_stdout
+
+        stdout_capture = io.StringIO()
+
+        with redirect_stdout(stdout_capture):
+            sync.link(abs_path, doc_url)
+
+        output = stdout_capture.getvalue()
+
+        if "✓ Linked" in output or "✅" in output:
+            return f"✅ Markdown file linked to Google Doc successfully!\n\n{output}"
+        else:
+            return f"⚠️ Link operation completed with messages:\n\n{output}"
+
+    except Exception as e:
+        logger.error(f"Link error: {str(e)}")
+        return f"❌ Error linking markdown to Google Doc: {str(e)}"
+
+
+@mcp.tool
+def unlink_markdown_from_google_doc(
+    markdown_path: str
+) -> str:
+    """
+    Remove the link between a markdown file and its Google Doc.
+
+    This only removes the mapping - it does not delete the Google Doc or markdown file.
+
+    Args:
+        markdown_path: Path to the markdown file to unlink
+
+    Returns:
+        Unlink confirmation message
+    """
+    try:
+        import os
+        abs_path = os.path.abspath(os.path.expanduser(markdown_path))
+
+        logger.info(f"Unlinking markdown from Google Doc: {abs_path}")
+
+        # Initialize sync tool
+        sync = MarkdownGDocsSync()
+
+        # Capture output
+        import io
+        from contextlib import redirect_stdout
+
+        stdout_capture = io.StringIO()
+
+        with redirect_stdout(stdout_capture):
+            sync.unlink(abs_path)
+
+        output = stdout_capture.getvalue()
+
+        if "✓ Unlinked" in output or "✅" in output:
+            return f"✅ Markdown file unlinked successfully!\n\n{output}"
+        else:
+            return f"⚠️ Unlink operation completed with messages:\n\n{output}"
+
+    except Exception as e:
+        logger.error(f"Unlink error: {str(e)}")
+        return f"❌ Error unlinking markdown from Google Doc: {str(e)}"
+
+
+@mcp.tool
+def list_markdown_google_doc_mappings() -> str:
+    """
+    List all markdown files linked to Google Docs.
+
+    Shows the current mappings between local markdown files and their corresponding
+    Google Docs, including last sync time and direction.
+
+    Returns:
+        List of all mappings
+    """
+    try:
+        logger.info("Listing markdown to Google Doc mappings")
+
+        # Initialize sync tool
+        sync = MarkdownGDocsSync()
+
+        # Capture output
+        import io
+        from contextlib import redirect_stdout
+
+        stdout_capture = io.StringIO()
+
+        with redirect_stdout(stdout_capture):
+            sync.list_mappings()
+
+        output = stdout_capture.getvalue()
+
+        return output if output else "No mappings found"
+
+    except Exception as e:
+        logger.error(f"List mappings error: {str(e)}")
+        return f"❌ Error listing mappings: {str(e)}"
+
+
+@mcp.tool
+def show_markdown_google_doc_status(
+    markdown_path: str
+) -> str:
+    """
+    Show sync status for a markdown file.
+
+    Displays information about the linked Google Doc, including the Doc ID,
+    URL, last sync time, and last sync direction.
+
+    Args:
+        markdown_path: Path to the markdown file
+
+    Returns:
+        Sync status information
+    """
+    try:
+        import os
+        abs_path = os.path.abspath(os.path.expanduser(markdown_path))
+
+        logger.info(f"Showing sync status for: {abs_path}")
+
+        # Initialize sync tool
+        sync = MarkdownGDocsSync()
+
+        # Capture output
+        import io
+        from contextlib import redirect_stdout
+
+        stdout_capture = io.StringIO()
+
+        with redirect_stdout(stdout_capture):
+            sync.status(abs_path)
+
+        output = stdout_capture.getvalue()
+
+        return output if output else "No mapping found for this file"
+
+    except Exception as e:
+        logger.error(f"Status error: {str(e)}")
+        return f"❌ Error showing status: {str(e)}"
+
+
+@mcp.tool
+def import_from_linked_google_doc(
+    markdown_path: str,
+    backup: bool = True
+) -> str:
+    """
+    Import changes from a linked Google Doc back to the markdown file.
+
+    This is useful for pulling changes made in Google Docs (by collaborators or reviewers)
+    back into your local markdown file. This is different from the one-way conversion
+    import_google_doc_to_markdown - this function requires an existing link and preserves
+    the mapping.
+
+    Args:
+        markdown_path: Path to the markdown file
+        backup: Whether to backup the existing markdown file before importing
+
+    Returns:
+        Import results
+    """
+    try:
+        import os
+        abs_path = os.path.abspath(os.path.expanduser(markdown_path))
+
+        logger.info(f"Importing from linked Google Doc to: {abs_path}")
+
+        # Initialize sync tool
+        sync = MarkdownGDocsSync()
+
+        # Capture output
+        import io
+        from contextlib import redirect_stdout
+
+        stdout_capture = io.StringIO()
+
+        with redirect_stdout(stdout_capture):
+            sync.import_doc(abs_path, backup=backup)
+
+        output = stdout_capture.getvalue()
+
+        if "✓ Successfully imported" in output or "✅" in output:
+            return f"✅ Changes imported from Google Doc successfully!\n\n{output}"
+        else:
+            return f"⚠️ Import completed with messages:\n\n{output}"
+
+    except Exception as e:
+        logger.error(f"Import from linked doc error: {str(e)}")
+        return f"❌ Error importing from linked Google Doc: {str(e)}"
 
 
 # ============================================================================
@@ -1472,7 +1794,8 @@ def describe_table(
 
 def main():
     """Main entry point for the MCP server."""
-    mcp.run()
+    # Disable banner to prevent it from breaking JSON-RPC protocol on stdout
+    mcp.run(show_banner=False)
 
 
 if __name__ == "__main__":
