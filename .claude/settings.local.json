@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python list_tools.py:*)",
+      "Bash(python test_auth.py:*)",
+      "Bash(python -c:*)",
+      "Bash(python:*)",
+      "Bash(find:*)",
+      "Bash(./local_tools/google_doc_crawler/md2gd/sync_cli.py:*)",
+      "Bash(rm:*)",
+      "Bash(pkill:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

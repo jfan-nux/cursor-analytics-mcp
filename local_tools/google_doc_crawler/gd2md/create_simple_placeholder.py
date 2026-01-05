@@ -29,9 +29,9 @@ def create_simple_placeholder():
         font_small = ImageFont.load_default()
     
     # Add simple text
-    title = "Drawing Not Available"
-    subtitle = "Google Drawing plugin not supported"
-    instruction = "View original document to see content"
+    title = "📊 Google Drawing"
+    subtitle = "Content not available in automated export"
+    instruction = "View original document to see timeline"
     
     # Center the text
     title_bbox = draw.textbbox((0, 0), title, font=font_large)

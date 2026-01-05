@@ -54,7 +54,7 @@ echo
 echo -e "${YELLOW}Next steps:${NC}"
 echo "1. Ensure your Snowflake credentials are configured:"
 echo "   export SNOWFLAKE_USER='your.username'"
-echo "   export SNOWFLAKE_PASSWORD='your_password'"
+echo "   export SNOWFLAKE_PAT='your_personal_access_token'"
 echo
 echo "2. Test the MCP server:"
 echo "   source venv/bin/activate"

@@ -1,0 +1,12 @@
+# Example Google Docs URL List
+# One URL per line, lines starting with # are ignored
+# 
+# Format examples:
+# - Full URL: https://docs.google.com/document/d/XXXXX/edit
+# - Short URL: https://docs.google.com/document/d/XXXXX
+# - Just the ID: XXXXX
+
+# Example document URLs (replace with your actual URLs):
+# https://docs.google.com/document/d/15qDmJqEsNN4RsmpBBavxZv-_XF84TfqnQOq6BSba_UQ/edit
+# https://docs.google.com/document/d/ANOTHER_DOC_ID_HERE/edit
+

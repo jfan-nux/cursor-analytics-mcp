@@ -25,7 +25,6 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 
 from utils.logger import get_logger
-from .quarter_detector import QuarterDetector
 
 # AST-based markdown processing dependencies
 try:
@@ -43,7 +42,6 @@ class EnhancedGoogleDocConverter:
         self.logger = get_logger(__name__)
         self.docs_service = None
         self.drive_service = None
-        self.quarter_detector = QuarterDetector()
 
     def postprocess_github_syntax(self, raw_md: str) -> str:
         """
@@ -496,7 +494,8 @@ class EnhancedGoogleDocConverter:
                                 return markdown_ref, image_counter + 1
                         
                         # If automated extraction failed, provide helpful placeholder
-                        return f"![{element_type} {image_counter + 1}](drawing-embedded-not-exportable)", image_counter + 1
+                        placeholder_text = f"_{element_type} {image_counter + 1}_\n\n> 📊 **Google Drawing**  \n> Content not available in automated export  \n> View original document to see content\n"
+                        return placeholder_text, image_counter + 1
             
             image_counter += 1
             
@@ -581,46 +580,18 @@ class EnhancedGoogleDocConverter:
                     
                     continue
             
-            # If all export attempts failed, try to get a thumbnail or fallback
+            # If all export attempts failed, use a placeholder
             try:
-                # Try to get drawing thumbnail or preview
-                if self.drive_service:
-                    file_info = self.drive_service.files().get(
-                        fileId=drawing_id, 
-                        fields='thumbnailLink,webViewLink'
-                    ).execute()
-                    
-                    thumbnail_link = file_info.get('thumbnailLink')
-                    if thumbnail_link:
-                        # Download thumbnail as fallback
-                        response = requests.get(thumbnail_link)
-                        response.raise_for_status()
-                        
-                        drawing_filename = f"drawing_{image_counter}_thumbnail.png"
-                        drawing_path = image_folder / drawing_filename
-                        
-                        with open(drawing_path, 'wb') as f:
-                            f.write(response.content)
-                        
-                        relative_path = f"images/drawing_{image_counter}_thumbnail.png"
-                        self.logger.info(f"Downloaded drawing thumbnail: {relative_path}")
-                        
-                        # Cache this drawing for future references
-                        self._downloaded_images[inline_object_id] = (relative_path, image_counter, "Drawing")
-                        
-                        element_type = self._determine_drawing_type(drawing_props)
-                        
-                        # Add Mermaid hint if applicable
-                        mermaid_hint = self._add_mermaid_hint(element_type, image_counter)
-                        
-                        markdown_ref = f"![{element_type} {image_counter}]({relative_path})"
-                        if mermaid_hint:
-                            markdown_ref += mermaid_hint
-                        
-                        return markdown_ref, image_counter
+                element_type = self._determine_drawing_type(drawing_props)
+                self.logger.warning(f"Could not export {element_type} {image_counter} - using placeholder")
+                
+                # Create a text placeholder instead of trying to download thumbnail
+                placeholder_text = f"_{element_type} {image_counter + 1}_\n\n> 📊 **Google Drawing**  \n> Content not available in automated export  \n> View original document to see content\n"
+                
+                return placeholder_text, image_counter + 1
             
-            except Exception as thumbnail_error:
-                self.logger.warning(f"Failed to get drawing thumbnail: {thumbnail_error}")
+            except Exception as placeholder_error:
+                self.logger.warning(f"Failed to create placeholder: {placeholder_error}")
             
             # Final fallback: Try document-level export with the drawing region
             try:
@@ -651,40 +622,25 @@ class EnhancedGoogleDocConverter:
                             
                             return markdown_ref, image_counter
                         
-                        # Create a better placeholder with instructions
+                        # Create a text placeholder
                         element_type = self._determine_drawing_type(drawing_props)
-                        placeholder_text = f"![{element_type} {image_counter}](drawing-embedded-in-doc)"
+                        placeholder_text = f"_{element_type} {image_counter + 1}_\n\n> 📊 **Google Drawing**  \n> Content not available in automated export  \n> View original document to see content\n"
                         
-                        # Add helpful comment with extraction instructions
-                        instruction_comment = f"""
-<!-- EMBEDDED DRAWING DETECTED - Manual extraction needed:
-   1. Open the Google Doc directly: {self.current_doc_url}
-   2. Right-click on the drawing/chart
-   3. Select "Save as image" or "Download"
-   4. Save as '{element_type.lower().replace(' ', '_')}_{image_counter}.png'
-   5. Replace this placeholder with: ![{element_type} {image_counter}](images/{element_type.lower().replace(' ', '_')}_{image_counter}.png)
--->"""
-                        
-                        # Add helpful comment with potential Mermaid alternative
-                        mermaid_hint = self._add_mermaid_hint(element_type, image_counter)
-                        if mermaid_hint:
-                            placeholder_text += f"\n{instruction_comment}\n{mermaid_hint}"
-                        else:
-                            placeholder_text += f"\n{instruction_comment}"
-                        
-                        return placeholder_text, image_counter
+                        return placeholder_text, image_counter + 1
             
             except Exception as doc_export_error:
                 self.logger.warning(f"Failed document-level drawing export: {doc_export_error}")
             
-            # Complete fallback - create a placeholder but with drawing-specific info
+            # Complete fallback - create a text placeholder
             self.logger.warning(f"Could not export drawing {image_counter} in any format")
             element_type = self._determine_drawing_type(drawing_props)
-            return f"![{element_type} {image_counter}](drawing-export-failed)", image_counter
+            placeholder_text = f"_{element_type} {image_counter + 1}_\n\n> 📊 **Google Drawing**  \n> Content not available in automated export  \n> View original document to see content\n"
+            return placeholder_text, image_counter + 1
             
         except Exception as e:
             self.logger.error(f"Error processing drawing/chart {image_counter + 1}: {e}")
-            return f"![Drawing {image_counter + 1}](drawing-error)", image_counter + 1
+            placeholder_text = f"_Drawing {image_counter + 1}_\n\n> 📊 **Google Drawing**  \n> Content not available in automated export  \n> View original document to see content\n"
+            return placeholder_text, image_counter + 1
     
     def _determine_drawing_type(self, drawing_props: Dict[str, Any]) -> str:
         """Determine the type of drawing based on its properties."""
@@ -1226,37 +1182,15 @@ class EnhancedGoogleDocConverter:
     
     def _extract_from_thumbnail(self, doc_id: str, image_counter: int, 
                               image_folder: Path, element_type: str) -> Optional[Path]:
-        """Extract drawing using Google Drive's thumbnail API."""
-        try:
-            self.logger.debug(f"Attempting thumbnail method for drawing {image_counter}")
-            
-            # Get file metadata with thumbnail link
-            file_metadata = self.drive_service.files().get(
-                fileId=doc_id, 
-                fields='thumbnailLink,webViewLink'
-            ).execute()
-            
-            thumbnail_link = file_metadata.get('thumbnailLink')
-            if thumbnail_link:
-                # Modify thumbnail URL for higher resolution
-                # Google Drive thumbnails can be resized by changing the size parameter
-                high_res_thumbnail = thumbnail_link.replace('=s220', '=s1600')  # Increase size
-                
-                response = requests.get(high_res_thumbnail)
-                response.raise_for_status()
-                
-                image_filename = f"drawing_{image_counter}_thumbnail.png"
-                image_path = image_folder / image_filename
-                
-                with open(image_path, 'wb') as f:
-                    f.write(response.content)
-                
-                self.logger.info(f"Extracted drawing using thumbnail API: {image_filename}")
-                return image_path
-                
-        except Exception as e:
-            self.logger.debug(f"Thumbnail method failed: {e}")
-            
+        """
+        Extract drawing using Google Drive's thumbnail API.
+        
+        Note: This method is now deprecated in favor of text placeholders for 
+        drawings that cannot be exported, as thumbnails often show 
+        "Content not available" messages rather than actual content.
+        """
+        # Return None to skip thumbnail extraction and use placeholder instead
+        self.logger.debug(f"Skipping thumbnail extraction for drawing {image_counter} - using placeholder instead")
         return None
 
     def _add_mermaid_hint(self, element_type: str, image_counter: int) -> str:
@@ -1706,13 +1640,16 @@ For more complex diagrams, refer to: https://mermaid.js.org/
             if 'image-placeholder' in line:
                 errors.append(f"Line {i}: broken image reference (image-placeholder)")
             
-            # Find drawing export failures
-            if 'drawing-export-failed' in line:
-                errors.append(f"Line {i}: drawing export failed")
+            # Find drawing placeholders (now using text format instead of broken image links)
+            if 'Content not available in automated export' in line:
+                # This is now the expected placeholder for drawings - don't treat as error
+                self.logger.debug(f"Line {i}: Found drawing placeholder (expected)")
+            elif 'drawing-export-failed' in line:
+                errors.append(f"Line {i}: drawing export failed (old format)")
             elif 'drawing-no-id' in line:
                 errors.append(f"Line {i}: drawing has no ID for export")
             elif 'drawing-error' in line:
-                errors.append(f"Line {i}: drawing processing error")
+                errors.append(f"Line {i}: drawing processing error (old format)")
             
             # Find visual element placeholders  
             if 'visual-element-placeholder' in line:
@@ -1922,13 +1859,6 @@ For more complex diagrams, refer to: https://mermaid.js.org/
             footnotes = document.get('footnotes', {})
             
             self.logger.info(f"Converting document with enhanced formatting: {title}")
-            
-            # Detect experiment quarter (initial pass from text)
-            detected_quarter = self.quarter_detector.detect_experiment_quarter(document)
-            self.logger.info(f"Initially detected experiment quarter: {detected_quarter}")
-            
-            # Clean up title and add quarter prefix
-            clean_title = self.quarter_detector.clean_document_title(title, detected_quarter)
             
             # Setup directories - check if using custom path structure
             base_output_path = Path(output_path)
@@ -2158,12 +2088,10 @@ For more complex diagrams, refer to: https://mermaid.js.org/
             self.logger.info("Running postprocess_github_syntax for final markdown cleanup")
             final_markdown = self.postprocess_github_syntax(markdown_with_collapsible)
             
-            # Write markdown file in document folder with yyyy-qq-title.md format
-            # Extract year and quarter from detected_quarter (e.g., "2023-q3" -> "2023-q3")
-            title_no_prefix = clean_title.split(' - ', 1)[1] if ' - ' in clean_title else clean_title
-            sanitized_title = re.sub(r'[^\w\s-]', '', title_no_prefix).strip()
+            # Write markdown file in document folder
+            sanitized_title = re.sub(r'[^\w\s-]', '', title).strip()
             sanitized_title = re.sub(r'[-\s]+', '-', sanitized_title)
-            markdown_filename = f"{detected_quarter}-{sanitized_title}.md"
+            markdown_filename = f"{sanitized_title}.md"
             markdown_file_path = document_folder / markdown_filename
             
             with open(markdown_file_path, 'w', encoding='utf-8') as f:
@@ -2171,9 +2099,7 @@ For more complex diagrams, refer to: https://mermaid.js.org/
             
             result = {
                 'status': 'success',
-                'title': clean_title,
-                'original_title': title,
-                'detected_quarter': detected_quarter,
+                'title': title,
                 'team_path': team_path,
                 'markdown_file': str(markdown_file_path),
                 'doc_url': doc_url,

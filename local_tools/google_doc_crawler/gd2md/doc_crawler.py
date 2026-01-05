@@ -32,7 +32,7 @@ except ImportError:
     GOOGLE_API_AVAILABLE = False
 
 from utils.logger import get_logger
-from .google_docs_credentials import get_google_docs_credentials, get_google_docs_scopes
+from ..shared import get_google_credentials, get_google_docs_scopes
 from .enhanced_converter import EnhancedGoogleDocConverter
 
 
@@ -75,7 +75,7 @@ class GoogleDocCrawler:
         
         try:
             self.logger.info("Initializing Google API services with unified credential system...")
-            credentials = get_google_docs_credentials()
+            credentials = get_google_credentials()
             
             self.docs_service = build('docs', 'v1', credentials=credentials)
             self.drive_service = build('drive', 'v3', credentials=credentials)

@@ -5,7 +5,7 @@ alwaysApply: true
 
 ## Core Principles
 - **Never Fabricate Data**: Use only real data from Snowflake or user-provided sources
-- **Always activate virtual environment**: `source venv/bin/activate` before running scripts
+- **Always activate virtual environment**: `source venv/bin/activate` before running scripts. This version has pyspark in it.
 - **No README files** for analysis projects
 - **Organize everything** under `user-analysis/` with separate SQL and Python files
 
@@ -28,23 +28,22 @@ alwaysApply: true
 
 ## Data Access & Queries
 
-### Primary Method - SnowflakeHook
+### Primary Method - MCP Snowflake Tool
 ```python
-snowhook = SnowflakeHook()
-df = sf.query_snowflake(query, method='pandas')
-# To save data back:
-snowhook.create_and_populate_table(df, table_name)
+# Use MCP tool for Snowflake queries:
+# For data retrieval: execute_snowflake_query(query, method='pandas')
+# For non-select statements: execute_snowflake_query(query)
 ```
 
-### Query Discovery
-- **Default**: Use `utils/query_search.py` for fast historical query search
-- **Fallback**: Use `utils/query_search_slow.py` only when needed
-- Results auto-saved to `context/query_search/` directory
+### Query Discovery - MCP Tools
+- **Search by table**: Use `search_queries_by_table_name(table_name, limit=5)` for historical queries on specific tables
+- **Search by keywords**: Use `search_queries_by_keyword(keywords, limit=5)` for queries containing specific terms
+- **Results**: MCP tools return formatted results with execution counts, users, and recent usage
 
-### Alternative - snowsql (if installed)
-```bash
-# Check if available: which snowsql
-./utils/snowsql_with_env.sh -f query.sql
+### SQL to Sheets Export
+```python
+# Export query results directly to Google Sheets:
+# execute_sql_and_upload_to_google_sheet(query, tab_name, spreadsheet_id=None)
 ```
 
 ## Snowflake Table Context Management
@@ -52,6 +51,7 @@ snowhook.create_and_populate_table(df, table_name)
 When working with Snowflake tables, ALWAYS maintain table context:
 
 ### Auto-Generate Context Files
+- **MCP Tool**: Use `describe_table(table_name)` to generate comprehensive table context
 - **Location**: `context/analysis-context/snowflake-table-context/{db_name}/{schema_name}/{table_name}.md`
 - **Triggers**: Query searches, new table discoveries, user-provided context
 - **Content**: Only user-confirmed queries (never AI-generated)
@@ -91,10 +91,47 @@ When working with Snowflake tables, ALWAYS maintain table context:
 ```
 
 ### Integration Workflow
-- **Query Search**: Auto-update context files with discovered usage patterns
-- **Analysis Work**: Reference existing context before writing queries
-- **Knowledge Building**: Accumulate institutional knowledge
-- **Query Optimization**: Use context for better query patterns
+- **Query Search**: Use `search_queries_by_table_name()` and `search_queries_by_keyword()` MCP tools to discover patterns
+- **Table Context**: Use `describe_table()` MCP tool to generate comprehensive documentation
+- **Analysis Work**: Use `fetch_table_context()`, `fetch_pod_queries()`, and other fetch tools for existing context
+- **Knowledge Building**: Accumulate institutional knowledge through MCP context tools
+- **Query Optimization**: Use MCP search tools for proven query patterns
+
+## Context Retrieval
+
+When users request context information, ALWAYS use cursor-analytics MCP functions:
+
+### Context Request Handling
+1. **Use MCP Functions First**: Always use appropriate `mcp_cursor-analytics_fetch_*` functions:
+   - `fetch_table_context` - For Snowflake table documentation and usage patterns
+   - `fetch_pod_queries` - For validated master SQL queries by team/topic
+   - `fetch_user_context` - For user-specific documentation and notes
+   - `fetch_experiment_readouts` - For experiment analysis documents
+   - `fetch_deep_dives` - For deep analysis documentation
+   - `fetch_cursor_rules` - For project rules and guidelines
+
+2. **Show Full Context First**: Display the complete retrieved context:
+   - Show full content from MCP functions without truncation when possible, especially when asked about recent queries. Just show the queries. 
+   - If content exceeds 20,000 characters, truncate with "... (truncated for length)"
+   - Always show the source and relevance score from search results
+
+3. **Then Summarize**: After showing full context, provide a concise summary:
+   - Key takeaways and main points
+   - How the context applies to the user's specific question
+   - Actionable insights or next steps
+
+### Example Pattern:
+```
+User: "I need context on user retention analysis"
+
+AI: [Calls fetch_user_context with query "user retention analysis"]
+
+## 📋 Retrieved Context (Score: 0.95)
+[Shows full context content from MCP function...]
+
+## 🔍 Summary
+[Provides concise summary of key points...]
+```
 
 ## Experiment Analysis
 
@@ -105,7 +142,7 @@ When user requests experiment analysis, clarify:
 
 ### Curie Export Requirements
 **ALWAYS get experiment metadata first before any export:**
-1. When user requests Curie export, ALWAYS run `get_experiment_metadata()` first
+1. When user requests Curie export, ALWAYS use `curie_get_metadata(experiment_name)` MCP tool first
 2. Display metadata summary including:
    - Available variants and control detection
    - Whether requested metrics exist (show similar ones if not found)
@@ -114,6 +151,11 @@ When user requests experiment analysis, clarify:
 3. Ask for user confirmation before proceeding
 4. This applies to EVERY export request, even if not the first in conversation
 5. DO NOT ASSUME metrics, dimensions, or variants - always verify with metadata first
+
+### User Rules
+1. When creating tables/temp views with SQL code, create under proddb.fionafan schema, unless otherwise sepcified.
+2. Use group by all instead of group by 1,2,3,4 etc.
+3. Use this logic to filter device_id, but make sure to mark it as dd_device_id_filtered. When joining, make sure to join on filtered device_id. replace(lower(CASE WHEN device_id like 'dx_%' then device_id else 'dx_'||device_id end), '-') 
 
 ## Project Settings
 ```ini
