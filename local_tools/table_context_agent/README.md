@@ -125,7 +125,7 @@ print(result)  # Rich markdown documentation
 ```bash
 # Snowflake Connection (Required)
 SNOWFLAKE_USER=your.username
-SNOWFLAKE_PASSWORD=your_password
+SNOWFLAKE_PAT=your_personal_access_token
 SNOWFLAKE_ACCOUNT=your_account
 SNOWFLAKE_DATABASE=proddb
 SNOWFLAKE_SCHEMA=public

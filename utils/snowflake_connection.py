@@ -91,7 +91,7 @@ class SnowflakeHook:
         warehouse: Optional[str] = None,
         role: Optional[str] = None,
         username: Optional[str] = None,
-        password: Optional[str] = None,
+        pat: Optional[str] = None,
         create_local_spark: bool = True,
         spark_config: Optional[dict] = None,
         use_persistent_spark: bool = False,
@@ -107,7 +107,7 @@ class SnowflakeHook:
             warehouse: Warehouse name (optional, defaults to SNOWFLAKE_WAREHOUSE env var)
             role: Role name (optional, defaults to SNOWFLAKE_ROLE env var)
             username: Username (optional, defaults to SNOWFLAKE_USER env var)
-            password: Password (optional, defaults to SNOWFLAKE_PASSWORD env var or keychain)
+            pat: Personal Access Token (optional, defaults to SNOWFLAKE_PAT env var)
             env_file: Path to .env file (optional, defaults to 'config/.env' relative to workspace root)
             create_local_spark: Whether to create a Spark session in local mode with optimized settings
             spark_config: Additional Spark configuration parameters (optional)
@@ -125,7 +125,7 @@ class SnowflakeHook:
         self.role = role or os.getenv("SNOWFLAKE_ROLE", "read_only_users")
         self.account = os.getenv("SNOWFLAKE_ACCOUNT", "doordash")
         self.use_persistent_spark = use_persistent_spark
-        self.password = password or os.getenv("SNOWFLAKE_PASSWORD")
+        self.password = pat or os.getenv("SNOWFLAKE_PAT")
 
         # Validate required parameters
         self._validate_params()

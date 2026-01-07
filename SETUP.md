@@ -58,7 +58,7 @@ Create your `config/.env` file with the following structure. **Note**: Snowflake
 # ============================================================================
 # Without these, the server cannot connect to Snowflake data warehouse
 SNOWFLAKE_USER=your.username
-SNOWFLAKE_PASSWORD=your_secure_password
+SNOWFLAKE_PAT=your_personal_access_token
 SNOWFLAKE_DATABASE=proddb
 SNOWFLAKE_SCHEMA=your_schema
 SNOWFLAKE_WAREHOUSE=YOUR_WAREHOUSE
@@ -234,7 +234,7 @@ Add to your MCP client (like Cursor) configuration. Environment variables are ca
       "command": "/path/to/cursor-analytics-mcp/venv/bin/cursor-analytics-mcp",
       "env": {
         "SNOWFLAKE_USER": "your.username",
-        "SNOWFLAKE_PASSWORD": "your_secure_password",
+        "SNOWFLAKE_PAT": "your_personal_access_token",
         "SNOWFLAKE_DATABASE": "proddb",
         "SNOWFLAKE_SCHEMA": "your_schema",
         "SNOWFLAKE_WAREHOUSE": "YOUR_WAREHOUSE",
@@ -260,7 +260,7 @@ Add to your MCP client (like Cursor) configuration. Environment variables are ca
       "env": {
         "_comment_required": "===== REQUIRED: Core Configuration =====",
         "SNOWFLAKE_USER": "your.username",
-        "SNOWFLAKE_PASSWORD": "your_secure_password",
+        "SNOWFLAKE_PAT": "your_personal_access_token",
         "SNOWFLAKE_DATABASE": "proddb",
         "SNOWFLAKE_SCHEMA": "your_schema",
         "SNOWFLAKE_WAREHOUSE": "YOUR_WAREHOUSE",

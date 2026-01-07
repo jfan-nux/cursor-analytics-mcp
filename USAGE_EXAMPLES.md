@@ -312,7 +312,7 @@ This document provides practical examples of using the cursor-analytics-mcp serv
 
 The MCP server provides detailed error messages for common issues:
 
-- **Missing credentials**: Check your SNOWFLAKE_USER and SNOWFLAKE_PASSWORD environment variables
+- **Missing credentials**: Check your SNOWFLAKE_USER and SNOWFLAKE_PAT environment variables
 - **Invalid experiment name**: Verify the experiment exists in Curie
 - **Missing context**: Context files may not exist for all tables/queries
 - **Permission errors**: Ensure you have proper Snowflake and Google Sheets permissions
