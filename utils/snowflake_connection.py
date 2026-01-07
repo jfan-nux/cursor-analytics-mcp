@@ -4,6 +4,12 @@ from typing import Optional, Union
 from pathlib import Path
 from dotenv import load_dotenv
 import pandas as pd
+
+# Configure Snowflake connector to be quiet (prevent stdout pollution in MCP)
+import logging
+logging.getLogger('snowflake.connector').setLevel(logging.WARNING)
+logging.getLogger('snowflake.connector.network').setLevel(logging.WARNING)
+
 import snowflake.connector
 from snowflake.connector.pandas_tools import write_pandas
 from utils.logger import get_logger
@@ -91,7 +97,7 @@ class SnowflakeHook:
         warehouse: Optional[str] = None,
         role: Optional[str] = None,
         username: Optional[str] = None,
-        pat: Optional[str] = None,
+        token: Optional[str] = None,
         create_local_spark: bool = True,
         spark_config: Optional[dict] = None,
         use_persistent_spark: bool = False,
@@ -107,14 +113,14 @@ class SnowflakeHook:
             warehouse: Warehouse name (optional, defaults to SNOWFLAKE_WAREHOUSE env var)
             role: Role name (optional, defaults to SNOWFLAKE_ROLE env var)
             username: Username (optional, defaults to SNOWFLAKE_USER env var)
-            pat: Personal Access Token (optional, defaults to SNOWFLAKE_PAT env var)
+            token: Personal Access Token (optional, defaults to SNOWFLAKE_PAT env var)
             env_file: Path to .env file (optional, defaults to 'config/.env' relative to workspace root)
             create_local_spark: Whether to create a Spark session in local mode with optimized settings
             spark_config: Additional Spark configuration parameters (optional)
             use_persistent_spark: Whether to use a persistent Spark session (default: False)
             insecure_mode: Whether to use insecure mode for certificate validation (default: True)
         """
-        # First check for environment variables from shell profile for username and password
+        # First check for environment variables from shell profile for username and token
         # These take highest priority
         env_file_path = Path(__file__).parent.parent / "config" / ".env"
         load_dotenv(dotenv_path=env_file_path, override=True)
@@ -125,13 +131,14 @@ class SnowflakeHook:
         self.role = role or os.getenv("SNOWFLAKE_ROLE", "read_only_users")
         self.account = os.getenv("SNOWFLAKE_ACCOUNT", "doordash")
         self.use_persistent_spark = use_persistent_spark
-        self.password = pat or os.getenv("SNOWFLAKE_PAT")
+        self.token = token or os.getenv("SNOWFLAKE_PAT")
 
         # Validate required parameters
         self._validate_params()
+        # Note: Snowflake PAT tokens are passed via the 'password' parameter
         self.params = dict(
             user=self.user,
-            password=self.password,
+            password=self.token,
             schema=self.schema,
             account=self.account,
             database=self.database,
@@ -169,12 +176,13 @@ class SnowflakeHook:
                     self.spark = None
 
             # Setup Snowflake connection parameters for Spark
+            # Note: Snowflake PAT tokens are passed via the password field
             if self.spark is not None:
                 self.sfparams = dict(
                     sfUrl=f"{self.account}.snowflakecomputing.com",
                     sfAccount=self.account,
                     sfUser=self.user,
-                    sfPassword=self.password,
+                    sfPassword=self.token,
                     sfDatabase=self.database,
                     sfSchema=self.schema,
                     sfWarehouse=self.warehouse,
@@ -193,7 +201,7 @@ class SnowflakeHook:
         required_params = {
             "account": self.account,
             "user": self.user,
-            "password": self.password,
+            "token": self.token,
             "database": self.database,
             "schema": self.schema,
             "warehouse": self.warehouse,

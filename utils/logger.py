@@ -57,8 +57,9 @@ def setup_logger(
         logger.handlers.clear()
 
     # Add console handler if requested
+    # IMPORTANT: Use stderr for MCP servers to avoid breaking JSON-RPC protocol
     if log_to_console:
-        console_handler = logging.StreamHandler(sys.stdout)
+        console_handler = logging.StreamHandler(sys.stderr)
         console_handler.setFormatter(formatter)
         logger.addHandler(console_handler)
 

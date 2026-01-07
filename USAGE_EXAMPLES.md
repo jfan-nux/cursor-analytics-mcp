@@ -308,6 +308,64 @@ This document provides practical examples of using the cursor-analytics-mcp serv
    {"name": "curie_export", "arguments": {"experiment_name": "your_experiment", "primary_metrics": ["metric1", "metric2"]}}
    ```
 
+### 📝 Google Docs Integration Workflow
+
+1. **Export markdown to Google Docs** (any local file):
+   ```json
+   {
+     "name": "export_markdown_to_google_doc",
+     "arguments": {
+       "markdown_path": "/Users/fiona.fan/Documents/my_analysis.md",
+       "open_browser": false
+     }
+   }
+   ```
+
+   **Response:**
+   ```
+   ✅ Markdown exported to Google Docs successfully!
+
+   📄 **Title:** My Analysis
+   📝 **Document ID:** 1sx4JaaKcMbNYOS-kwUPTuIvL5ard-RiN_B0ZxgEFwv4
+   🔗 **URL:** https://docs.google.com/document/d/1sx4JaaKcMbNYOS-kwUPTuIvL5ard-RiN_B0ZxgEFwv4/edit
+   🔄 **Action:** Created new document
+   💾 **Mapping:** Automatically created for future exports
+   ```
+
+2. **Import Google Doc to markdown**:
+   ```json
+   {
+     "name": "import_google_doc_to_markdown",
+     "arguments": {
+       "doc_url": "https://docs.google.com/document/d/DOC_ID/edit",
+       "markdown_path": "/Users/fiona.fan/Documents/imported_doc.md"
+     }
+   }
+   ```
+
+3. **Check sync status**:
+   ```json
+   {
+     "name": "show_markdown_google_doc_status",
+     "arguments": {
+       "markdown_path": "/Users/fiona.fan/Documents/my_analysis.md"
+     }
+   }
+   ```
+
+4. **List all tracked files**:
+   ```json
+   {"name": "list_markdown_google_doc_mappings"}
+   ```
+
+**Key Features:**
+- ✅ Works with any local file path (not just current directory)
+- ✅ Non-interactive, fully automated
+- ✅ Auto-creates/updates Google Docs
+- ✅ Local mapping file (`.gdocs_sync_mappings.json` in current directory)
+- ✅ Returns document ID and URL
+- ✅ Supports images and tables (with Apps Script)
+
 ## Error Handling
 
 The MCP server provides detailed error messages for common issues:
