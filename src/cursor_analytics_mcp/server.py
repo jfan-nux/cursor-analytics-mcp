@@ -551,7 +551,7 @@ def execute_sql_and_upload_to_google_sheet(
 # GOOGLE DOCS CRAWLER AND CONVERTER
 # ============================================================================
 
-@mcp.tool
+# @mcp.tool  # Hidden from MCP - use as local tool only
 def crawl_and_convert_google_docs(
     master_doc_url: str,
     output_path: str = "context/experiment-readouts"
@@ -608,7 +608,7 @@ def crawl_and_convert_google_docs(
         return f"❌ Error in Google Docs batch conversion: {str(e)}"
 
 
-@mcp.tool
+# @mcp.tool  # Hidden from MCP - use as local tool only
 def get_google_doc_links(doc_url: str) -> str:
     """
     Extract all Google Docs links from a document without converting them.
@@ -926,7 +926,7 @@ def link_markdown_to_google_doc(
         return f"❌ Error linking markdown to Google Doc: {str(e)}"
 
 
-@mcp.tool
+# @mcp.tool  # Hidden from MCP - use as local tool only
 def unlink_markdown_from_google_doc(
     markdown_path: str
 ) -> str:
@@ -971,7 +971,7 @@ def unlink_markdown_from_google_doc(
         return f"❌ Error unlinking markdown from Google Doc: {str(e)}"
 
 
-@mcp.tool
+# @mcp.tool  # Hidden from MCP - use as local tool only
 def list_markdown_google_doc_mappings() -> str:
     """
     List all markdown files linked to Google Docs.
@@ -1006,7 +1006,7 @@ def list_markdown_google_doc_mappings() -> str:
         return f"❌ Error listing mappings: {str(e)}"
 
 
-@mcp.tool
+# @mcp.tool  # Hidden from MCP - use as local tool only
 def show_markdown_google_doc_status(
     markdown_path: str
 ) -> str:
@@ -1427,7 +1427,7 @@ def write_documents_to_session_context(results: List[Dict], query: str, context_
     
     return f"📁 Wrote {len(results)} documents to: {session_dir}\n📄 Files: {', '.join(written_files)}\n📋 Index: index.md"
 
-@mcp.tool
+# @mcp.tool  # Hidden from MCP - use as local tool only
 def fetch_table_context(query: str, top_k: int = 5, team: Optional[str] = None, write_to_local: bool = False) -> str:
     """
     Search for Snowflake table context using hybrid search (BM25 + embeddings).
@@ -1472,7 +1472,7 @@ def fetch_table_context(query: str, top_k: int = 5, team: Optional[str] = None, 
         return f"Error fetching table context: {str(e)}. Please ensure the document index table exists and is populated."
 
 
-@mcp.tool
+# @mcp.tool  # Hidden from MCP - use as local tool only
 def fetch_pod_queries(query: str, top_k: int = 3, team: Optional[str] = None) -> str:
     """
     Search for validated master queries using hybrid search (BM25 + embeddings).
@@ -1521,7 +1521,7 @@ def fetch_pod_queries(query: str, top_k: int = 3, team: Optional[str] = None) ->
         return f"Error fetching pod queries: {str(e)}. Please ensure the document index table exists and is populated."
 
 
-@mcp.tool
+# @mcp.tool  # Hidden from MCP - use as local tool only
 def fetch_user_context(query: str, top_k: int = 5, team: Optional[str] = None, write_to_local: bool = False) -> str:
     """
     Search for user-specific context using hybrid search (BM25 + embeddings).
@@ -1587,7 +1587,7 @@ def fetch_user_context(query: str, top_k: int = 5, team: Optional[str] = None, w
         return f"Error fetching user context: {str(e)}. Please ensure the document index table exists and is populated."
 
 
-@mcp.tool
+# @mcp.tool  # Hidden from MCP - use as local tool only
 def fetch_experiment_readouts(query: str, top_k: int = 5, team: Optional[str] = None, write_to_local: bool = False) -> str:
     """
     Search for experiment readout documents using hybrid search (BM25 + embeddings).
@@ -1632,7 +1632,7 @@ def fetch_experiment_readouts(query: str, top_k: int = 5, team: Optional[str] = 
         return f"Error fetching experiment readouts: {str(e)}. Please ensure the document index table exists and is populated."
 
 
-@mcp.tool
+# @mcp.tool  # Hidden from MCP - use as local tool only
 def fetch_deep_dives(query: str, top_k: int = 5, team: Optional[str] = None, write_to_local: bool = False) -> str:
     """
     Search for deep dive analysis documents using hybrid search (BM25 + embeddings).
@@ -1677,7 +1677,7 @@ def fetch_deep_dives(query: str, top_k: int = 5, team: Optional[str] = None, wri
         return f"Error fetching deep dives: {str(e)}. Please ensure the document index table exists and is populated."
 
 
-@mcp.tool
+# @mcp.tool  # Hidden from MCP - use as local tool only
 def fetch_cursor_rules(rule_name: str) -> str:
     """
     Fetch Cursor rules from .cursor/rules/ directory.
