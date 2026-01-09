@@ -143,8 +143,8 @@ class GoogleDocCrawler:
                             if 'textRun' in elem:
                                 text_run = elem['textRun']
                                 if 'textStyle' in text_run and 'link' in text_run['textStyle']:
-                                    link_url = text_run['textStyle']['link']['url']
-                                    if 'docs.google.com' in link_url:
+                                    link_url = text_run['textStyle']['link'].get('url')
+                                    if link_url and 'docs.google.com' in link_url:
                                         links.append(link_url)
                 
                 elif 'table' in element:
@@ -448,8 +448,8 @@ def convert_google_doc_to_markdown_string(doc_url: str, write_file: bool = False
                 return {
                     'status': 'success',
                     'title': temp_result['title'],
-                    'original_title': temp_result['original_title'],
-                    'detected_quarter': temp_result['detected_quarter'],
+                    'original_title': temp_result.get('original_title', temp_result['title']),
+                    'detected_quarter': temp_result.get('detected_quarter', ''),
                     'team_path': temp_result['team_path'],
                     'doc_url': doc_url,
                     'doc_id': doc_id,

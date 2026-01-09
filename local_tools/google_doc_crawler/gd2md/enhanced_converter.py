@@ -195,13 +195,27 @@ class EnhancedGoogleDocConverter:
         
         # Handle links first (including person names that might be links)
         if text_style.get('link'):
-            link_url = text_style['link']['url']
-            link_text = clean_text.strip()
-            if link_text:
-                formatted_text = f"[{link_text}]({link_url})"
-            else:
-                # Handle cases where link text might be empty but URL exists
-                formatted_text = f"[Link]({link_url})"
+            link_data = text_style['link']
+            # Handle different link types: url, headingId, bookmarkId
+            link_url = link_data.get('url')
+            if link_url:
+                link_text = clean_text.strip()
+                if link_text:
+                    formatted_text = f"[{link_text}]({link_url})"
+                else:
+                    # Handle cases where link text might be empty but URL exists
+                    formatted_text = f"[Link]({link_url})"
+            elif link_data.get('headingId'):
+                # Internal heading link - use anchor format
+                heading_id = link_data['headingId']
+                link_text = clean_text.strip() or "Link"
+                formatted_text = f"[{link_text}](#{heading_id})"
+            elif link_data.get('bookmarkId'):
+                # Internal bookmark link - use anchor format
+                bookmark_id = link_data['bookmarkId']
+                link_text = clean_text.strip() or "Link"
+                formatted_text = f"[{link_text}](#{bookmark_id})"
+            # If no recognized link type, just use the text as-is
         
         # Apply text formatting (order matters) - only if text isn't already formatted
         if text_style.get('bold') and not (formatted_text.startswith('**') and formatted_text.endswith('**')):
