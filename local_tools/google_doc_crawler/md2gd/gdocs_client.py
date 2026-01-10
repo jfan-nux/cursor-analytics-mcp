@@ -26,6 +26,9 @@ class GoogleDocsClient:
         """
         Create a new Google Doc with content.
         
+        If a template_doc_id is set, copies the template to preserve its named styles
+        (fonts, sizes, spacing). Otherwise creates a blank document.
+        
         Args:
             title: Document title
             requests: List of Google Docs API requests
@@ -33,16 +36,39 @@ class GoogleDocsClient:
         Returns:
             Dict with 'doc_id' and 'doc_url'
         """
-        # Create empty document
-        doc = self.docs_service.documents().create(body={'title': title}).execute()
-        doc_id = doc['documentId']
-        doc_url = f"https://docs.google.com/document/d/{doc_id}/edit"
-        
-        print(f"Created document: {title} (ID: {doc_id})")
-        
-        # Apply template styles if available
-        if self.template_doc_id:
-            self._apply_template_styles(doc_id)
+        if self.template_doc_id and self.drive_service:
+            # Copy template document to preserve its named styles
+            try:
+                copied_file = self.drive_service.files().copy(
+                    fileId=self.template_doc_id,
+                    body={'name': title}
+                ).execute()
+                doc_id = copied_file['id']
+                doc_url = f"https://docs.google.com/document/d/{doc_id}/edit"
+                print(f"Created document from template: {title} (ID: {doc_id})")
+                
+                # Clear the template content (keep styles)
+                doc = self.docs_service.documents().get(documentId=doc_id).execute()
+                end_index = doc['body']['content'][-1]['endIndex'] - 1
+                if end_index > 1:
+                    self._batch_update(doc_id, [{
+                        'deleteContentRange': {
+                            'range': {'startIndex': 1, 'endIndex': end_index}
+                        }
+                    }])
+                
+            except Exception as e:
+                print(f"Warning: Could not copy template, creating blank doc: {e}")
+                doc = self.docs_service.documents().create(body={'title': title}).execute()
+                doc_id = doc['documentId']
+                doc_url = f"https://docs.google.com/document/d/{doc_id}/edit"
+                print(f"Created blank document: {title} (ID: {doc_id})")
+        else:
+            # Create blank document
+            doc = self.docs_service.documents().create(body={'title': title}).execute()
+            doc_id = doc['documentId']
+            doc_url = f"https://docs.google.com/document/d/{doc_id}/edit"
+            print(f"Created document: {title} (ID: {doc_id})")
         
         # Set pageless format and margins
         self._configure_document_style(doc_id)
@@ -252,51 +278,17 @@ class GoogleDocsClient:
     
     def _apply_template_styles(self, doc_id: str):
         """
-        Copy named styles from template document.
+        DEPRECATED: This method is no longer used.
         
-        Args:
-            doc_id: Target document ID
+        Template styles are now preserved by copying the template document
+        using Drive API's files.copy() in create_doc(). This approach:
+        - Preserves all named style definitions (fonts, sizes, spacing)
+        - Preserves bold/italic formatting in tables
+        - Works reliably (Google Docs API doesn't have updateNamedStyle)
+        
+        This method is kept as a stub for backwards compatibility.
         """
-        try:
-            # Get template document
-            template_doc = self.docs_service.documents().get(
-                documentId=self.template_doc_id
-            ).execute()
-            
-            # Extract named styles
-            named_styles = template_doc.get('namedStyles', {}).get('styles', [])
-            
-            if not named_styles:
-                print("Warning: No named styles found in template document")
-                return
-            
-            # Apply styles to new document
-            requests = []
-            for style in named_styles:
-                style_type = style.get('namedStyleType')
-                if style_type:
-                    requests.append({
-                        'updateParagraphStyle': {
-                            'range': {
-                                'startIndex': 1,
-                                'endIndex': 2
-                            },
-                            'paragraphStyle': {
-                                'namedStyleType': style_type
-                            },
-                            'fields': 'namedStyleType'
-                        }
-                    })
-            
-            # Note: This is a simplified approach. For full style copying,
-            # we'd need to copy text styles, paragraph styles, etc.
-            # The API doesn't directly support "copy all styles", so we're
-            # setting up the document to use the same named style types.
-            
-            print(f"Applied styles from template document")
-            
-        except Exception as e:
-            print(f"Warning: Could not apply template styles: {e}")
+        pass
     
     def _configure_document_style(self, doc_id: str):
         """
@@ -350,23 +342,96 @@ class GoogleDocsClient:
             return
         
         try:
+            # Get current document length to validate indices
+            doc = self.docs_service.documents().get(documentId=doc_id).execute()
+            
+            # Find the document end index - use the body content end index
+            body_content = doc.get('body', {}).get('content', [])
+            doc_end_index = 1  # Default to 1 (empty doc)
+            if body_content:
+                last_element = body_content[-1]
+                doc_end_index = last_element.get('endIndex', 1)
+            
+            # Validate and fix indices in requests
+            validated_requests = self._validate_request_indices(requests, doc_end_index)
+            
             # Google Docs API has a limit on batch size (around 500 requests)
             # Split into chunks if needed
             chunk_size = 400
-            for i in range(0, len(requests), chunk_size):
-                chunk = requests[i:i + chunk_size]
+            for i in range(0, len(validated_requests), chunk_size):
+                chunk = validated_requests[i:i + chunk_size]
+                body = {'requests': chunk}
+                # Debug: print exactly what we're sending
+                if chunk and 'updateNamedStyle' in chunk[0]:
+                    import json
+                    print(f"DEBUG _batch_update: Sending body with {len(chunk)} requests")
+                    print(f"DEBUG: First request keys: {list(chunk[0].keys())}")
                 self.docs_service.documents().batchUpdate(
                     documentId=doc_id,
-                    body={'requests': chunk}
+                    body=body
                 ).execute()
                 
                 # Small delay between chunks to avoid rate limiting
-                if i + chunk_size < len(requests):
+                if i + chunk_size < len(validated_requests):
                     time.sleep(0.5)
                     
         except Exception as e:
             print(f"Error in batch update: {e}")
             raise
+    
+    def _validate_request_indices(self, requests: List[Dict], doc_end_index: int) -> List[Dict]:
+        """
+        Validate and fix request indices to ensure they don't exceed document bounds.
+        
+        Args:
+            requests: List of API requests
+            doc_end_index: Current document end index
+            
+        Returns:
+            List of validated requests (invalid ones are filtered out)
+        """
+        validated = []
+        for req in requests:
+            valid_req = self._validate_single_request(req, doc_end_index)
+            if valid_req is not None:
+                validated.append(valid_req)
+        return validated
+    
+    def _validate_single_request(self, req: Dict, doc_end_index: int) -> Dict:
+        """
+        Validate a single request's indices.
+        
+        Returns None if the request should be skipped, otherwise returns the (possibly modified) request.
+        """
+        import copy
+        req = copy.deepcopy(req)
+        
+        # Check for requests that have range with indices
+        range_keys = ['updateTextStyle', 'updateParagraphStyle', 'deleteContentRange']
+        
+        for key in range_keys:
+            if key in req:
+                range_obj = req[key].get('range', {})
+                start_idx = range_obj.get('startIndex', 0)
+                end_idx = range_obj.get('endIndex', 0)
+                
+                # Validate indices
+                if start_idx >= doc_end_index:
+                    # Start is beyond document - skip this request
+                    print(f"Warning: Skipping {key} - startIndex {start_idx} >= doc_end {doc_end_index}")
+                    return None
+                
+                if end_idx > doc_end_index:
+                    # Clamp end index to document end
+                    print(f"Warning: Clamping {key} endIndex from {end_idx} to {doc_end_index}")
+                    range_obj['endIndex'] = doc_end_index
+                
+                if range_obj.get('startIndex', 0) >= range_obj.get('endIndex', 0):
+                    # Invalid range after clamping - skip
+                    print(f"Warning: Skipping {key} - invalid range after clamping")
+                    return None
+        
+        return req
     
     
     def get_doc_title(self, doc_id: str) -> str:

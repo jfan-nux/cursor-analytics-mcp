@@ -295,18 +295,27 @@ class MarkdownConverter:
         for match in re.finditer(r'(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)', text):
             italic_ranges.append((match.start(), match.end(), match.group(1)))
         
-        # Find links
-        for match in re.finditer(r'\[([^\]]+)\]\(([^\)]+)\)', text):
-            link_ranges.append((match.start(), match.end(), match.group(1), match.group(2)))
+        # Find links (separate mailto links for person chip handling)
+        person_ranges = []
+        for match in re.finditer(r'\[([^\]]+)\]\(mailto:([^\)]+)\)', text):
+            person_ranges.append((match.start(), match.end(), match.group(1), match.group(2)))
         
-        # Remove markdown formatting from text
+        # Find regular links (exclude mailto links which are handled separately)
+        for match in re.finditer(r'\[([^\]]+)\]\(([^\)]+)\)', text):
+            url = match.group(2)
+            if not url.startswith('mailto:'):
+                link_ranges.append((match.start(), match.end(), match.group(1), url))
+        
+        # Remove markdown formatting from text, converting mailto links to person markers
         clean_text = text
         # Remove bold markers
         clean_text = re.sub(r'\*\*(.+?)\*\*', r'\1', clean_text)
         # Remove italic markers
         clean_text = re.sub(r'(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)', r'\1', clean_text)
-        # Remove link markers but keep text
-        clean_text = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', clean_text)
+        # Convert mailto links to person markers for Apps Script processing
+        clean_text = re.sub(r'\[([^\]]+)\]\(mailto:([^\)]+)\)', r'[person:\2:\1]', clean_text)
+        # Remove regular link markers but keep text
+        clean_text = re.sub(r'\[([^\]]+)\]\((?!mailto:)[^\)]+\)', r'\1', clean_text)
         
         # Insert clean text
         requests.append({
@@ -419,46 +428,72 @@ class MarkdownConverter:
         """
         Create bulleted or numbered list with proper nesting levels.
         
+        Per Google Docs API best practice: insert ALL text at once with tabs for nesting,
+        then apply createParagraphBullets to the entire range.
+        
         Args:
             items: List of (text, indent_level) tuples
             ordered: True for numbered lists, False for bullet lists
         """
         requests = []
         
+        if not items:
+            return requests
+        
+        # Step 1: Build the full list text with tabs for nesting
+        # Also track formatting positions for bold/italic
+        # Note: tabs will be consumed by createParagraphBullets, so we track
+        # positions in the "post-consumption" text (without tabs)
+        full_text = ""
+        formatting_info = []  # List of (offset_after_tabs_consumed, item_text, clean_item)
+        content_position = 0  # Track position in text AFTER tabs are consumed
+        
         for item_text, indent_level in items:
             # Remove markdown formatting from item text
             clean_item = item_text
-            # Remove bold markers
             clean_item = re.sub(r'\*\*(.+?)\*\*', r'\1', clean_item)
-            # Remove italic markers
             clean_item = re.sub(r'(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)', r'\1', clean_item)
-            # Remove link markers but keep text
-            clean_item = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', clean_item)
+            # Convert mailto links to person markers for Apps Script processing
+            clean_item = re.sub(r'\[([^\]]+)\]\(mailto:([^\)]+)\)', r'[person:\2:\1]', clean_item)
+            # Remove regular link markers but keep text
+            clean_item = re.sub(r'\[([^\]]+)\]\((?!mailto:)[^\)]+\)', r'\1', clean_item)
             
-            # TEMPORARY: Flatten all bullets (ignore indent_level) for now
-            text = clean_item + '\n'
+            # Prepend tabs for nesting level
+            tabs = '\t' * indent_level
+            line = tabs + clean_item + '\n'
             
-            requests.append({
-                'insertText': {
-                    'location': self._make_location(),
-                    'text': text
-                }
-            })
+            # Track where this item's content starts AFTER tabs are consumed
+            formatting_info.append((content_position, item_text, clean_item))
             
-            start_index = self.index
+            # Update content_position for next item (tabs don't count, they get consumed)
+            content_position += len(clean_item) + 1  # +1 for newline
             
-            # Apply list style - Google Docs automatically handles nesting based on leading tabs
-            bullet_request = {
-                'createParagraphBullets': {
-                    'range': self._make_range(self.index, self.index + len(text)),
-                    'bulletPreset': 'NUMBERED_DECIMAL_ALPHA_ROMAN' if ordered else 'BULLET_DISC_CIRCLE_SQUARE'
-                }
+            full_text += line
+        
+        # Step 2: Insert all text at once
+        start_index = self.index
+        requests.append({
+            'insertText': {
+                'location': self._make_location(),
+                'text': full_text
             }
-            requests.append(bullet_request)
+        })
+        
+        # Step 3: Apply bullets to the entire range - this converts tabs to nesting
+        requests.append({
+            'createParagraphBullets': {
+                'range': self._make_range(start_index, start_index + len(full_text)),
+                'bulletPreset': 'NUMBERED_DECIMAL_NESTED' if ordered else 'BULLET_DISC_CIRCLE_SQUARE'
+            }
+        })
+        
+        # Step 4: Apply bold/italic formatting to each item
+        # content_offset is the position in the document AFTER tabs are consumed
+        for content_offset, item_text, clean_item in formatting_info:
+            item_start = start_index + content_offset
             
-            # Apply bold formatting to parts of the item
+            # Apply bold formatting
             for match in re.finditer(r'\*\*(.+?)\*\*', item_text):
-                # Calculate position in clean text
                 clean_pos = 0
                 orig_pos = 0
                 while orig_pos < match.start():
@@ -469,15 +504,13 @@ class MarkdownConverter:
                         orig_pos += 1
                 
                 content = match.group(1)
-                actual_start = start_index + clean_pos
+                actual_start = item_start + clean_pos
                 actual_end = actual_start + len(content)
                 
                 requests.append({
                     'updateTextStyle': {
                         'range': self._make_range(actual_start, actual_end),
-                        'textStyle': {
-                            'bold': True
-                        },
+                        'textStyle': {'bold': True},
                         'fields': 'bold'
                     }
                 })
@@ -496,20 +529,21 @@ class MarkdownConverter:
                         orig_pos += 1
                 
                 content = match.group(1)
-                actual_start = start_index + clean_pos
+                actual_start = item_start + clean_pos
                 actual_end = actual_start + len(content)
                 
                 requests.append({
                     'updateTextStyle': {
                         'range': self._make_range(actual_start, actual_end),
-                        'textStyle': {
-                            'italic': True
-                        },
+                        'textStyle': {'italic': True},
                         'fields': 'italic'
                     }
                 })
-            
-            self.index += len(text)
+        
+        # Update index - tabs are consumed by createParagraphBullets
+        # Count actual characters after tab consumption
+        total_content_len = sum(len(clean) + 1 for _, _, clean in formatting_info)  # +1 for newlines
+        self.index += total_content_len
         
         return requests
     
@@ -628,20 +662,56 @@ class MarkdownConverter:
         if not rows:
             return requests
         
+        # Detect repeated values in first column for cell merging
+        # Track runs of identical values in column 0
+        merge_info = {}  # {row_index: merge_count} for cells that start a merge
+        if len(rows) > 1:
+            i = 1  # Start from second row (skip header)
+            while i < len(rows):
+                if rows[i] and rows[i][0]:
+                    current_val = rows[i][0].strip()
+                    # Look for consecutive identical values
+                    merge_count = 1
+                    j = i + 1
+                    while j < len(rows) and rows[j] and rows[j][0] and rows[j][0].strip() == current_val:
+                        merge_count += 1
+                        j += 1
+                    if merge_count > 1:
+                        merge_info[i] = merge_count
+                        i = j  # Skip past the merged rows
+                    else:
+                        i += 1
+                else:
+                    i += 1
+        
         # Convert table to format with row markers for Apps Script
         csv_rows = []
-        for row in rows:
+        for row_idx, row in enumerate(rows):
             # Escape special characters in cells and convert markdown formatting to markers
             escaped_cells = []
-            for cell in row:
+            for col_idx, cell in enumerate(row):
                 # Convert markdown formatting to markers that survive pipe-escaping
                 clean_cell = cell
                 clean_cell = re.sub(r'\*\*(.+?)\*\*', r'{B}\1{/B}', clean_cell)  # Bold -> {B}text{/B}
                 clean_cell = re.sub(r'(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)', r'{I}\1{/I}', clean_cell)  # Italic
-                clean_cell = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', clean_cell)  # Links (strip)
+                # Convert mailto links to person markers
+                clean_cell = re.sub(r'\[([^\]]+)\]\(mailto:([^\)]+)\)', r'[person:\2:\1]', clean_cell)
+                # Strip regular links
+                clean_cell = re.sub(r'\[([^\]]+)\]\((?!mailto:)[^\)]+\)', r'\1', clean_cell)
                 
                 # Replace | with &#124; and newlines with spaces
                 escaped = clean_cell.replace('|', '&#124;').replace('\n', ' ').strip()
+                
+                # Add merge marker for first column cells that start a merge
+                if col_idx == 0 and row_idx in merge_info:
+                    escaped = f'[merge:{merge_info[row_idx]}]{escaped}'
+                # Mark cells that are part of a merge (should be empty after merging)
+                elif col_idx == 0:
+                    for start_row, count in merge_info.items():
+                        if start_row < row_idx < start_row + count:
+                            escaped = '[merged]'  # This cell will be merged away
+                            break
+                
                 escaped_cells.append(escaped)
             # Prefix each row with [row] marker for identification during cleanup
             csv_rows.append('[row]' + '|'.join(escaped_cells))
@@ -676,7 +746,12 @@ class MarkdownConverter:
                     markdown_lines.append(md_line)
             elif 'table' in element:
                 md_table = self._table_to_markdown(element['table'])
+                # Add blank line before table if previous line isn't empty
+                if markdown_lines and markdown_lines[-1].strip():
+                    markdown_lines.append('')
                 markdown_lines.extend(md_table)
+                # Add blank line after table
+                markdown_lines.append('')
             elif 'sectionBreak' in element:
                 markdown_lines.append('')
         
@@ -696,18 +771,33 @@ class MarkdownConverter:
                 content = text_run.get('content', '')
                 text_style = text_run.get('textStyle', {})
                 
-                # Apply inline formatting
-                if text_style.get('bold') and text_style.get('italic'):
-                    content = f'***{content.strip()}***'
-                elif text_style.get('bold'):
-                    content = f'**{content.strip()}**'
-                elif text_style.get('italic'):
-                    content = f'*{content.strip()}*'
-                
-                # Handle links
-                if 'link' in text_style:
-                    url = text_style['link'].get('url', '')
-                    content = f'[{content.strip()}]({url})'
+                # Apply inline formatting while preserving leading/trailing whitespace
+                # This prevents "**word1****word2**" when words should be "**word1** **word2**"
+                if text_style.get('bold') or text_style.get('italic') or 'link' in text_style:
+                    # Extract leading/trailing whitespace
+                    leading_space = ''
+                    trailing_space = ''
+                    stripped = content.strip()
+                    if content and stripped:
+                        leading_space = content[:len(content) - len(content.lstrip())]
+                        trailing_space = content[len(content.rstrip()):]
+                    
+                    if stripped:  # Only wrap if there's actual content
+                        if text_style.get('bold') and text_style.get('italic'):
+                            content = f'{leading_space}***{stripped}***{trailing_space}'
+                        elif text_style.get('bold'):
+                            content = f'{leading_space}**{stripped}**{trailing_space}'
+                        elif text_style.get('italic'):
+                            content = f'{leading_space}*{stripped}*{trailing_space}'
+                        else:
+                            content = f'{leading_space}{stripped}{trailing_space}'
+                        
+                        # Handle links (apply after bold/italic)
+                        if 'link' in text_style:
+                            url = text_style['link'].get('url', '')
+                            # Re-wrap with link, preserving spaces outside
+                            inner = content.strip()
+                            content = f'{leading_space}[{inner}]({url}){trailing_space}'
                 
                 text_parts.append(content)
             
@@ -715,6 +805,33 @@ class MarkdownConverter:
             inline_object = element.get('inlineObjectElement')
             if inline_object:
                 text_parts.append('[Image]')
+            
+            # Handle person chips (email mentions / @mentions)
+            person = element.get('person')
+            if person:
+                person_props = person.get('personProperties', {})
+                name = person_props.get('name', '')
+                email = person_props.get('email', '')
+                if name and email:
+                    # Format as a mailto link with the person's name
+                    text_parts.append(f'[{name}](mailto:{email})')
+                elif email:
+                    text_parts.append(f'[{email}](mailto:{email})')
+                elif name:
+                    text_parts.append(name)
+            
+            # Handle rich links (document links, smart chips for URLs)
+            rich_link = element.get('richLink')
+            if rich_link:
+                link_props = rich_link.get('richLinkProperties', {})
+                title = link_props.get('title', '')
+                uri = link_props.get('uri', '')
+                if title and uri:
+                    text_parts.append(f'[{title}]({uri})')
+                elif uri:
+                    text_parts.append(f'[{uri}]({uri})')
+                elif title:
+                    text_parts.append(title)
         
         text = ''.join(text_parts).strip()
         
@@ -723,32 +840,123 @@ class MarkdownConverter:
             level = named_style.split('_')[1]
             return f'{"#" * int(level)} {text}'
         elif 'bullet' in paragraph:
-            # List item
-            return f'- {text}'
+            # List item with nesting level
+            bullet = paragraph.get('bullet', {})
+            nesting_level = bullet.get('nestingLevel', 0)
+            indent = '  ' * nesting_level  # 2 spaces per nesting level
+            return f'{indent}- {text}'
         else:
             return text
     
     def _table_to_markdown(self, table: Dict) -> List[str]:
-        """Convert table to markdown."""
+        """Convert table to markdown with proper handling of merged cells."""
         rows = table.get('tableRows', [])
         md_rows = []
+        
+        # First pass: determine the actual number of columns and build cell grid
+        # Track cells that span multiple rows so we can repeat their content
+        num_cols = 0
+        for row in rows:
+            col_count = 0
+            for cell in row.get('tableCells', []):
+                col_span = cell.get('tableCellStyle', {}).get('columnSpan', 1)
+                col_count += col_span
+            num_cols = max(num_cols, col_count)
+        
+        # Track row spans: {(row_idx, col_idx): (content, remaining_rows)}
+        row_span_tracker = {}
         
         for row_idx, row in enumerate(rows):
             cells = row.get('tableCells', [])
             cell_texts = []
+            col_idx = 0
+            cell_iter = iter(cells)
             
-            for cell in cells:
-                content = cell.get('content', [])
+            while col_idx < num_cols:
+                # Check if there's a row span from a previous row
+                if (row_idx, col_idx) in row_span_tracker:
+                    content, remaining = row_span_tracker[(row_idx, col_idx)]
+                    cell_texts.append(content)
+                    # Propagate to next row if still spanning
+                    if remaining > 1:
+                        row_span_tracker[(row_idx + 1, col_idx)] = (content, remaining - 1)
+                    # Consume the placeholder cell from the iterator (Google Docs includes empty cells for merged positions)
+                    try:
+                        next(cell_iter)
+                    except StopIteration:
+                        pass
+                    col_idx += 1
+                    continue
+                
+                # Get next cell from iterator
+                try:
+                    cell = next(cell_iter)
+                except StopIteration:
+                    # No more cells, fill with empty
+                    cell_texts.append('')
+                    col_idx += 1
+                    continue
+                
+                # Extract cell content
+                content_elements = cell.get('content', [])
                 cell_text = ''
-                for element in content:
+                for element in content_elements:
                     if 'paragraph' in element:
                         cell_text += self._paragraph_to_markdown(element['paragraph'])
-                cell_texts.append(cell_text.strip())
+                cell_text = cell_text.strip()
+                
+                # Get span info
+                cell_style = cell.get('tableCellStyle', {})
+                col_span = cell_style.get('columnSpan', 1)
+                row_span = cell_style.get('rowSpan', 1)
+                
+                # Add the cell content
+                cell_texts.append(cell_text)
+                
+                # If row span > 1, track for subsequent rows
+                if row_span > 1:
+                    for future_row in range(1, row_span):
+                        row_span_tracker[(row_idx + future_row, col_idx)] = (cell_text, row_span - future_row)
+                
+                col_idx += 1
+                
+                # Handle column span by adding empty cells
+                for _ in range(1, col_span):
+                    if col_idx < num_cols:
+                        cell_texts.append('')
+                        col_idx += 1
+            
+            # Ensure consistent column count
+            while len(cell_texts) < num_cols:
+                cell_texts.append('')
             
             md_rows.append('| ' + ' | '.join(cell_texts) + ' |')
             
             # Add separator after header row
             if row_idx == 0:
                 md_rows.append('|' + '---|' * len(cell_texts))
+        
+        # Trim trailing empty columns from all rows
+        if md_rows:
+            # Find the last column with any content
+            max_content_col = 0
+            for row in md_rows:
+                if row.startswith('|') and not row.startswith('|---'):
+                    cells = [c.strip() for c in row.split('|')[1:-1]]  # Skip first/last empty from split
+                    for i, cell in enumerate(cells):
+                        if cell:
+                            max_content_col = max(max_content_col, i)
+            
+            # Rebuild rows with only needed columns (at least max_content_col + 1 columns)
+            trimmed_rows = []
+            for row in md_rows:
+                if row.startswith('|---'):
+                    # Separator row - adjust to match column count
+                    trimmed_rows.append('|' + '---|' * (max_content_col + 1))
+                else:
+                    cells = [c.strip() for c in row.split('|')[1:-1]]
+                    trimmed_cells = cells[:max_content_col + 1]
+                    trimmed_rows.append('| ' + ' | '.join(trimmed_cells) + ' |')
+            md_rows = trimmed_rows
         
         return md_rows

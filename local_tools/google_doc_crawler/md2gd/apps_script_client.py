@@ -3,22 +3,23 @@ Client for calling Apps Script to process documents.
 """
 
 from typing import Dict, Optional
-from googleapiclient.discovery import build
 
 
 class AppsScriptClient:
     """Calls Apps Script functions using the Apps Script API."""
     
-    def __init__(self, script_service, script_id: str):
+    def __init__(self, script_service, deployment_id: str):
         """
         Initialize Apps Script client.
         
         Args:
             script_service: Authenticated Apps Script API service
-            script_id: The Script ID (not the deployment ID)
+            deployment_id: The Deployment ID (starts with "AKfycb...")
+                          Found after deploying as "API Executable" in Apps Script.
+                          NOTE: This is NOT the Script ID from Project Settings!
         """
         self.script_service = script_service
-        self.script_id = script_id
+        self.deployment_id = deployment_id
     
     def process_document(self, document_id: str, template_doc_id: Optional[str] = None, tab_id: Optional[str] = None) -> Dict:
         """
@@ -41,7 +42,7 @@ class AppsScriptClient:
             }
             
             response = self.script_service.scripts().run(
-                scriptId=self.script_id,
+                scriptId=self.deployment_id,
                 body=request
             ).execute()
             

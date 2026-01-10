@@ -89,7 +89,7 @@ class MarkdownGDocsSync:
     
     def _process_with_apps_script(self, doc_id: str, tab_id: str = None):
         """
-        Process document with Apps Script to insert images and apply styles.
+        Process document with Apps Script to insert images and tables.
         
         Args:
             doc_id: Google Doc ID to process
@@ -99,13 +99,14 @@ class MarkdownGDocsSync:
         
         if not apps_script_id:
             print("\n⚠️  Apps Script ID not configured.")
+            print("   Tables will appear as [table]/[row] markers.")
             print("   Images will appear as [img][path] markers.")
-            print("   Configure 'apps_script_id' in config.yaml to enable image insertion and font styling.")
+            print("   Configure 'apps_script_id' in config.yaml to enable processing.")
             return
         
         print("\nProcessing document with Apps Script...")
         print("  - Inserting images from Drive")
-        print("  - Applying Proxima Nova template styles")
+        print("  - Creating tables from markers")
         
         try:
             script_service = self.get_script_service()
@@ -116,16 +117,17 @@ class MarkdownGDocsSync:
             
             if result.get('success'):
                 images_count = result.get('imagesInserted', 0)
+                tables_count = result.get('tablesInserted', 0)
                 print(f"\n✓ Apps Script processing complete!")
+                print(f"  - {tables_count} tables inserted")
                 print(f"  - {images_count} images inserted")
-                print(f"  - Template styles applied")
             else:
                 print(f"\n⚠️  Apps Script processing failed: {result.get('message')}")
-                print("   Document created but images/styles not applied.")
+                print("   Document created but images/tables not applied.")
         
         except Exception as e:
             print(f"\n⚠️  Error calling Apps Script: {e}")
-            print("   Document created but images/styles not applied.")
+            print("   Document created but images/tables not applied.")
     
     def _load_config(self, config_path: str) -> dict:
         """Load configuration from YAML file and override with .env variables."""
