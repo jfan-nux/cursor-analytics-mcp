@@ -31,7 +31,7 @@ Each major tool has comprehensive documentation with setup, usage, and troublesh
 
 - **[Curie Export](local_tools/curie_export/README.md)** - Export experiment results to Google Sheets
 - **[Document Indexer](local_tools/document_indexer/README.md)** - Hybrid search with BM25 + embeddings
-- **[Google Doc Crawler](local_tools/google_doc_crawler/README.md)** - Convert Google Docs to markdown
+- **[Google Doc Crawler](local_tools/gdocs_sync/README.md)** - Convert Google Docs to markdown
 - **[SQL to Sheets](local_tools/sql_to_sheets/README.md)** - Direct SQL query export to Google Sheets
 - **[Table Context Agent](local_tools/table_context_agent/README.md)** - AI-powered table documentation
 
@@ -140,7 +140,7 @@ Convert a single Google Doc to markdown with team-based organization.
 #### `convert_google_doc_to_markdown(doc_url, write_file=False, output_path="context/experiment-readouts")`
 Convert a Google Doc to markdown content (returns as string).
 
-> 📖 **See detailed documentation:** [`local_tools/google_doc_crawler/README.md`](local_tools/google_doc_crawler/README.md)
+> 📖 **See detailed documentation:** [`local_tools/gdocs_sync/README.md`](local_tools/gdocs_sync/README.md)
 
 ### Context Search & Management
 
@@ -393,7 +393,7 @@ cursor-analytics-mcp/
 ├── local_tools/                 # Tool implementations (each has README.md)
 │   ├── curie_export/           # Curie experiment analysis
 │   ├── document_indexer/       # Hybrid search system
-│   ├── google_doc_crawler/     # Google Docs integration
+│   ├── gdocs_sync/     # Google Docs integration
 │   ├── sql_to_sheets/          # Direct SQL→Sheets export
 │   └── table_context_agent/    # Table documentation
 ├── utils/                      # Core utilities

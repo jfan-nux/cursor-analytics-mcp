@@ -50,13 +50,13 @@ try:
         get_experiment_metadata
     )
     from local_tools.sql_to_sheets.sql_to_sheets_helper import export_sql_to_sheets
-    from local_tools.google_doc_crawler.gd2md.doc_crawler import (
+    from local_tools.gdocs_sync.crawlers import (
         process_google_docs_batch,
         GoogleDocCrawler,
         convert_google_doc_to_markdown_string
     )
-    from local_tools.google_doc_crawler.md2gd.sync_cli import MarkdownGDocsSync
-    from local_tools.google_doc_crawler.md2gd.mapping_manager import MappingManager
+    from local_tools.gdocs_sync.cli import MarkdownGDocsSync
+    from local_tools.gdocs_sync.core import MappingManager
     from utils.logger import get_logger
     # Setup logging
     logger = get_logger(__name__)
@@ -88,6 +88,20 @@ try:
 except ImportError:
     logger.warning("Table context agent not available.")
     TABLE_CONTEXT_AVAILABLE = False
+
+# Try to import Databricks job submission functionality
+try:
+    from local_tools.databricks_job_submit import (
+        run_job as databricks_run_job,
+        get_job_manager,
+        get_run_url as databricks_get_run_url,
+        sql_file_to_notebook,
+    )
+    from local_tools.databricks_job_submit.databricks_job_manager import DatabricksJobManager
+    DATABRICKS_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"Databricks job submission not available: {e}")
+    DATABRICKS_AVAILABLE = False
 
 # Initialize FastMCP server
 mcp = FastMCP("Cursor Analytics MCP Server 🚀")
@@ -666,9 +680,8 @@ def export_markdown_to_google_doc(
     try:
         import os
         import webbrowser
-        from local_tools.google_doc_crawler.md2gd.gdocs_client import GoogleDocsClient
-        from local_tools.google_doc_crawler.md2gd.markdown_converter import MarkdownConverter
-        from local_tools.google_doc_crawler.md2gd.image_handler import ImageHandler
+        from local_tools.gdocs_sync.core import GoogleDocsClient, ImageHandler
+        from local_tools.gdocs_sync.core.markdown_converter import MarkdownConverter
         from googleapiclient.discovery import build
 
         # Convert to absolute path
@@ -688,20 +701,16 @@ def export_markdown_to_google_doc(
         sync = MarkdownGDocsSync()
         mapping_manager = MappingManager()
 
-        # Get services
-        from local_tools.google_doc_crawler.shared import get_google_credentials
-        scopes = [
-            'https://www.googleapis.com/auth/documents',
-            'https://www.googleapis.com/auth/drive',
-            'https://www.googleapis.com/auth/script.projects'
-        ]
-        credentials = get_google_credentials(scopes=scopes)
-        docs_service = build('docs', 'v1', credentials=credentials)
-        drive_service = build('drive', 'v3', credentials=credentials)
+        # Get services using unified authenticator
+        from local_tools.gdocs_sync.auth import UnifiedAuthenticator
+        authenticator = UnifiedAuthenticator()
+        credentials = authenticator.get_credentials()
+        docs_service = authenticator.get_docs_service()
+        drive_service = authenticator.get_drive_service()
 
         # Initialize components
         config = sync.config
-        template_id = config.get('template_doc_id')
+        template_id = getattr(config, 'template_doc_id', None)
         gdocs_client = GoogleDocsClient(docs_service, drive_service, template_id)
 
         # Check if document already exists
@@ -712,7 +721,7 @@ def export_markdown_to_google_doc(
         image_handler = ImageHandler(
             drive_service,
             markdown_dir,
-            config.get('image_download_dir', './gdocs_images')
+            getattr(config, 'image_download_dir', 'images')
         )
         _, images = image_handler.process_markdown_images(markdown_content)
         image_paths = {}
@@ -745,11 +754,11 @@ def export_markdown_to_google_doc(
                 )
 
                 # Process with Apps Script if configured
-                apps_script_id = config.get('apps_script_id', '').strip()
+                apps_script_id = (getattr(config, 'apps_script_id', '') or '').strip()
                 if apps_script_id:
                     try:
-                        script_service = build('script', 'v1', credentials=credentials)
-                        from local_tools.google_doc_crawler.md2gd.apps_script_client import AppsScriptClient
+                        script_service = authenticator.get_script_service()
+                        from local_tools.gdocs_sync.core import AppsScriptClient
                         script_client = AppsScriptClient(script_service, apps_script_id)
                         result = script_client.process_document(doc_id, template_id, tab_id)
                         logger.info(f"Apps Script processing: {result}")
@@ -784,11 +793,11 @@ def export_markdown_to_google_doc(
             )
 
             # Process with Apps Script if configured
-            apps_script_id = config.get('apps_script_id', '').strip()
+            apps_script_id = (getattr(config, 'apps_script_id', '') or '').strip()
             if apps_script_id:
                 try:
-                    script_service = build('script', 'v1', credentials=credentials)
-                    from local_tools.google_doc_crawler.md2gd.apps_script_client import AppsScriptClient
+                    script_service = authenticator.get_script_service()
+                    from local_tools.gdocs_sync.core import AppsScriptClient
                     script_client = AppsScriptClient(script_service, apps_script_id)
                     result_script = script_client.process_document(doc_id, template_id, None)
                     logger.info(f"Apps Script processing: {result_script}")
@@ -1786,6 +1795,537 @@ def describe_table(
 
 
 
+
+
+# ============================================================================
+# DATABRICKS JOB OPERATIONS
+# ============================================================================
+
+@mcp.tool
+def run_databricks_job(
+    job_name: str,
+    local_script_path: str,
+    job_parameters: Optional[Dict[str, str]] = None,
+    existing_cluster_id: Optional[str] = None,
+    timeout_seconds: int = 3600,
+    wait_for_completion: bool = True,
+    save_logs: bool = True,
+    cleanup_script: bool = True
+) -> str:
+    """
+    Run a Python script on Databricks using an existing cluster.
+
+    This tool handles the complete workflow:
+    1. Uploads the script to DBFS
+    2. Submits the job to an existing cluster
+    3. Optionally waits for completion and retrieves results
+    4. Saves logs locally and cleans up uploaded script
+
+    Args:
+        job_name: Name of the job (used for identification and log files)
+        local_script_path: Path to the local Python script to run
+        job_parameters: Parameters to pass to the script as command-line args (e.g., {"data_path": "s3://bucket/data"})
+        existing_cluster_id: ID of existing Databricks cluster to use (falls back to DATABRICKS_CLUSTER_ID env var)
+        timeout_seconds: Job timeout in seconds (default: 1 hour)
+        wait_for_completion: Whether to wait for job to complete (default: True)
+        save_logs: Whether to save logs locally after completion (default: True)
+        cleanup_script: Whether to delete uploaded script from DBFS after completion (default: True)
+
+    Returns:
+        Job results including status, run ID, job URL, and logs path
+    """
+    if not DATABRICKS_AVAILABLE:
+        return "Databricks job submission not available. Please ensure DATABRICKS_WORKSPACE_URL and DATABRICKS_ACCESS_TOKEN environment variables are set."
+
+    try:
+        import os
+        logger.info(f"Starting Databricks job: {job_name}")
+
+        # Convert to absolute path
+        abs_script_path = os.path.abspath(os.path.expanduser(local_script_path))
+
+        if not os.path.exists(abs_script_path):
+            return f"Error: Script file not found: {abs_script_path}"
+
+        # Run the job
+        result = databricks_run_job(
+            job_name=job_name,
+            local_script_path=abs_script_path,
+            existing_cluster_id=existing_cluster_id,
+            job_parameters=job_parameters,
+            timeout_seconds=timeout_seconds,
+            wait_for_completion=wait_for_completion,
+            save_logs=save_logs,
+            cleanup_script=cleanup_script
+        )
+
+        # Format response
+        status = result.get('status', 'UNKNOWN')
+        run_id = result.get('databricks_run_id')
+        job_url = result.get('job_url', '')
+        log_file = result.get('log_file')
+        error = result.get('error')
+
+        if status == "SUCCESS":
+            response = f"Job '{job_name}' completed successfully!\n\n"
+            response += f"**Run ID:** {run_id}\n"
+            response += f"**Job URL:** {job_url}\n"
+            if log_file:
+                response += f"**Logs saved to:** {log_file}\n"
+
+            # Include job results if available
+            job_results = result.get('job_results')
+            if job_results:
+                response += f"\n**Job Results:**\n```json\n{json.dumps(job_results, indent=2)}\n```"
+
+            return response
+
+        elif status == "SUBMITTED":
+            response = f"Job '{job_name}' submitted successfully (not waiting for completion).\n\n"
+            response += f"**Run ID:** {run_id}\n"
+            response += f"**Job URL:** {job_url}\n"
+            response += f"\nUse `get_databricks_job_status({run_id})` to check progress."
+            return response
+
+        else:
+            response = f"Job '{job_name}' failed.\n\n"
+            if run_id:
+                response += f"**Run ID:** {run_id}\n"
+            if job_url:
+                response += f"**Job URL:** {job_url}\n"
+            if error:
+                response += f"**Error:** {error}\n"
+            if log_file:
+                response += f"**Logs saved to:** {log_file}\n"
+            return response
+
+    except Exception as e:
+        logger.error(f"Databricks job error: {str(e)}")
+        return f"Error running Databricks job: {str(e)}"
+
+
+@mcp.tool
+def get_databricks_job_status(run_id: int) -> str:
+    """
+    Get the status of a Databricks job run.
+
+    Args:
+        run_id: The Databricks job run ID
+
+    Returns:
+        Job status information including state, result, and timing
+    """
+    if not DATABRICKS_AVAILABLE:
+        return "Databricks job submission not available. Please ensure DATABRICKS_WORKSPACE_URL and DATABRICKS_ACCESS_TOKEN environment variables are set."
+
+    try:
+        logger.info(f"Getting status for Databricks job run: {run_id}")
+
+        # Get job manager
+        job_manager = get_job_manager()
+
+        # Get job status
+        status = job_manager.get_job_status(run_id)
+
+        if not status:
+            return f"Could not retrieve status for run ID: {run_id}"
+
+        # Extract relevant information
+        state = status.get('state', {})
+        life_cycle_state = state.get('life_cycle_state', 'UNKNOWN')
+        result_state = state.get('result_state', 'N/A')
+        state_message = state.get('state_message', '')
+
+        # Timing information
+        start_time = status.get('start_time')
+        end_time = status.get('end_time')
+
+        # Format response
+        response = f"**Databricks Job Run Status**\n\n"
+        response += f"**Run ID:** {run_id}\n"
+        response += f"**Lifecycle State:** {life_cycle_state}\n"
+        response += f"**Result State:** {result_state}\n"
+
+        if state_message:
+            response += f"**State Message:** {state_message}\n"
+
+        if start_time:
+            from datetime import datetime
+            start_dt = datetime.fromtimestamp(start_time / 1000)
+            response += f"**Start Time:** {start_dt.strftime('%Y-%m-%d %H:%M:%S')}\n"
+
+        if end_time:
+            end_dt = datetime.fromtimestamp(end_time / 1000)
+            response += f"**End Time:** {end_dt.strftime('%Y-%m-%d %H:%M:%S')}\n"
+
+        # Job URL
+        job_url = databricks_get_run_url(run_id)
+        response += f"**Job URL:** {job_url}\n"
+
+        return response
+
+    except Exception as e:
+        logger.error(f"Error getting job status: {str(e)}")
+        return f"Error getting job status: {str(e)}"
+
+
+@mcp.tool
+def cancel_databricks_job(run_id: int) -> str:
+    """
+    Cancel a running Databricks job.
+
+    Args:
+        run_id: The Databricks job run ID to cancel
+
+    Returns:
+        Cancellation result message
+    """
+    if not DATABRICKS_AVAILABLE:
+        return "Databricks job submission not available. Please ensure DATABRICKS_WORKSPACE_URL and DATABRICKS_ACCESS_TOKEN environment variables are set."
+
+    try:
+        logger.info(f"Cancelling Databricks job run: {run_id}")
+
+        # Get job manager
+        job_manager = get_job_manager()
+
+        # Cancel the job
+        success = job_manager.cancel_job(run_id)
+
+        if success:
+            return f"Job run {run_id} has been cancelled successfully."
+        else:
+            return f"Failed to cancel job run {run_id}. It may have already completed or been cancelled."
+
+    except Exception as e:
+        logger.error(f"Error cancelling job: {str(e)}")
+        return f"Error cancelling job: {str(e)}"
+
+
+@mcp.tool
+def get_databricks_job_logs(run_id: int, job_name: str = "job") -> str:
+    """
+    Get and save logs for a completed Databricks job run.
+
+    Args:
+        run_id: The Databricks job run ID
+        job_name: Name to use for the log file (default: "job")
+
+    Returns:
+        Log content summary and path to saved log file
+    """
+    if not DATABRICKS_AVAILABLE:
+        return "Databricks job submission not available. Please ensure DATABRICKS_WORKSPACE_URL and DATABRICKS_ACCESS_TOKEN environment variables are set."
+
+    try:
+        logger.info(f"Getting logs for Databricks job run: {run_id}")
+
+        # Get job manager
+        job_manager = get_job_manager()
+
+        # Get cluster logs
+        logs = job_manager.get_cluster_logs(run_id)
+
+        stdout = logs.get('stdout', '')
+        stderr = logs.get('stderr', '')
+
+        # Format response
+        response = f"**Logs for Run ID: {run_id}**\n\n"
+
+        if stdout:
+            # Truncate if too long
+            if len(stdout) > 2000:
+                response += f"**STDOUT (truncated):**\n```\n{stdout[:2000]}\n... (truncated, {len(stdout)} total chars)\n```\n\n"
+            else:
+                response += f"**STDOUT:**\n```\n{stdout}\n```\n\n"
+        else:
+            response += "**STDOUT:** (empty)\n\n"
+
+        if stderr:
+            if len(stderr) > 1000:
+                response += f"**STDERR (truncated):**\n```\n{stderr[:1000]}\n... (truncated)\n```\n"
+            else:
+                response += f"**STDERR:**\n```\n{stderr}\n```\n"
+
+        # Save logs to file
+        from local_tools.databricks_job_submit import save_logs as databricks_save_logs
+        log_path = databricks_save_logs(run_id, job_name)
+        response += f"\n**Logs saved to:** {log_path}"
+
+        return response
+
+    except Exception as e:
+        logger.error(f"Error getting job logs: {str(e)}")
+        return f"Error getting job logs: {str(e)}"
+
+
+@mcp.tool
+def run_sql_tables_on_databricks(
+    sql_file_path: str,
+    job_name: Optional[str] = None,
+    existing_cluster_id: Optional[str] = None,
+    timeout_seconds: int = 7200,
+    wait_for_completion: bool = True,
+    save_logs: bool = True,
+    cleanup_script: bool = True,
+    snowflake_scope: str = "fionafan-scope",
+    snowflake_warehouse: str = "TEAM_DATA_ANALYTICS_ETL",
+    snowflake_role: str = "FIONAFAN",
+    snowflake_schema: str = "FIONAFAN"
+) -> str:
+    """
+    Run CREATE TABLE statements from a SQL file on Databricks via Snowflake.
+
+    This tool:
+    1. Parses the SQL file and extracts only CREATE TABLE / CREATE OR REPLACE TABLE statements
+    2. Generates a Databricks notebook that executes these statements via Snowflake
+    3. Submits the notebook to Databricks and optionally waits for completion
+
+    All non-CREATE TABLE statements (SELECT, INSERT, UPDATE, etc.) are skipped.
+
+    Args:
+        sql_file_path: Path to the .sql file containing CREATE TABLE statements
+        job_name: Name for the Databricks job (defaults to SQL filename)
+        existing_cluster_id: Databricks cluster ID (falls back to DATABRICKS_CLUSTER_ID env var)
+        timeout_seconds: Job timeout in seconds (default: 2 hours)
+        wait_for_completion: Whether to wait for job to complete (default: True)
+        save_logs: Whether to save logs locally after completion (default: True)
+        cleanup_script: Whether to delete uploaded script from DBFS after completion (default: True)
+        snowflake_scope: Databricks secrets scope for Snowflake credentials
+        snowflake_warehouse: Snowflake warehouse to use
+        snowflake_role: Snowflake role to use
+        snowflake_schema: Snowflake schema to use
+
+    Returns:
+        Job results including tables created, status, run ID, and job URL
+    """
+    if not DATABRICKS_AVAILABLE:
+        return "Databricks job submission not available. Please ensure DATABRICKS_WORKSPACE_URL and DATABRICKS_ACCESS_TOKEN environment variables are set."
+
+    try:
+        import os
+        import tempfile
+
+        # Convert to absolute path
+        abs_sql_path = os.path.abspath(os.path.expanduser(sql_file_path))
+
+        if not os.path.exists(abs_sql_path):
+            return f"Error: SQL file not found: {abs_sql_path}"
+
+        if not abs_sql_path.lower().endswith('.sql'):
+            return f"Error: Expected .sql file, got: {abs_sql_path}"
+
+        # Generate job name from filename if not provided
+        if job_name is None:
+            job_name = os.path.splitext(os.path.basename(abs_sql_path))[0]
+
+        logger.info(f"Converting SQL file to Databricks notebook: {abs_sql_path}")
+
+        # Convert SQL to notebook in a temp directory
+        temp_dir = tempfile.mkdtemp(prefix="sql_to_databricks_")
+        notebook_path = os.path.join(temp_dir, f"{job_name}.py")
+
+        # Generate the notebook
+        output_path, table_names, statement_count = sql_file_to_notebook(
+            sql_file_path=abs_sql_path,
+            output_path=notebook_path,
+            snowflake_scope=snowflake_scope,
+            snowflake_warehouse=snowflake_warehouse,
+            snowflake_role=snowflake_role,
+            snowflake_schema=snowflake_schema
+        )
+
+        if statement_count == 0:
+            return f"No CREATE TABLE statements found in {abs_sql_path}. Only CREATE TABLE and CREATE OR REPLACE TABLE statements are supported."
+
+        logger.info(f"Generated notebook with {statement_count} CREATE TABLE statements")
+        logger.info(f"Tables to create: {', '.join(table_names)}")
+
+        # Run the notebook on Databricks
+        result = databricks_run_job(
+            job_name=f"sql_tables_{job_name}",
+            local_script_path=output_path,
+            existing_cluster_id=existing_cluster_id,
+            timeout_seconds=timeout_seconds,
+            wait_for_completion=wait_for_completion,
+            save_logs=save_logs,
+            cleanup_script=cleanup_script
+        )
+
+        # Clean up temp notebook file
+        try:
+            os.remove(output_path)
+            os.rmdir(temp_dir)
+        except Exception:
+            pass  # Ignore cleanup errors
+
+        # Format response
+        status = result.get('status', 'UNKNOWN')
+        run_id = result.get('databricks_run_id')
+        job_url = result.get('job_url', '')
+        log_file = result.get('log_file')
+        error = result.get('error')
+
+        response = f"**SQL Tables Job: {job_name}**\n\n"
+        response += f"**Source SQL:** {abs_sql_path}\n"
+        response += f"**CREATE TABLE statements found:** {statement_count}\n"
+        response += f"**Tables:** {', '.join(table_names)}\n\n"
+
+        if status == "SUCCESS":
+            response += f"**Status:** SUCCESS\n"
+            response += f"**Run ID:** {run_id}\n"
+            response += f"**Job URL:** {job_url}\n"
+            if log_file:
+                response += f"**Logs saved to:** {log_file}\n"
+
+            # Include job results if available
+            job_results = result.get('job_results')
+            if job_results:
+                response += f"\n**Execution Results:**\n```json\n{json.dumps(job_results, indent=2)}\n```"
+
+            return response
+
+        elif status == "SUBMITTED":
+            response += f"**Status:** SUBMITTED (not waiting for completion)\n"
+            response += f"**Run ID:** {run_id}\n"
+            response += f"**Job URL:** {job_url}\n"
+            response += f"\nUse `get_databricks_job_status({run_id})` to check progress."
+            return response
+
+        else:
+            response += f"**Status:** FAILED\n"
+            if run_id:
+                response += f"**Run ID:** {run_id}\n"
+            if job_url:
+                response += f"**Job URL:** {job_url}\n"
+            if error:
+                response += f"**Error:** {error}\n"
+            if log_file:
+                response += f"**Logs saved to:** {log_file}\n"
+            return response
+
+    except Exception as e:
+        logger.error(f"SQL tables job error: {str(e)}")
+        return f"Error running SQL tables job: {str(e)}"
+
+
+@mcp.tool
+def run_sql_text_on_databricks(
+    sql_text: str,
+    job_name: Optional[str] = None,
+    existing_cluster_id: Optional[str] = None,
+    timeout_seconds: int = 7200,
+    wait_for_completion: bool = True,
+    save_logs: bool = True,
+    cleanup_script: bool = True,
+    snowflake_scope: str = "fionafan-scope",
+    snowflake_warehouse: str = "TEAM_DATA_ANALYTICS_ETL",
+    snowflake_role: str = "FIONAFAN",
+    snowflake_schema: str = "FIONAFAN"
+) -> str:
+    """
+    Run CREATE TABLE statements from raw SQL text on Databricks via Snowflake.
+
+    Mirrors run_sql_tables_on_databricks, but takes SQL content directly
+    instead of a file path.
+    """
+    if not DATABRICKS_AVAILABLE:
+        return "Databricks job submission not available. Please ensure DATABRICKS_WORKSPACE_URL and DATABRICKS_ACCESS_TOKEN environment variables are set."
+
+    try:
+        import tempfile
+
+        # Persist SQL text to a temp file for reuse with existing flow
+        temp_dir = tempfile.mkdtemp(prefix="sql_text_to_dbx_")
+        sql_path = os.path.join(temp_dir, "input.sql")
+        with open(sql_path, "w", encoding="utf-8") as f:
+            f.write(sql_text)
+
+        if job_name is None:
+            job_name = "sql_text_job"
+
+        # Convert SQL to a Databricks notebook
+        notebook_path = os.path.join(temp_dir, f"{job_name}.py")
+        output_path, table_names, statement_count = sql_file_to_notebook(
+            sql_file_path=sql_path,
+            output_path=notebook_path,
+            snowflake_scope=snowflake_scope,
+            snowflake_warehouse=snowflake_warehouse,
+            snowflake_role=snowflake_role,
+            snowflake_schema=snowflake_schema
+        )
+
+        if statement_count == 0:
+            return "No CREATE TABLE statements found in provided SQL text. Only CREATE TABLE and CREATE OR REPLACE TABLE statements are supported."
+
+        logger.info(f"Generated notebook with {statement_count} CREATE TABLE statements")
+        logger.info(f"Tables to create: {', '.join(table_names)}")
+
+        # Run the notebook on Databricks
+        result = databricks_run_job(
+            job_name=f"sql_tables_{job_name}",
+            local_script_path=output_path,
+            existing_cluster_id=existing_cluster_id,
+            timeout_seconds=timeout_seconds,
+            wait_for_completion=wait_for_completion,
+            save_logs=save_logs,
+            cleanup_script=cleanup_script
+        )
+
+        # Clean up temp files
+        try:
+            os.remove(output_path)
+            os.remove(sql_path)
+            os.rmdir(temp_dir)
+        except Exception:
+            pass
+
+        # Format response
+        status = result.get('status', 'UNKNOWN')
+        run_id = result.get('databricks_run_id')
+        job_url = result.get('job_url', '')
+        log_file = result.get('log_file')
+        error = result.get('error')
+
+        response = f"**SQL Tables Job (text): {job_name}**\n\n"
+        response += f"**CREATE TABLE statements found:** {statement_count}\n"
+        response += f"**Tables:** {', '.join(table_names)}\n\n"
+
+        if status == "SUCCESS":
+            response += f"**Status:** SUCCESS\n"
+            response += f"**Run ID:** {run_id}\n"
+            response += f"**Job URL:** {job_url}\n"
+            if log_file:
+                response += f"**Logs saved to:** {log_file}\n"
+
+            job_results = result.get('job_results')
+            if job_results:
+                response += f"\n**Execution Results:**\n```json\n{json.dumps(job_results, indent=2)}\n```"
+
+            return response
+
+        elif status == "SUBMITTED":
+            response += f"**Status:** SUBMITTED (not waiting for completion)\n"
+            response += f"**Run ID:** {run_id}\n"
+            response += f"**Job URL:** {job_url}\n"
+            response += f"\nUse `get_databricks_job_status({run_id})` to check progress."
+            return response
+
+        else:
+            response += f"**Status:** FAILED\n"
+            if run_id:
+                response += f"**Run ID:** {run_id}\n"
+            if job_url:
+                response += f"**Job URL:** {job_url}\n"
+            if error:
+                response += f"**Error:** {error}\n"
+            if log_file:
+                response += f"**Logs saved to:** {log_file}\n"
+            return response
+
+    except Exception as e:
+        logger.error(f"SQL text job error: {str(e)}")
+        return f"Error running SQL text job: {str(e)}"
 
 
 # ============================================================================
